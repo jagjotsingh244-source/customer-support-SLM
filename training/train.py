@@ -9,6 +9,7 @@ Run from the repo root:
 
 import argparse
 import os
+import time
 
 import torch
 import yaml
@@ -38,6 +39,22 @@ class StepReporter(TrainerCallback):
 
     def on_save(self, args, state, control, **kwargs):
         print(f">>> Saved checkpoint at step {state.global_step}")
+
+
+class DrillPause(TrainerCallback):
+    """Drill only: waits at one step so there is time to delete the runtime by hand."""
+
+    def __init__(self, step, minutes):
+        self.step, self.minutes = step, minutes
+
+    def on_step_end(self, args, state, control, **kwargs):
+        if state.global_step == self.step:
+            print(
+                f">>> PAUSED at step {self.step}. Delete the runtime now "
+                f"(Runtime -> Disconnect and delete runtime). "
+                f"Training continues by itself in {self.minutes} minutes."
+            )
+            time.sleep(self.minutes * 60)
 
 
 def run(cfg, resume=False):
@@ -72,13 +89,17 @@ def run(cfg, resume=False):
         target_modules="all-linear",
         task_type="CAUSAL_LM",
     )
+    callbacks = [StepReporter()]
+    if cfg.get("pause_at_step") and not resume:  # a resumed run must not pause again
+        callbacks.append(DrillPause(cfg["pause_at_step"], cfg.get("pause_minutes", 15)))
+
     trainer = SFTTrainer(
         model=model,
         args=args,
         train_dataset=ds,
         processing_class=tok,
         peft_config=lora,
-        callbacks=[StepReporter()],
+        callbacks=callbacks,
     )
 
     checkpoint = None

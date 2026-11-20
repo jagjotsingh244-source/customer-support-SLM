@@ -15,6 +15,12 @@ save_steps: 50          # a crash loses at most 50 steps
 save_total_limit: 2     # keep only the 2 newest checkpoints on disk
 logging_steps: 10
 
+# Drill only: on a T4 this tiny run finishes in a minute or two, too fast to stop by hand.
+# At this step training waits, so you can delete the runtime. Skipped when resuming.
+# Set to null for real training runs.
+pause_at_step: 120
+pause_minutes: 15
+
 # Training settings
 per_device_train_batch_size: 8
 learning_rate: 2.0e-4   # write floats with a dot: YAML reads 2e-4 as text
