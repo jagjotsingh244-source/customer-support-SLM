@@ -1,0 +1,27 @@
+# Lesson 0.2 disconnect drill: a tiny model, a short run, frequent saves.
+# The model barely matters here; the point is proving a run survives a crash.
+
+# What to train on
+model_name: HuggingFaceTB/SmolLM2-135M
+dataset_name: bitext/Bitext-customer-support-llm-chatbot-training-dataset
+num_rows: 2000
+
+# Reproducibility: same seed + same config = comparable runs
+seed: 3407
+
+# How long to train and how often to save
+max_steps: 300
+save_steps: 50          # a crash loses at most 50 steps
+save_total_limit: 2     # keep only the 2 newest checkpoints on disk
+logging_steps: 10
+
+# Training settings
+per_device_train_batch_size: 8
+learning_rate: 2.0e-4   # write floats with a dot: YAML reads 2e-4 as text
+lora_r: 16              # LoRA keeps checkpoints a few MB, so Hub pushes are fast
+lora_alpha: 16
+
+# Where checkpoints go
+output_dir: outputs/drill             # the notebook's own disk: wiped on disconnect
+push_to_hub: true
+hub_model_id: 123jagjot/nova-drill    # the Hub copy: survives disconnects
