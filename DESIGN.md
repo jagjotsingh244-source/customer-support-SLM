@@ -16,7 +16,7 @@ Pass marks: rows enforced in code must pass 100% of the time. Pass marks for the
 
 | Capability | Mechanism | Why this mechanism | How it is measured |
 |---|---|---|---|
-| Greet and set tone | Fine-tune (+ short system prompt) | Tone is behaviour, not a fact; a 2B model follows long prompt instructions loosely, and every prompt token costs latency on every turn | Rubric score (friendly, concise, on-brand) on held-out openers; reply length within limit; asks at most one question |
+| Greet and set tone | Fine-tune  | Tone is behaviour, not a fact; a 2B model follows long prompt instructions loosely, and every prompt token costs latency on every turn | Rubric score (friendly, concise, on-brand) on held-out openers; reply length within limit; asks at most one question |
 | Return-window questions | RAG | Policy changes (e.g. electronics 30 → 15 days); answer must cite current text | Required fact present; citation points at the right chunk |
 | Refund-timeline questions | RAG | General policy ("how long do refunds take?"); timelines vary by payment method and change; must quote the current help-center text, never a remembered number | Required fact present; citation points at the right chunk; no number appears that is absent from retrieved chunks |
 | Check a refund's status | Tool + fine-tune | "Where is **my** refund?" is per-customer live data, not policy; training teaches the model to call the tool instead of answering from the policy text | Correct tool and arguments; refund status and amount in the reply match the tool output exactly |
