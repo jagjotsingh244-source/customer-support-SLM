@@ -96,10 +96,13 @@ if "4" in which:
         outs = []
         for seed in range(5):
             torch.manual_seed(seed)
-            out = model.generate(ids, max_new_tokens=60, do_sample=True, eos_token_id=EOS, **kw)[0, ids.shape[1]:]
+            out = model.generate(ids, max_new_tokens=600, do_sample=True, eos_token_id=EOS, **kw)[0, ids.shape[1]:]
+            finished = out[-1].item() in EOS          # False = still talking when the 600 cap hit
             text = tok.decode(out, skip_special_tokens=True).strip().replace("\n", " ")
-            outs.append(text)
-            print(f"  run {seed + 1} ({len(out)} tokens): {text}")
+            outs.append({"tokens": len(out), "finished": finished, "text": text})
+            print(f"  run {seed + 1} ({len(out)} tokens, {'finished' if finished else 'HIT CAP'}): {text[:160]}...")
+        lengths = [o["tokens"] for o in outs]
+        print(f"  lengths: {lengths} | min {min(lengths)} max {max(lengths)}")
         results[name] = outs
 
 if "5" in which:

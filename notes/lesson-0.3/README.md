@@ -32,11 +32,15 @@ Scripts (run from this folder with a Python that has `transformers>=5` and `torc
    block, and also started thinking. Both are wrong for Nova.
 7. **Hand-written greedy loop = `model.generate(do_sample=False)`**, token for token (31 tokens), once
    both stop on `<|im_end|>`. The loop without a KV cache took 17.5 s against 2.1 s for `generate`.
-8. **Sampling:** at temperature 0.2 the five replies were near-identical in content (all ask for more
-   details). With the model card's settings (temperature 1.0, top_k 20) the content changed between runs:
-   two of five claimed "I don't have access to your order", one used an emoji. Support needs the low
-   end; Module 2 decides the exact value. `presence_penalty` from the card is a vLLM/OpenAI-API setting,
-   not a `generate` argument.
+8. **Sampling** (5 runs each, replies up to 600 tokens, all finished on their own):
+   - temperature 0.2: lengths 101–129 tokens (102, 129, 101, 123, 120); all five ask for more details.
+   - model card (temperature 1.0, top_p 1.0, top_k 20): lengths 106–284 tokens (185, 106, 284, 208, 205),
+     almost 3x spread; three of five claimed "I don't have access to your order", one used an emoji.
+
+   Higher temperature changes length and content, and here it made the model refuse more often.
+   Support needs the low end; Module 2 decides the exact value. `presence_penalty=2.0` from the card is a
+   vLLM/OpenAI-API setting, not a `generate` argument; Lesson 0.4's notebook repeats this comparison through
+   vLLM with it.
 
 ## Thinking on vs off (greedy, same question)
 

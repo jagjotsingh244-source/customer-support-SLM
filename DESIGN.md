@@ -44,6 +44,19 @@ Estimates get replaced by measurements as the course goes on.
 - **Max size of one user message: 1,500 tokens** — *target*, enforced in code before the model sees the message (about 1,100 words). Over the cap: no model call; reply with a fixed message asking for the main question or the order number. Keeps one message from taking more than 1,500 of the 4,000 history tokens. Built in Module 9; tested in Module 2 (a 3,000-token message must get the polite decline, not an error). When the full prompt is still too long, trim the oldest history first, then retrieved chunks; never the system prompt or tool schemas.
 - **Cost per 1,000 conversations: ~$5** — *estimate*. Assumes a GPU at about $1/hour serving about 200 conversations/hour. Replace with the real GPU rate and measured throughput in Module 10.
 
+## Risk tests (Lesson 0.4)
+
+Run on a Kaggle T4 in one session with `training/notebooks/risk-tests.ipynb`. A failing test gets at most 60 minutes of fixing (versions, flags, dtype); after that, take its fallback and move on.
+
+| # | Test | Pass when | Result | Error / notes | Fallback (if failed) |
+|---|---|---|---|---|---|
+| 1 | Generate in Transformers on a T4 | Coherent reply ending with `<\|im_end\|>` | Not run yet | Passed on a Mac (MPS) in Lesson 0.3; needs `eos_token_id=[<\|im_end\|>, <\|endoftext\|>]` | Switch to text-only Qwen3-4B or Qwen3-1.7B |
+| 2 | 50-step Unsloth LoRA, save, reload, generate | Loss falls; reloaded adapter changes the output | Not run yet | | Switch to text-only Qwen3-4B or Qwen3-1.7B |
+| 3 | vLLM serves the base model, one parsed tool call | `message.tool_calls` is filled | Not run yet | | Evals with Transformers or llama.cpp; serve on an L4/A10-class GPU in Module 10 |
+| 4 | vLLM serves the adapter as a LoRA module | `model="nova-test"` answers in the adapter's style | Not run yet | | Merge the adapter into the base (Module 10) |
+
+Pinned versions that worked: `requirements-gpu.txt` (training) and the serving pins recorded with it.
+
 ## Change log
 
 Record every budget or mechanism change: old → new, and the evidence.
