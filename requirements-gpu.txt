@@ -1,0 +1,19 @@
+# Training environment that passed risk tests 1-2 (Lesson 0.4).
+# Measured on Kaggle, GPU T4, 2026-11-20. Every training notebook installs exactly these:
+#   pip install -r requirements-gpu.txt
+# torch came from Kaggle's image as 2.11.0+cu130 (CUDA 13); "==2.11.0" matches that build,
+# so pip keeps it instead of downloading torch again.
+torch==2.11.0
+transformers==5.17.0
+trl==1.15.0
+peft==0.21.2
+unsloth==2026.11.7
+unsloth_zoo==2026.11.7
+accelerate==1.15.0
+datasets==4.8.5
+bitsandbytes==0.50.2
+triton==3.6.0
+pyyaml
+
+# Serving (vLLM) runs in its own environment and is pinned separately once risk tests 3-4 pass.
+# Run 1 tried vllm==0.34.0 (torch 2.14.0, transformers 5.22.2, triton 3.8.0): the engine did not start on a T4.

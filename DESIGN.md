@@ -50,12 +50,13 @@ Run on a Kaggle T4 in one session with `training/notebooks/risk-tests.ipynb`. A 
 
 | # | Test | Pass when | Result | Error / notes | Fallback (if failed) |
 |---|---|---|---|---|---|
-| 1 | Generate in Transformers on a T4 | Coherent reply ending with `<\|im_end\|>` | Not run yet | Passed on a Mac (MPS) in Lesson 0.3; needs `eos_token_id=[<\|im_end\|>, <\|endoftext\|>]` | Switch to text-only Qwen3-4B or Qwen3-1.7B |
-| 2 | 50-step Unsloth LoRA, save, reload, generate | Loss falls; reloaded adapter changes the output | Not run yet | | Switch to text-only Qwen3-4B or Qwen3-1.7B |
-| 3 | vLLM serves the base model, one parsed tool call | `message.tool_calls` is filled | Not run yet | | Evals with Transformers or llama.cpp; serve on an L4/A10-class GPU in Module 10 |
-| 4 | vLLM serves the adapter as a LoRA module | `model="nova-test"` answers in the adapter's style | Not run yet | | Merge the adapter into the base (Module 10) |
+| 1 | Generate in Transformers on a T4 | Coherent reply ending with `<\|im_end\|>` | **PASS** (run 1) | 145-token reply in 13.2 s (11 tok/s); correct `get_order_status(4417)` tool call. Needs `eos_token_id=[<\|im_end\|>, <\|endoftext\|>]` | Not needed |
+| 2 | 50-step Unsloth LoRA, save, reload, generate | Loss falls; reloaded adapter changes the output | **PASS** (run 1) | 50 steps in 165 s; loss 1.60 → 0.58; reloaded adapter answers in Bitext's style | Not needed |
+| 3 | vLLM serves the base model, one parsed tool call | `message.tool_calls` is filled | **FAIL** (run 1), fixing | vLLM 0.34.0: `Engine core initialization failed`; the server never started. Root cause is in `vllm-base.log`; the 60-minute fix limit starts once that cause is known | Evals with Transformers or llama.cpp; serve on an L4/A10-class GPU in Module 10 |
+| 4 | vLLM serves the adapter as a LoRA module | `model="nova-test"` answers in the adapter's style | **FAIL** (run 1), blocked by test 3 | Not tested yet: the server failed with or without LoRA | Merge the adapter into the base (Module 10) |
 
-Pinned versions that worked: `requirements-gpu.txt` (training) and the serving pins recorded with it.
+Pinned versions that worked: `requirements-gpu.txt` (training, tests 1–2). Serving pins are added there once tests 3–4 are settled.
+Run 1 report: `notes/lesson-0.4/report-run1.txt`.
 
 ## Change log
 
