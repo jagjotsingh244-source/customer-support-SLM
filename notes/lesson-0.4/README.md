@@ -29,3 +29,14 @@ Notebook: `training/notebooks/risk-tests.ipynb`. Run 1: Kaggle, GPU T4 x2, 2026-
    would have broken one or the other.
 6. **A failing test needs its root cause in the report.** Run 1 kept only the last 2,500 characters of
    the vLLM log, which held vLLM's summary error, not the cause. The full log is in the run's Output.
+7. **Why vLLM did not start (from `vllm-base.log`):** vLLM loaded the model, then ran a dummy forward pass
+   to measure memory. Qwen3.5's gated norm calls FlashInfer's `gemma_rmsnorm`, which FlashInfer compiles on
+   first use for the GPU's architecture (sm75 for a T4). Compiling worked; linking failed with
+   `/usr/bin/ld: cannot find -lcuda`, because Kaggle's image has the driver (`libcuda.so.1`) but no
+   `libcuda.so` file and no CUDA stubs folder. The other T4 messages in the log were not fatal: FlashAttention 2
+   needs compute capability 8.0+ and FlashInfer sampling needs more than 7.5, so vLLM fell back for both.
+   Lesson: newer serving stacks assume Ampere-or-newer GPUs; on a T4, expect kernels to be built on the spot
+   and fallbacks to be used.
+8. **Run 2 (`training/notebooks/risk-tests-vllm.ipynb`)** tries the fixes in order and stops at the first that
+   serves: (A) link `libcuda.so` to the driver and add it to `LIBRARY_PATH`; (B) A + `--enforce-eager`;
+   (C) A + FlashInfer removed; (D) A + vLLM 0.17.x. It stops starting new attempts after 60 minutes.
