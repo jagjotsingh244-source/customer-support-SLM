@@ -1,0 +1,28 @@
+# Secrets: tokens live in Kaggle/Colab secrets or your shell, never in the repo
+.env
+.env.*
+*.token
+hf_token*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.ipynb_checkpoints/
+
+# Training outputs: checkpoints and adapters go to the Hugging Face Hub, not Git
+outputs/
+spike/
+spike-adapter/
+wandb/
+*.safetensors
+*.bin
+*.gguf
+
+# Data files are versioned on the Hub (nimbus-data); keep only the folder placeholders
+data/**/*
+!data/**/
+!data/**/.gitkeep
+
+# macOS
+.DS_Store
