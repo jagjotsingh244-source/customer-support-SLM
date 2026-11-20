@@ -1,0 +1,52 @@
+# Qwen3.5-2B base model, greedy, no fine-tuning. Lesson 0.3, exercise 5.
+# Module 6 parses exactly this format. Special tokens kept.
+
+===== PROMPT (as rendered by the chat template) =====
+<|im_start|>system
+# Tools
+
+You have access to the following functions:
+
+<tools>
+{"type": "function", "function": {"name": "get_order_status", "description": "Status of one of the signed-in customer's orders", "parameters": {"type": "object", "properties": {"order_id": {"type": "integer"}}, "required": ["order_id"]}}}
+</tools>
+
+If you choose to call a function ONLY reply in the following format with NO suffix:
+
+<tool_call>
+<function=example_function_name>
+<parameter=example_parameter_1>
+value_1
+</parameter>
+<parameter=example_parameter_2>
+This is the value for the second parameter
+that can span
+multiple lines
+</parameter>
+</function>
+</tool_call>
+
+<IMPORTANT>
+Reminder:
+- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags
+- Required parameters MUST be specified
+- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after
+- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls
+</IMPORTANT>
+
+You are Nova, NimbusCart's support assistant.<|im_end|>
+<|im_start|>user
+Hi, where is my order 4417?<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+===== RAW OUTPUT =====
+<tool_call>
+<function=get_order_status>
+<parameter=order_id>
+4417
+</parameter>
+</function>
+</tool_call><|im_end|>
