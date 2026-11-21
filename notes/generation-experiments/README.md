@@ -1,21 +1,22 @@
-# Lesson 0.3: how Qwen3.5-2B produces a reply
+# How Qwen3.5-2B produces a reply
 
 Run on a MacBook (MPS, float16), Transformers 5.23.0, PyTorch 2.15.0, 2026-11-20.
-Not yet run on a T4: that is risk test 1, done in Lesson 0.4.
+The T4 run is risk test 1, in `notes/gpu-risk-tests/`.
 
 Scripts (run from this folder with a Python that has `transformers>=5` and `torch`):
-`ex1_prompt.py` (exercise 1), `ex2to5.py [2|3|4|5]` (exercises 2–5), `think_compare.py` (thinking on vs off).
-`raw_tool_call.txt` is the exact prompt and raw tool-call output Module 6 must parse.
+`render_prompt.py` (the prompt the model sees, special tokens, token counts),
+`generation_checks.py [template] [loop] [sampling] [toolcall]` (findings 6–8 and 4), `think_compare.py` (thinking on vs off).
+`raw_tool_call.txt` is the exact prompt and raw tool-call output the agent must handle.
 
 ## Findings
 
 1. **Thinking is turned off by the prompt, not by a setting.** With `enable_thinking=False` (the default)
-   the template ends the prompt with an empty `<think>\n\n</think>\n\n` block. Training data in Module 3
+   the template ends the prompt with an empty `<think>\n\n</think>\n\n` block. Training data
    must contain the same empty block, or training and serving formats differ.
 2. **Wrong stop token in the model config.** The tokenizer's eos is `<|im_end|>` (248046) but
    `config.json` sets `eos_token_id` to `<|endoftext|>` (248044), and the repo has no
    `generation_config.json`. So `model.generate` runs past the end of the turn unless given
-   `eos_token_id=[248046, 248044]`. Check the stop tokens again when serving with vLLM (Module 10).
+   `eos_token_id=[248046, 248044]`. Check the stop tokens again when serving with vLLM.
 3. **Tool-call format is XML-style, not JSON:**
    `<tool_call>` `<function=NAME>` `<parameter=NAME>` value `</parameter>` `</function>` `</tool_call>`.
    `<tool_call>`, `</tool_call>`, `<think>`, `</think>`, `<|im_start|>`, `<|im_end|>` are single tokens;
@@ -26,7 +27,7 @@ Scripts (run from this folder with a Python that has `transformers>=5` and `torc
 5. **Token costs:** user message "Hi, where is my order 4417?" = 12 tokens (each digit of 4417 is its own
    token). Short system prompt + user message = 39. One tool adds 261; the 6 draft tools add 656
    (about 180 fixed + about 80 per tool). Vocabulary: 248,077 tokens.
-6. **Without the template the lesson's failure looks different here:** the raw string did not continue
+6. **Without the template the expected failure looks different:** the raw string did not continue
    the customer's message; the model jumped into a long thinking block instead. With the template but
    `add_generation_prompt=False`, the model wrote the assistant cue itself, without the empty think
    block, and also started thinking. Both are wrong for Nova.
@@ -38,9 +39,9 @@ Scripts (run from this folder with a Python that has `transformers>=5` and `torc
      almost 3x spread; three of five claimed "I don't have access to your order", one used an emoji.
 
    Higher temperature changes length and content, and here it made the model refuse more often.
-   Support needs the low end; Module 2 decides the exact value. `presence_penalty=2.0` from the card is a
-   vLLM/OpenAI-API setting, not a `generate` argument. Repeated through vLLM with it in Lesson 0.4
-   (`notes/lesson-0.4/`): temperature 0.2 gave 115–131 tokens, the model card settings 92–234.
+   Support needs the low end; the baseline eval decides the exact value. `presence_penalty=2.0` from the card is a
+   vLLM/OpenAI-API setting, not a `generate` argument. Repeated through vLLM with it in the risk tests
+   (`notes/gpu-risk-tests/`): temperature 0.2 gave 115–131 tokens, the model card settings 92–234.
 
 ## Thinking on vs off (greedy, same question)
 

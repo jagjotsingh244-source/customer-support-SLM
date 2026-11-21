@@ -1,5 +1,5 @@
--- One SQL query per customer question in db/QUESTIONS.md (Lesson 1.1, exercise 3).
--- These are the first drafts of Module 6's tools.
+-- One SQL query per customer question in db/QUESTIONS.md.
+-- These are the first drafts of the agent's order tools.
 --
 -- Run: psql "$DB_URL" -f db/questions.sql
 -- Loads db/fixtures.sql inside a transaction, runs all 16, then rolls back,
@@ -15,7 +15,7 @@
 -- The SQL returns facts (dates, statuses, flags). Policy text and timings
 -- ("card refunds take 5-7 business days") come from the help center (RAG).
 -- The window lengths below (7 and 15 days) repeat the help-center policy;
--- Module 6 moves them to one place in code.
+-- The tool layer will hold them in one place in code.
 
 \set ON_ERROR_STOP on
 \set QUIET on

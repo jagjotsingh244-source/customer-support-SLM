@@ -1,4 +1,7 @@
-"""Exercises 2-5 with Qwen3.5-2B on the Mac (MPS, float16 like the T4)."""
+"""Generation checks with Qwen3.5-2B on the Mac (MPS, float16 like the T4).
+
+Run: python generation_checks.py [template] [loop] [sampling] [toolcall]   (default: all four)
+"""
 import json
 import sys
 import time
@@ -14,7 +17,7 @@ try:
 except ImportError:
     from transformers import AutoModelForImageTextToText as ModelClass
 
-which = set(sys.argv[1:]) or {"2", "3", "4", "5"}
+which = set(sys.argv[1:]) or {"template", "loop", "sampling", "toolcall"}
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 tok = AutoTokenizer.from_pretrained(MID)
 t0 = time.time()
@@ -44,8 +47,8 @@ def show(title, text):
     print(f"\n----- {title} -----\n{text}")
 
 
-if "2" in which:
-    print("\n" + "=" * 25, "EXERCISE 2: raw vs template vs no cue", "=" * 25)
+if "template" in which:
+    print("\n" + "=" * 25, "TEMPLATE: raw vs template vs no cue", "=" * 25)
     cases = {
         "a) raw string, no template": USER,
         "b) template + add_generation_prompt=True": render(),
@@ -58,8 +61,8 @@ if "2" in which:
         show(title, reply)
         results[title] = reply
 
-if "3" in which:
-    print("\n" + "=" * 25, "EXERCISE 3: hand-written loop vs generate", "=" * 25)
+if "loop" in which:
+    print("\n" + "=" * 25, "LOOP: hand-written loop vs generate", "=" * 25)
     prompt_ids = ids_of(render([ORDER_STATUS]))
     ids = prompt_ids
     t0 = time.time()
@@ -81,11 +84,11 @@ if "3" in which:
     show("model.generate", tok.decode(ref, skip_special_tokens=False))
     print(f"\nidentical: {same} | my loop {len(mine)} tokens in {loop_time:.1f}s "
           f"| generate {len(ref)} tokens in {gen_time:.1f}s | first difference at: {first_diff}")
-    results["ex3"] = {"identical": same, "loop_s": loop_time, "generate_s": gen_time,
+    results["loop"] = {"identical": same, "loop_s": loop_time, "generate_s": gen_time,
                       "loop_tokens": len(mine), "first_diff": first_diff}
 
-if "4" in which:
-    print("\n" + "=" * 25, "EXERCISE 4: sampling", "=" * 25)
+if "sampling" in which:
+    print("\n" + "=" * 25, "SAMPLING", "=" * 25)
     ids = ids_of(render())
     settings = {
         "temperature 0.2": dict(temperature=0.2, top_p=1.0, top_k=0),
@@ -105,13 +108,13 @@ if "4" in which:
         print(f"  lengths: {lengths} | min {min(lengths)} max {max(lengths)}")
         results[name] = outs
 
-if "5" in which:
-    print("\n" + "=" * 25, "EXERCISE 5: does the base model call the tool?", "=" * 25)
+if "toolcall" in which:
+    print("\n" + "=" * 25, "TOOL CALL: does the base model call the tool?", "=" * 25)
     prompt = render([ORDER_STATUS])
     raw = greedy(prompt, n=120)
     show("raw output, special tokens kept", raw)
-    results["ex5_prompt"] = prompt
-    results["ex5_raw"] = raw
+    results["toolcall_prompt"] = prompt
+    results["toolcall_raw"] = raw
 
-json.dump(results, open("results_" + "".join(sorted(which)) + ".json", "w"), indent=1)
+json.dump(results, open("results_" + "_".join(sorted(which)) + ".json", "w"), indent=1)
 print(f"\n[transformers {transformers.__version__}, torch {torch.__version__}]")

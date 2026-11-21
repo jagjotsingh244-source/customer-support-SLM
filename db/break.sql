@@ -1,4 +1,4 @@
--- Lesson 1.1, exercise 4: try to break the schema.
+-- Try to break the schema.
 -- Every insert after the fixtures must FAIL. Nothing is kept: the whole run
 -- is rolled back at the end.
 -- Run: psql "$DB_URL" -f db/break.sql

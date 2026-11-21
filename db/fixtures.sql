@@ -1,8 +1,7 @@
--- A tiny hand-built world for testing the 16 queries in db/questions.sql
--- (Lesson 1.1, exercise 3). Not the real seed: Lesson 1.3's seed.py builds
--- 3,000 orders. Every row here is chosen so one question has a known answer.
+-- A tiny hand-built world for testing the 16 queries in db/questions.sql.
+-- Not the real seed: db/seed.py (to come) builds 3,000 orders. Every row here is chosen so one question has a known answer.
 --
--- The clock is NOW = 2026-11-20 10:00 IST (Lesson 1.2). Every timestamp is
+-- The clock is NOW = 2026-11-20 10:00 IST (frozen in config.py). Every timestamp is
 -- before it.
 --
 -- Customer 1 (Asha, train) owns orders 10001-10009, one per situation.

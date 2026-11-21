@@ -12,7 +12,7 @@ This file decides where every capability lives and the budgets the system must f
 
 ## Capability map
 
-Pass marks: rows enforced in code must pass 100% of the time. Pass marks for the other rows (e.g. "required fact present in ≥ 90% of answers") are placeholders until Module 2's baseline shows what is realistic.
+Pass marks: rows enforced in code must pass 100% of the time. Pass marks for the other rows (e.g. "required fact present in ≥ 90% of answers") are placeholders until the baseline eval shows what is realistic.
 
 | Capability | Mechanism | Why this mechanism | How it is measured |
 |---|---|---|---|
@@ -32,19 +32,19 @@ Pass marks: rows enforced in code must pass 100% of the time. Pass marks for the
 ## Budgets
 
 Targets are product requirements: change them only deliberately, with a written reason.
-Estimates get replaced by measurements as the course goes on.
+Estimates get replaced by measurements as the project goes on.
 
 - **p95 latency, reply with one tool call: 3 s** — *target*. Covers both model passes (emit the tool call, then answer from the result) plus the DB query.
 - **Context window: 8,192 tokens** — *target* for the total. The split is an *estimate*:
-  - system prompt: 500 (measure in Module 2)
-  - tool schemas: 700 (*measured* in Lesson 0.3: 656 tokens for the 6 draft tools, about 180 fixed + about 80 per tool; 700 leaves room for one more tool)
-  - history: 4,000 (refine in Modules 7–8)
-  - retrieved chunks: 2,000, e.g. 4 × 500 (refine in Module 5)
+  - system prompt: 500 (measure in the baseline eval)
+  - tool schemas: 700 (*measured* in the generation experiments: 656 tokens for the 6 draft tools, about 180 fixed + about 80 per tool; 700 leaves room for one more tool)
+  - history: 4,000 (refine with synthetic conversations and the eval harness)
+  - retrieved chunks: 2,000, e.g. 4 × 500 (refine when retrieval is built)
   - reply headroom: 992
-- **Max size of one user message: 1,500 tokens** — *target*, enforced in code before the model sees the message (about 1,100 words). Over the cap: no model call; reply with a fixed message asking for the main question or the order number. Keeps one message from taking more than 1,500 of the 4,000 history tokens. Built in Module 9; tested in Module 2 (a 3,000-token message must get the polite decline, not an error). When the full prompt is still too long, trim the oldest history first, then retrieved chunks; never the system prompt or tool schemas.
-- **Cost per 1,000 conversations: ~$5** — *estimate*. Assumes a GPU at about $1/hour serving about 200 conversations/hour. Replace with the real GPU rate and measured throughput in Module 10.
+- **Max size of one user message: 1,500 tokens** — *target*, enforced in code before the model sees the message (about 1,100 words). Over the cap: no model call; reply with a fixed message asking for the main question or the order number. Keeps one message from taking more than 1,500 of the 4,000 history tokens. Built with the guardrails; tested in the baseline eval (a 3,000-token message must get the polite decline, not an error). When the full prompt is still too long, trim the oldest history first, then retrieved chunks; never the system prompt or tool schemas.
+- **Cost per 1,000 conversations: ~$5** — *estimate*. Assumes a GPU at about $1/hour serving about 200 conversations/hour. Replace with the real GPU rate and measured throughput once serving is set up.
 
-## Risk tests (Lesson 0.4)
+## Risk tests
 
 Run on a Kaggle T4 in one session with `training/notebooks/risk-tests.ipynb`. A failing test gets at most 60 minutes of fixing (versions, flags, dtype); after that, take its fallback and move on.
 
@@ -56,7 +56,7 @@ Run on a Kaggle T4 in one session with `training/notebooks/risk-tests.ipynb`. A 
 | 4 | vLLM serves the adapter as a LoRA module | `model="nova-test"` answers in the adapter's style | **PASS** (run 2) | Run 1's adapter served as `nova-test`; replies differ from the base, in Bitext's style. Start with LoRA took 190 s | Not needed |
 
 Pinned versions that worked: `requirements-gpu.txt` (training, tests 1–2) and `requirements-serve.txt` (vLLM, tests 3–4), kept in separate environments.
-Reports: `notes/lesson-0.4/report-run1.txt` and `report-run2.txt`.
+Reports: `notes/gpu-risk-tests/report-run1.txt` and `report-run2.txt`.
 
 ## Change log
 
@@ -64,8 +64,8 @@ Record every budget or mechanism change: old → new, and the evidence.
 
 | Date | Change | Reason |
 |---|---|---|
-| 2026-11-20 | First draft | Lesson 0.1 |
+| 2026-11-20 | First draft | Capability map and budgets |
 | 2026-11-20 | Added "Check a refund's status" and "Say I don't know" rows; order status now also checks the reply; injection set includes indirect injection; pass-mark note added; escalation stays trained (decision recorded) | Review of the first draft |
-| 2026-11-20 | Tool schemas: estimate 700 → measured 656 (allotment kept at 700) | Lesson 0.3: rendered Qwen3.5-2B chat template with 6 draft tools; see `notes/lesson-0.3/` |
+| 2026-11-20 | Tool schemas: estimate 700 → measured 656 (allotment kept at 700) | Rendered Qwen3.5-2B chat template with 6 draft tools; see `notes/generation-experiments/` |
 | 2026-11-20 | New budget: max 1,500 tokens per user message, enforced in code, plus a trim order for over-long prompts | Long pastes would overflow the 8,192 window (vLLM rejects them), slow prefill, dilute a 2B model's attention and hide injections |
-| 2026-11-20 | Stack confirmed: Qwen3.5-2B + Unsloth LoRA for training, vLLM 0.34.0 with LoRA modules for serving; no fallbacks taken. Transformers is for training and offline checks only | Lesson 0.4 risk tests 1–4 pass on a T4; Transformers decodes at 11 tok/s against vLLM's 50 tok/s |
+| 2026-11-20 | Stack confirmed: Qwen3.5-2B + Unsloth LoRA for training, vLLM 0.34.0 with LoRA modules for serving; no fallbacks taken. Transformers is for training and offline checks only | Risk tests 1–4 pass on a T4; Transformers decodes at 11 tok/s against vLLM's 50 tok/s |

@@ -1,4 +1,4 @@
-# Lesson 0.2 disconnect drill: a tiny model, a short run, frequent saves.
+# Disconnect drill: a tiny model, a short run, frequent saves.
 # The model barely matters here; the point is proving a run survives a crash.
 
 # What to train on

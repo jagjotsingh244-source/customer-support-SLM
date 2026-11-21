@@ -1,9 +1,9 @@
-# State machines (Lesson 1.1, exercise 5)
+# State machines
 
 Every allowed move gets a row. **Anything not listed is forbidden**, including
 staying put by "jumping back" (e.g. `delivered → packed`).
 
-"Nova?" says whether a Nova tool may cause the move (Module 6). Everything else
+"Nova?" says whether a Nova tool may cause the move. Everything else
 is caused by the warehouse, the carrier or the backend, and Nova only reads it.
 Only two moves are Nova's: cancelling, and confirming a return. Both happen
 only after the customer explicitly says yes.
@@ -29,7 +29,7 @@ cancelled, return_requested, refunded.
 
 Terminal: `cancelled`, `refunded`.
 
-**Rules that tie the order to its boxes** (checked in `db/checks.sql`, Lesson 1.3):
+**Rules that tie the order to its boxes** (to be checked in `db/checks.sql` after seeding):
 
 - Once shipped, the order follows its **least advanced box**: one box
   delivered and one in transit means the order is `shipped`, not `delivered`.
@@ -43,7 +43,7 @@ Terminal: `cancelled`, `refunded`.
 - `shipped → cancelled`. Cancellation is free only until the order ships;
   after that the routes are "refuse delivery" or a return (policy table).
 - A lost parcel's ending. The order stays `shipped` while support investigates
-  (the `lost` scenario in Lesson 1.3 stops before it is resolved).
+  (the seeded `lost` scenario stops before it is resolved).
 - A second return after `refunded`. One return per order keeps the demo world
   simple; revisit if the scenarios need it.
 

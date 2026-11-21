@@ -1,4 +1,4 @@
-"""Shared setup for the Lesson 0.3 exercises."""
+"""Shared setup for the generation experiments."""
 
 MID = "Qwen/Qwen3.5-2B"
 SYSTEM = "You are Nova, NimbusCart's support assistant."
@@ -11,11 +11,11 @@ def fn(name, description, props=None, required=None):
         "parameters": {"type": "object", "properties": props or {}, "required": required or []}}}
 
 
-# The lesson's single tool.
+# One tool, for the single-tool experiments.
 ORDER_STATUS = fn("get_order_status", "Status of one of the signed-in customer's orders",
                   {"order_id": {"type": "integer"}}, ["order_id"])
 
-# Draft of Nova's full tool set, from the DESIGN.md capability map (names and fields will change in Module 6).
+# Draft of Nova's full tool set, from the DESIGN.md capability map (names and fields will change when the tool layer is built).
 NOVA_TOOLS = [
     fn("list_orders", "List the signed-in customer's recent orders",
        {"limit": {"type": "integer", "description": "How many orders to return"}}),

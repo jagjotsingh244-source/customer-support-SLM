@@ -7,8 +7,8 @@ GPUs: 2 | vLLM on GPU 1
 |---|---|---|
 | 1. Transformers generate on T4 | PASS |  |
 | 2. Unsloth LoRA: train, save, reload, generate | PASS |  |
-| 3. vLLM parsed tool call | FAIL | Run evals with Transformers or llama.cpp; serve on an L4- or A10-class GPU in Module 10 |
-| 4. vLLM serves LoRA adapter | FAIL | Merge the adapter into the base (Module 10) instead of serving it separately |
+| 3. vLLM parsed tool call | FAIL | Run evals with Transformers or llama.cpp; serve on an L4- or A10-class GPU |
+| 4. vLLM serves LoRA adapter | FAIL | Merge the adapter into the base for serving instead of serving it separately |
 
 --- training environment (tests 1-2) ---
 torch==2.11.0+cu130

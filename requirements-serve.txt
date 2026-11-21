@@ -1,4 +1,4 @@
-# Serving environment (vLLM) that passed risk tests 3-4 (Lesson 0.4, run 2).
+# Serving environment (vLLM) that passed GPU risk tests 3-4 (run 2, notes/gpu-risk-tests/).
 # Measured on Kaggle, GPU T4, 2026-11-20. Install it in its own environment, never next to the training pins:
 #   uv venv /tmp/vllm-env --python 3.12
 #   uv pip install --python /tmp/vllm-env/bin/python -r requirements-serve.txt

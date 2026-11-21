@@ -1,4 +1,4 @@
-# Training environment that passed risk tests 1-2 (Lesson 0.4).
+# Training environment that passed GPU risk tests 1-2 (notes/gpu-risk-tests/).
 # Measured on Kaggle, GPU T4, 2026-11-20. Every training notebook installs exactly these:
 #   pip install -r requirements-gpu.txt
 # torch came from Kaggle's image as 2.11.0+cu130 (CUDA 13); "==2.11.0" matches that build,

@@ -1,4 +1,4 @@
-"""Exercise 1: print the prompt the model really sees, find the special tokens, count tokens."""
+"""Print the prompt the model really sees, find the special tokens, count tokens."""
 import re
 from collections import Counter
 

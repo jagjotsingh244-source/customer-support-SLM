@@ -1,5 +1,5 @@
-# Qwen3.5-2B base model, greedy, no fine-tuning. Lesson 0.3, exercise 5.
-# Module 6 parses exactly this format. Special tokens kept.
+# Qwen3.5-2B base model, greedy, no fine-tuning.
+# The agent's tool-call handling must accept exactly this format. Special tokens kept.
 
 ===== PROMPT (as rendered by the chat template) =====
 <|im_start|>system

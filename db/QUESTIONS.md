@@ -1,10 +1,10 @@
-# Customer questions Nova must answer (Lesson 1.1)
+# Customer questions Nova must answer
 
 Write these BEFORE finishing the schema. For each: the question as a customer
-would say it, the columns that answer it, and (exercise 3) the SQL for one customer.
+would say it, the columns that answer it, and the SQL that answers it for one customer.
 
-The first six come from the lesson; 7–16 are my own (one more than the lesson's 15,
-so payment failures are covered too). **GAP** marks a column the starting schema
+The first six are the most common support questions; 7–16 widen the coverage
+(returns, refunds, addresses, warranty, complaints and failed payments). **GAP** marks a column the starting schema
 did not have.
 
 | # | Question | Columns that answer it | SQL works? |
@@ -18,7 +18,7 @@ did not have.
 | 7 | Show me my recent orders | `orders.order_id`, `placed_at`, `status`, `total_inr` for one `customer_id`, newest first (index on `orders(customer_id, placed_at)`) | ✅ |
 | 8 | Why was I charged ₹548 when the item was ₹499? | `order_items.qty × unit_price_inr`; shipping charge (**GAP: no shipping fee column**, so "total = sum of items" breaks for orders under the free-shipping threshold) | ✅ |
 | 9 | Can I change my delivery address? | `orders.status` (only before `shipped`); the address the order ships to (**GAP: address lives only as `customers.city`; orders need their own copy**) | ✅ |
-| 10 | How much will I get back if I return just one item? | `order_items.unit_price_inr × qty` for the returned lines (`return_items`); refund amount (**GAP: refunds**); whether shipping is refunded is policy (decide in Lesson 1.4) | ✅ |
+| 10 | How much will I get back if I return just one item? | `order_items.unit_price_inr × qty` for the returned lines (`return_items`); refund amount (**GAP: refunds**); whether shipping is refunded is policy (decide in the help center) | ✅ |
 | 11 | When is my return pickup? | `returns.status`, pickup date, picked-up timestamp (**GAP: returns**) | ✅ |
 | 12 | Why was my return rejected? | `returns.status = 'rejected'` + rejection reason as an enum, not free text (**GAP**) | ✅ |
 | 13 | It says delivered but I didn't get it | `shipments.status`, `delivered_at`; last `shipment_events` row (`location`); a ticket to follow up (**GAP: tickets**) | ✅ |
@@ -55,9 +55,9 @@ What writing the SQL found:
   so the return must record what the customer said. Added to the schema.
 - The return window is per item, counted from the `delivered_at` of the box the
   item travelled in, not from the order.
-- The 7- and 15-day windows now appear in both SQL and the help center; Module 6
-  should hold them in one place in code.
+- The 7- and 15-day windows now appear in both SQL and the help center; the tool
+  layer should hold them in one place in code.
 - `::date` on a timestamp uses the session time zone (UTC in this Docker
   image), which shifts the day for anything between 00:00 and 05:30 IST.
-  `questions.sql` sets the session to `Asia/Kolkata`; tools in Module 6 need
+  `questions.sql` sets the session to `Asia/Kolkata`; the agent's tools need
   the same.

@@ -1,7 +1,7 @@
-# Local Postgres with pgvector for NimbusCart (Lesson 0.2).
+# Local Postgres with pgvector for NimbusCart.
 # Start: docker compose up -d     Stop: docker compose down
 # Connect: psql postgresql://nimbus:nimbus@localhost:5433/nimbus
-# Host port is 5433, not the course's 5432: a system-wide PostgreSQL 18
+# Host port is 5433, not the default 5432: a system-wide PostgreSQL 18
 # already listens on 5432 on this Mac. Inside Docker it is still 5432.
 # These credentials are for local development only.
 services:

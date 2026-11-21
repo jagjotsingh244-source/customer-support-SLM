@@ -1,4 +1,4 @@
-"""Training entry point for the Lesson 0.2 disconnect drill.
+"""Training entry point for the disconnect drill.
 
 All training logic lives here, versioned in Git. The notebook only calls run().
 
@@ -26,7 +26,7 @@ def load_config(path):
 
 
 def format_row(row):
-    # Drill only: plain text, no chat template. Lesson 0.3 explains why real runs
+    # Drill only: plain text, no chat template. notes/generation-experiments/ explains why real runs
     # must use the model's chat template instead.
     return {"text": f"Customer: {row['instruction']}\nAgent: {row['response']}"}
 

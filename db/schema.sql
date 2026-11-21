@@ -1,5 +1,5 @@
--- NimbusCart schema (Lesson 1.1). The schema is the contract: tool schemas
--- (Module 6), synthetic chats (Module 7) and golden cases (Module 2) depend on it.
+-- NimbusCart schema. The schema is the contract: the agent's tool schemas,
+-- the synthetic training chats and the golden eval cases all depend on it.
 -- Designed backwards from the 16 questions in db/QUESTIONS.md.
 -- Load: psql "$DB_URL" -f db/schema.sql
 -- Re-runnable: drops everything first. Local dev data only.

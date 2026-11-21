@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Make vLLM start on a Kaggle T4 (Lesson 0.4, risk test 3).
+# Make vLLM start on a Kaggle T4 (GPU risk test 3, notes/gpu-risk-tests/).
 #
 # Why: on first use FlashInfer compiles a norm kernel for the GPU (sm75 on a T4) and links it with -lcuda.
 # Kaggle's image has the driver (/usr/local/nvidia/lib64/libcuda.so.<version>) but no plain libcuda.so,
