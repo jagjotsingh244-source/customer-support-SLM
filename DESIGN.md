@@ -3,6 +3,9 @@
 Nova is NimbusCart's customer-support assistant, built on Qwen3.5-2B.
 This file decides where every capability lives and the budgets the system must fit inside.
 
+**Language:** English, including Indian English. Hinglish is out of scope until there is Hinglish
+training data; an unscored probe in `kb/_customer_words.md` measures the gap.
+
 ## The four rules
 
 1. **If it changes often, retrieve it (RAG):** policies, shipping charges, warranty terms.
@@ -69,3 +72,4 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-20 | Tool schemas: estimate 700 → measured 656 (allotment kept at 700) | Rendered Qwen3.5-2B chat template with 6 draft tools; see `notes/generation-experiments/` |
 | 2026-11-20 | New budget: max 1,500 tokens per user message, enforced in code, plus a trim order for over-long prompts | Long pastes would overflow the 8,192 window (vLLM rejects them), slow prefill, dilute a 2B model's attention and hide injections |
 | 2026-11-20 | Stack confirmed: Qwen3.5-2B + Unsloth LoRA for training, vLLM 0.34.0 with LoRA modules for serving; no fallbacks taken. Transformers is for training and offline checks only | Risk tests 1–4 pass on a T4; Transformers decodes at 11 tok/s against vLLM's 50 tok/s |
+| 2026-11-21 | Language scope: English only; Hinglish measured by an unscored probe, never counted in scores | Training data (Bitext, synthetic conversations) is English; scoring Hinglish would measure a capability Nova was never taught |

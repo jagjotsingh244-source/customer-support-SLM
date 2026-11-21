@@ -127,6 +127,9 @@ REFUND_DAYS = {"upi": (1, 3), "wallet": (1, 3), "card": (5, 7), "bank_transfer":
 REVERSAL_DAYS = (5, 7)       # business days for a failed payment's debit to come back
 FREE_SHIPPING_ABOVE, SHIPPING_FEE = Decimal(499), Decimal(49)
 WINDOW_DAYS = {"electronics": 7, "home": 15, "accessories": 15}
+TRANSIT_DAYS = {"metro": (2, 4), "other": (4, 7)}   # after the order ships
+PICKUP_DAYS = (1, 2)          # after a return is confirmed
+INSPECTION_HOURS = (6, 36)    # after pickup; the help center promises within 2 days
 
 # Time helpers: every moment is built from TODAY and checked against NOW ---------
 
@@ -155,7 +158,7 @@ def business_days_after(t: dt.datetime, n: int) -> dt.datetime:
 
 
 def transit_days(city: str) -> int:
-    return rng.randint(2, 4) if city in METRO else rng.randint(4, 7)
+    return rng.randint(*TRANSIT_DAYS["metro" if city in METRO else "other"])
 
 # One order before IDs are assigned ---------------------------------------------
 
@@ -285,7 +288,7 @@ def new_return(d: Draft, start, line_ids, reason, confirm=True):
            "rejected_at": None, "rejection_reason": None, "lines": list(line_ids)}
     if confirm:
         ret.update(status="confirmed", confirmed_at=later(start, 0.05, 2))
-        ret["pickup_date"] = ret["confirmed_at"].date() + dt.timedelta(days=rng.randint(1, 2))
+        ret["pickup_date"] = ret["confirmed_at"].date() + dt.timedelta(days=rng.randint(*PICKUP_DAYS))
         if ret["pickup_date"] < TODAY:
             ret.update(status="picked_up", picked_up_at=at(ret["pickup_date"], 10, 18))
     d.returns.append(ret)
@@ -368,7 +371,7 @@ def build_refunded(d):
     box = delivered_on(d, ago(10, 40))
     ret = new_return(d, later(box["delivered_at"], 12, 72), some_lines(d),
                      rng.choice(["changed_mind", "wrong_item", "damaged_in_transit", "faulty"]))
-    inspected = later(ret["picked_up_at"], 6, 36)
+    inspected = later(ret["picked_up_at"], *INSPECTION_HOURS)
     sent = refund(d, d.subtotal(ret["lines"]), inspected, ret)   # shipping is not refunded
     assert sent, "a refunded return must have its money sent"
     ret.update(status="refunded", refunded_at=sent)

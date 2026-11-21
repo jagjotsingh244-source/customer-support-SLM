@@ -41,3 +41,8 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Did: wrote `db/seed.py` (14 order scenarios, one builder each, plus failed payments), `db/checks.sql` (19 invariants) and `db/scenarios.csv`. 3,000 orders, every check passes, two seeds give identical data, and every scenario has at least 7 orders on eval customers.
 - Surprised me: all checks passed first time, so I broke five things on purpose to prove they could fail; they caught all five. The two dumps "differed" only by a random token pg_dump writes, not by data. A COD refund needs its own state (awaiting bank details) while the return is still picked up.
 - Next time: build every timestamp forward from one clock and assert it is before `NOW`, so a builder that asks for the future crashes instead of writing a bad row.
+
+### 2026-11-21 · Writing the help center for retrieval
+- Did: wrote 18 pages in `kb/` (one topic per page, one rule per section, every number in digits), an archived 30-day returns page, a customer-words file for retrieval tests, and `scripts/check_kb.py`, which checks the writing rules and that every promised number matches the constants in `db/seed.py`. Added it to CI.
+- Surprised me: the checker passed first time, so I planted five mistakes; it caught all five, including a page that no longer matched the seed's 15-day window. Inside a Python f-string, a regex `{3}` silently becomes `3`. "7 days" means three different things across the pages (electronics window, possible loss, reporting a faulty not-returnable item).
+- Next time: write the numbers table before the pages, and make the seed's numbers named constants from the start so the docs can be checked against them.

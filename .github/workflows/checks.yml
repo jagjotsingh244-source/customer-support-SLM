@@ -11,3 +11,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Only config.py may read the clock
         run: bash scripts/check_clock.sh
+
+  help-center:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Help center follows its writing rules and matches the seed
+        run: uv run --frozen python scripts/check_kb.py
