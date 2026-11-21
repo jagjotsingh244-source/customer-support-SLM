@@ -78,7 +78,7 @@ proposed, confirmed, picked_up, refunded, rejected.
 | proposed | confirmed | Customer explicitly says yes; `confirmed_at` and `pickup_date` are set | ✅ |
 | proposed | rejected | Backend eligibility check fails: `outside_window`, `not_returnable` or `opened_not_faulty` | |
 | confirmed | picked_up | Courier collects the item; `picked_up_at` is set | |
-| picked_up | refunded | Inspection passes and the refund is issued (a `refunds` row is created) | |
+| picked_up | refunded | Inspection passes and the money is sent. For COD the `refunds` row is created at inspection as `awaiting_bank_details`, and the return moves to `refunded` only once bank details are added | |
 | picked_up | rejected | Inspection fails: `failed_inspection`; the item is sent back | |
 
 Terminal: `refunded`, `rejected`.
@@ -93,6 +93,9 @@ initiated, awaiting_bank_details, completed.
 |------|----|------------------|
 | awaiting_bank_details | initiated | COD customer adds bank details; `bank_details_added_at` is set |
 | initiated | completed | Money reaches the customer; `completed_at` is set |
+
+Return refunds cover the returned items only; the shipping fee is not refunded.
+Cancellation refunds cover the full order total.
 
 A refund starts as `awaiting_bank_details` for COD orders and `initiated` for
 UPI, card and wallet. Terminal: `completed`.

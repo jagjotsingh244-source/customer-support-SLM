@@ -5,6 +5,10 @@
 \set ON_ERROR_ROLLBACK on
 \set QUIET on
 BEGIN;
+-- Start from empty tables. TRUNCATE is transactional, so the ROLLBACK at the
+-- end brings the seeded data back untouched.
+TRUNCATE customers, products, orders, shipments, order_items, shipment_events,
+         returns, return_items, refunds, tickets, payments, scenarios;
 
 -- Fixtures: one valid row of each kind the bad inserts point at
 INSERT INTO customers VALUES (1, 'Asha Rao', 'asha@example.in', '+919800000001',

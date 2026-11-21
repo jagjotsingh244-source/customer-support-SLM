@@ -8,7 +8,7 @@
 -- timestamp a "when" question needs is stored; no free-text notes a model
 -- could be tricked by; foreign keys everywhere.
 
-DROP TABLE IF EXISTS payments, tickets, refunds, return_items, returns,
+DROP TABLE IF EXISTS scenarios, payments, tickets, refunds, return_items, returns,
                      shipment_events, order_items, shipments, orders,
                      products, customers CASCADE;
 DROP TYPE IF EXISTS order_status, shipment_status, return_status,
@@ -181,6 +181,16 @@ CREATE TABLE payments (
   attempted_at TIMESTAMPTZ NOT NULL,
   reversed_at  TIMESTAMPTZ,
   CHECK ((status = 'reversed') = (reversed_at IS NOT NULL))
+);
+
+-- Seed metadata ---------------------------------------------------------------
+
+-- Which situation each seeded order was built from (db/seed.py). Used by the
+-- eval cases, the synthetic-conversation sampler and per-scenario scores.
+-- Never exposed to Nova's tools: it would hand the model the answer.
+CREATE TABLE scenarios (
+  order_id BIGINT PRIMARY KEY REFERENCES orders,
+  scenario TEXT NOT NULL
 );
 
 -- Indexes: every tool looks up by customer or order -------------------------

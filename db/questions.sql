@@ -22,6 +22,10 @@
 \set QUIET on
 \pset footer off
 BEGIN;
+-- Start from empty tables. TRUNCATE is transactional, so the ROLLBACK at the
+-- end brings the seeded data back untouched.
+TRUNCATE customers, products, orders, shipments, order_items, shipment_events,
+         returns, return_items, refunds, tickets, payments, scenarios;
 -- The database defaults to UTC. Without this, ::date casts in Q4/Q15 would
 -- give a different day for anything between 00:00 and 05:30 IST.
 SET LOCAL TIME ZONE 'Asia/Kolkata';

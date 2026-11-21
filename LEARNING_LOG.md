@@ -31,3 +31,13 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Did: wrote 16 customer questions in `db/QUESTIONS.md` (including failed payments), finished `db/schema.sql` (11 tables, 9 enums), wrote one scoped query per question in `db/questions.sql` and tested them against a hand-built world (`db/fixtures.sql`); 10 bad inserts in `db/break.sql` all fail; wrote six state machines in `db/STATES.md`.
 - Surprised me: writing the questions first found 11 gaps in the starting schema (refunds for cancelled orders, shipping fee, a delivery address per order, payments...). Writing the SQL found one more (the return reason, for "opened electronics only if faulty"), and writing the state machine found another (a cancelled packed order left its shipment label stuck, so `shipment_status` got `cancelled`). The Docker Postgres runs in UTC, so `::date` gave the wrong day for times between 00:00 and 05:30 IST.
 - Next time: every query filters on `customer_id`, even with an order ID; set the session time zone to IST in every tool; keep policy numbers (7 and 15 days) in one place in code.
+
+### 2026-11-21 · One clock and two worlds
+- Did: added `config.py` (a frozen `NOW` read through `now()`, plus `partition_for`), `scripts/check_clock.sh` and a CI workflow that fails if any code reads the real clock.
+- Surprised me: the hash split gave 17.6% eval, not 20%; that is the price of every customer keeping its side forever. My own hand-built test data broke the rule straight away (customer 1 is eval, I had marked it train).
+- Next time: write the guard before the code it protects; the clock check caught a comment I had written myself.
+
+### 2026-11-21 · Seeding the problems, not the average day
+- Did: wrote `db/seed.py` (14 order scenarios, one builder each, plus failed payments), `db/checks.sql` (19 invariants) and `db/scenarios.csv`. 3,000 orders, every check passes, two seeds give identical data, and every scenario has at least 7 orders on eval customers.
+- Surprised me: all checks passed first time, so I broke five things on purpose to prove they could fail; they caught all five. The two dumps "differed" only by a random token pg_dump writes, not by data. A COD refund needs its own state (awaiting bank details) while the return is still picked up.
+- Next time: build every timestamp forward from one clock and assert it is before `NOW`, so a builder that asks for the future crashes instead of writing a bad row.
