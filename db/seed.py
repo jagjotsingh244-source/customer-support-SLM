@@ -43,7 +43,8 @@ fake.seed_instance(SEED)
 
 # Scenario catalog: share of the 3,000 orders, and why it is hard for Nova.
 SCENARIOS = {
-    "delivered_on_time":        0.36,  # baseline; most questions are simple
+    "delivered_on_time":        0.33,  # baseline; most questions are simple
+    "not_yet_shipped":          0.03,  # placed or packed: free cancel, address change
     "in_transit":               0.15,  # must quote the ETA, not invent one
     "delayed":                  0.08,  # ETA already passed; must not promise a new date
     "split_shipment":           0.06,  # one box delivered, one not
@@ -302,9 +303,25 @@ def some_lines(d: Draft):
 # One builder per scenario -------------------------------------------------------
 
 def build_delivered_on_time(d):
-    delivered_on(d, ago(21, 150))                        # outside every return window
+    box = delivered_on(d, ago(21, 150))                  # outside every return window
     for i in d.items:
         i["opened"] = i["product"].category == "electronics" and rng.random() < 0.7
+    if rng.random() < 0.05:                              # an old complaint, already resolved
+        opened = later(box["delivered_at"], 24, 72)
+        d.tickets.append({"reason": rng.choice(["damaged", "other"]), "status": "resolved",
+                          "created_at": opened, "resolved_at": later(opened, 2, 48)})
+
+
+def build_not_yet_shipped(d):
+    if rng.random() < 0.5:                               # placed this morning
+        d.placed_at = at(TODAY, 6, 9)
+    else:                                                # placed yesterday, packed, label printed
+        d.placed_at = at(TODAY - dt.timedelta(days=1), 12, 20)
+        d.status = "packed"
+        d.boxes.append({"carrier": rng.choice(list(CARRIERS)), "status": "label_created", "shipped_at": None,
+                        "eta": None, "delivered_at": None, "events": []})
+        for i in d.items:
+            i["box"] = 0
 
 
 def build_in_transit(d):

@@ -40,6 +40,11 @@ psql "$DB_URL" -f db/questions.sql
 "SQL works?" ✅ means the query ran and returned the row I expected from the
 fixtures (checked 2026-11-20 against NOW = 2026-11-20 10:00 IST).
 
+The same SQL also runs against the full seeded store: [`verify_queries.py`](verify_queries.py)
+reads it from `questions.sql`, runs each question for every eval-partition order of
+the matching scenario, and checks the rows against what that scenario built
+(24 cases, all 16 questions, plus a scope check on every eval order). It runs in CI.
+
 Rules every query follows:
 
 - **Scoped to one customer.** `customer_id = :cid` is in every WHERE clause,

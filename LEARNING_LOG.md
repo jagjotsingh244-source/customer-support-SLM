@@ -46,3 +46,8 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Did: wrote 18 pages in `kb/` (one topic per page, one rule per section, every number in digits), an archived 30-day returns page, a customer-words file for retrieval tests, and `scripts/check_kb.py`, which checks the writing rules and that every promised number matches the constants in `db/seed.py`. Added it to CI.
 - Surprised me: the checker passed first time, so I planted five mistakes; it caught all five, including a page that no longer matched the seed's 15-day window. Inside a Python f-string, a regex `{3}` silently becomes `3`. "7 days" means three different things across the pages (electronics window, possible loss, reporting a faulty not-returnable item).
 - Next time: write the numbers table before the pages, and make the seed's numbers named constants from the start so the docs can be checked against them.
+
+### 2026-11-21 · The store's gate: real queries on real rows
+- Did: wrote `db/verify_queries.py`, which reads the 16 queries from `db/questions.sql` and runs them against every eval order of the matching scenario (24 cases, about 1,100 query runs, plus a scope check on all 521 eval orders). Added a CI job that seeds a fresh Postgres and runs the seed checks, the query gate and the bad-insert tests.
+- Surprised me: before running anything, counting order statuses showed the seed had no placed or packed orders, so "Can I cancel?" and "Can I change my address?" had nothing to look up. Added a `not_yet_shipped` scenario (3%) and resolved tickets on old orders. Changing one row's ETA made the gate fail on exactly that order.
+- Next time: check that every question has seeded rows behind it as soon as the scenario catalog is written, not at the end.

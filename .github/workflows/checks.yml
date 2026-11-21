@@ -19,3 +19,28 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - name: Help center follows its writing rules and matches the seed
         run: uv run --frozen python scripts/check_kb.py
+
+  store:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: nimbus
+          POSTGRES_PASSWORD: nimbus
+          POSTGRES_DB: nimbus
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nimbus -d nimbus"
+          --health-interval 2s --health-timeout 3s --health-retries 15
+    env:
+      DB_URL: postgresql://nimbus:nimbus@localhost:5432/nimbus
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Seed the store and run its invariant checks
+        run: uv run --frozen python -m db.seed
+      - name: Customer-question queries return the right rows
+        run: uv run --frozen python db/verify_queries.py
+      - name: Bad inserts are rejected
+        run: test "$(psql "$DB_URL" -f db/break.sql 2>&1 | grep -c '^psql.*ERROR')" = 10
