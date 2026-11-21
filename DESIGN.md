@@ -61,6 +61,22 @@ Run on a Kaggle T4 in one session with `training/notebooks/risk-tests.ipynb`. A 
 Pinned versions that worked: `requirements-gpu.txt` (training, tests 1–2) and `requirements-serve.txt` (vLLM, tests 3–4), kept in separate environments.
 Reports: `notes/gpu-risk-tests/report-run1.txt` and `report-run2.txt`.
 
+## Where the eval database lives
+
+The model runs on a Kaggle GPU, and its tools need the store's database. A Kaggle notebook cannot
+reach the Postgres on the laptop, so the eval uses a **managed Postgres on Neon** (free tier,
+Postgres 16 to match local Docker, pgvector enabled, AWS US East 2 near Kaggle's US GPUs).
+
+- **Local Docker stays the source of truth.** Seed and load there, then copy the whole database
+  across (Postgres 16 tools from the container, so client and server versions match):
+  `docker compose exec -T -e NEON_URL db sh -c 'pg_dump -U nimbus -d nimbus --no-owner --no-privileges --no-comments | psql "$NEON_URL" -q -v ON_ERROR_STOP=1 --single-transaction'`
+  (the target must be empty; reset it first when re-copying).
+- **The connection string is a secret:** `NEON_URL` in the gitignored `.env` on the laptop, a
+  notebook secret on Kaggle. Scripts take it as `DB_URL`, e.g. `DB_URL="$NEON_URL" uv run python db/verify_queries.py`.
+- **Direct connection, not the pooler:** a full restore and a few eval connections do not need pooling.
+- **Checked after the first copy (2026-11-22):** row counts match local in all 13 tables, the
+  orders table is byte-identical (md5 over every row), and `db/verify_queries.py` passes 24/24 against Neon.
+
 ## Change log
 
 Record every budget or mechanism change: old → new, and the evidence.
@@ -73,3 +89,4 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-20 | New budget: max 1,500 tokens per user message, enforced in code, plus a trim order for over-long prompts | Long pastes would overflow the 8,192 window (vLLM rejects them), slow prefill, dilute a 2B model's attention and hide injections |
 | 2026-11-20 | Stack confirmed: Qwen3.5-2B + Unsloth LoRA for training, vLLM 0.34.0 with LoRA modules for serving; no fallbacks taken. Transformers is for training and offline checks only | Risk tests 1–4 pass on a T4; Transformers decodes at 11 tok/s against vLLM's 50 tok/s |
 | 2026-11-21 | Language scope: English only; Hinglish measured by an unscored probe, never counted in scores | Training data (Bitext, synthetic conversations) is English; scoring Hinglish would measure a capability Nova was never taught |
+| 2026-11-22 | Eval database: managed Postgres on Neon, copied from local Docker | Kaggle notebooks cannot reach the laptop's Postgres; in-notebook Postgres adds minutes to every run, and a laptop-only CPU model would take hours for the eval |
