@@ -42,5 +42,9 @@ jobs:
         run: uv run --frozen python -m db.seed
       - name: Customer-question queries return the right rows
         run: uv run --frozen python db/verify_queries.py
+      - name: Help center loads as searchable sections
+        run: |
+          uv run --frozen python db/load_kb.py
+          test "$(psql "$DB_URL" -At -c "SELECT section_id FROM kb_sections, websearch_to_tsquery('english', 'return opened electronics') q WHERE tsv @@ q ORDER BY ts_rank(tsv, q) DESC LIMIT 1")" = returns-electronics#opened-electronics
       - name: Bad inserts are rejected
         run: test "$(psql "$DB_URL" -f db/break.sql 2>&1 | grep -c '^psql.*ERROR')" = 10
