@@ -8,7 +8,7 @@ BEGIN;
 
 -- Fixtures: one valid row of each kind the bad inserts point at
 INSERT INTO customers VALUES (1, 'Asha Rao', 'asha@example.in', '+919800000001',
-  'Pune', 'train', '2026-01-05 10:00+05:30');
+  'Pune', 'eval', '2026-01-05 10:00+05:30');
 INSERT INTO products (product_id, name, category, price_inr) VALUES
   (1, 'USB-C cable', 'accessories', 299.00);
 INSERT INTO orders (order_id, customer_id, status, payment_method, total_inr,

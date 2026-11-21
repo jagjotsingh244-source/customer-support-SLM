@@ -9,7 +9,8 @@
 --   1. Scoped to one customer: `customer_id = :cid` is in every WHERE clause,
 --      even when an order_id is given. Asking about someone else's order
 --      returns no rows (see the scope check at the end).
---   2. The clock is :'now', never now(). Dates are compared in IST, because a
+--   2. The clock is :'now' (config.NOW), never the database's own clock;
+--      scripts/check_clock.sh enforces it. Dates are compared in IST, because a
 --      session in UTC sees a different "today" between 00:00 and 05:30 IST.
 --
 -- The SQL returns facts (dates, statuses, flags). Policy text and timings

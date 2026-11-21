@@ -1,0 +1,13 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  clock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Only config.py may read the clock
+        run: bash scripts/check_clock.sh

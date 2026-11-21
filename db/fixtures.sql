@@ -4,12 +4,13 @@
 -- The clock is NOW = 2026-11-20 10:00 IST (frozen in config.py). Every timestamp is
 -- before it.
 --
--- Customer 1 (Asha, train) owns orders 10001-10009, one per situation.
--- Customer 2 (Gurpreet, eval) owns 10010; no query for customer 1 may see it.
+-- Customer 1 (Asha, eval) owns orders 10001-10009, one per situation.
+-- Customer 2 (Gurpreet, train) owns 10010; no query for customer 1 may see it.
+-- Partitions follow config.partition_for (1 -> eval, 2 -> train).
 
 INSERT INTO customers VALUES
-  (1, 'Asha Rao',      'asha.rao@example.in',      '+919800000001', 'Pune',     'train', '2026-01-05 10:00+05:30'),
-  (2, 'Gurpreet Gill', 'gurpreet.gill@example.in', '+919800000002', 'Ludhiana', 'eval',  '2026-03-10 10:00+05:30');
+  (1, 'Asha Rao',      'asha.rao@example.in',      '+919800000001', 'Pune',     'eval',  '2026-01-05 10:00+05:30'),
+  (2, 'Gurpreet Gill', 'gurpreet.gill@example.in', '+919800000002', 'Ludhiana', 'train', '2026-03-10 10:00+05:30');
 
 INSERT INTO products (product_id, name, category, price_inr, returnable, warranty_months) VALUES
   (1, 'Phone case',         'accessories',  299.00, true,   0),
