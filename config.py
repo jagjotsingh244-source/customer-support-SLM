@@ -23,6 +23,11 @@ NOW = datetime(2026, 11, 20, 10, 0, tzinfo=IST)  # frozen for development and ev
 SEED = 3407
 EVAL_SHARE = 0.20
 
+# Return window in days after delivery, by product category. One copy for the
+# seed (db/seed.py), the agent's eligibility check (agent/tools_v0.py) and the
+# help-center check (scripts/check_kb.py, via the seed).
+WINDOW_DAYS = {"electronics": 7, "home": 15, "accessories": 15}
+
 
 def now() -> datetime:
     """The only way any code in this repo asks for the time."""

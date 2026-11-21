@@ -26,7 +26,7 @@ from pathlib import Path
 import psycopg
 from faker import Faker
 
-from config import IST, SEED, now, partition_for
+from config import IST, SEED, WINDOW_DAYS, now, partition_for
 
 NOW = now()
 TODAY = NOW.date()
@@ -127,7 +127,6 @@ PAYMENTS = {"upi": 0.45, "card": 0.25, "wallet": 0.10, "cod": 0.20}
 REFUND_DAYS = {"upi": (1, 3), "wallet": (1, 3), "card": (5, 7), "bank_transfer": (5, 7)}  # business days
 REVERSAL_DAYS = (5, 7)       # business days for a failed payment's debit to come back
 FREE_SHIPPING_ABOVE, SHIPPING_FEE = Decimal(499), Decimal(49)
-WINDOW_DAYS = {"electronics": 7, "home": 15, "accessories": 15}
 TRANSIT_DAYS = {"metro": (2, 4), "other": (4, 7)}   # after the order ships
 PICKUP_DAYS = (1, 2)          # after a return is confirmed
 INSPECTION_HOURS = (6, 36)    # after pickup; the help center promises within 2 days
