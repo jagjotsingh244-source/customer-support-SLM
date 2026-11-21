@@ -15,5 +15,4 @@ bitsandbytes==0.50.2
 triton==3.6.0
 pyyaml
 
-# Serving (vLLM) runs in its own environment and is pinned separately once risk tests 3-4 pass.
-# Run 1 tried vllm==0.34.0 (torch 2.14.0, transformers 5.22.2, triton 3.8.0): the engine did not start on a T4.
+# Serving (vLLM) runs in its own environment, pinned in requirements-serve.txt (risk tests 3-4).

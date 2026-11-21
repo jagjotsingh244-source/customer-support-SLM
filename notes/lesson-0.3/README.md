@@ -39,8 +39,8 @@ Scripts (run from this folder with a Python that has `transformers>=5` and `torc
 
    Higher temperature changes length and content, and here it made the model refuse more often.
    Support needs the low end; Module 2 decides the exact value. `presence_penalty=2.0` from the card is a
-   vLLM/OpenAI-API setting, not a `generate` argument; Lesson 0.4's notebook repeats this comparison through
-   vLLM with it.
+   vLLM/OpenAI-API setting, not a `generate` argument. Repeated through vLLM with it in Lesson 0.4
+   (`notes/lesson-0.4/`): temperature 0.2 gave 115–131 tokens, the model card settings 92–234.
 
 ## Thinking on vs off (greedy, same question)
 

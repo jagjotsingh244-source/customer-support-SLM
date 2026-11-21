@@ -1,0 +1,67 @@
+Risk test report, run 2 (vLLM fix): Kaggle, GPU T4 x2, 2026-11-20, notebook training/notebooks/risk-tests-vllm.ipynb at 9627470,
+with run 1's output attached for the adapter. Pasted from the notebook log.
+
+===== VLLM FIX REPORT =====
+
+--- environment ---
+driver: Tesla T4, 580.178.04, 7.5
+Tesla T4, 580.178.04, 7.5
+system nvcc: Cuda compilation tools, release 13.0, V13.0.88
+Build cuda_13.0.r13.0/compiler.36424714_0
+/usr/local/cuda/lib64/stubs:
+ldconfig libcuda:
+libcuda used for linking: /usr/local/nvidia/lib64/libcuda.so.580.178.04
+
+--- fix attempts (11 min used of the 60-minute limit) ---
+| Attempt | Result | Seconds |
+|---|---|---|
+| A: libcuda link fix | started | 650 |
+| LoRA: A: libcuda link fix | started | 190 |
+
+| Test | Result | Fallback if failed |
+|---|---|---|
+| 3. vLLM parsed tool call | PASS |  |
+| 4. vLLM serves LoRA adapter | PASS |  |
+
+--- serving environment that worked ---
+attempt: A: libcuda link fix | extra flags: none
+vllm==0.34.0
+torch==2.14.0
+transformers==5.22.2
+triton==3.8.0
+flashinfer-python==0.7.3
+
+--- details ---
+
+## 3. vLLM parsed tool call: PASS
+started with: A: libcuda link fix | 4.00s for the call
+tool_calls: [ChatCompletionMessageFunctionToolCall(id='chatcmpl-tool-8ec9ed6dc8ef0b5d', function=Function(arguments='{"order_id": 4417}', name='get_order_status'), type='function')]
+content: None
+
+## 4. vLLM serves LoRA adapter: PASS
+adapter: run 1 adapter (trained 50 steps)
+--- base ---
+I'd be happy to help you cancel your order! However, I need a bit more information to assist you properly:
+
+1. **What's your order number?**
+2. **When was the order placed?**
+3. **What payment method was used?**
+4. **Are you trying to cancel before or after the order was shipped?**
+
+Once I have these details, I can guide you through the cancellation process based on your specific situation. If you're unsure about the steps, I can also provide general guidance on how to cancel orders through various platforms (Amazon, eBay, Shopify, etc.).
+--- nova-test ---
+I've got that you're looking to cancel your order, and I'm here to assist you with that. To cancel your order, please follow these steps:
+
+1. Sign in to your {{Online Company Portal Info}} using your credentials.
+2. Navigate to the '{{Online Order Interaction}}' or '{{Online Order Interaction}}' section.
+3. Locate the order you wish to cancel and click on it.
+4. Look for the option labeled '{{Online Order Interaction}}' and select it.
+5. Confirm the cancellation by following any additional prompts or instructions provided by the system.
+
+If you encounter any difficulties or have any questions along the way, our dedicated support team is available to help you. You can reach us during
+
+speed: 128 tokens in 2.6s (50.0 tok/s), greedy, one request
+
+--- sampling lengths (vLLM) ---
+temperature 0.2: [(128, 'stop'), (128, 'stop'), (119, 'stop'), (131, 'stop'), (115, 'stop')]
+model card (temp 1.0, top_p 1.0, top_k 20, presence_penalty 2.0): [(92, 'stop'), (110, 'stop'), (146, 'stop'), (234, 'stop'), (120, 'stop')]

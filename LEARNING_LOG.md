@@ -18,3 +18,9 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Did: rendered the real chat template, counted tokens (6 draft tools = 656), wrote the greedy loop and matched `generate`, compared sampling (temperature 1.0 made replies vary 106–284 tokens, against 101–129 at 0.2) and thinking on vs off, saved the raw tool-call format.
 - Surprised me: the model config's stop token is `<|endoftext|>`, not `<|im_end|>`, so `generate` ran past the end of the turn. Thinking is turned off by an empty `<think></think>` block in the prompt.
 - Next time: always decode with special tokens visible when debugging, and check stop tokens on every new serving setup.
+
+### 2026-11-20 · Lesson 0.4: risk tests on a T4
+- Did: ran the four risk tests on Kaggle. Transformers and Unsloth passed first time; vLLM failed, and I fixed it with a run 2 notebook that tried fixes in a set order. Pinned training and serving versions in separate files.
+- Surprised me: the cause of the failure was a missing file name (`libcuda.so`), hidden 300 lines above the error the report showed. vLLM was 4.5x faster than Transformers on the same GPU.
+- Next time: always read the full log for the first real error, not the last line; keep training and serving in separate environments.
+

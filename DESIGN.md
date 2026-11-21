@@ -52,11 +52,11 @@ Run on a Kaggle T4 in one session with `training/notebooks/risk-tests.ipynb`. A 
 |---|---|---|---|---|---|
 | 1 | Generate in Transformers on a T4 | Coherent reply ending with `<\|im_end\|>` | **PASS** (run 1) | 145-token reply in 13.2 s (11 tok/s); correct `get_order_status(4417)` tool call. Needs `eos_token_id=[<\|im_end\|>, <\|endoftext\|>]` | Not needed |
 | 2 | 50-step Unsloth LoRA, save, reload, generate | Loss falls; reloaded adapter changes the output | **PASS** (run 1) | 50 steps in 165 s; loss 1.60 → 0.58; reloaded adapter answers in Bitext's style | Not needed |
-| 3 | vLLM serves the base model, one parsed tool call | `message.tool_calls` is filled | **FAIL** (run 1), fixing | vLLM 0.34.0 never started. Root cause (from `vllm-base.log`): FlashInfer JIT-compiles a norm kernel for the T4 (sm75) on first use, and linking it fails with `/usr/bin/ld: cannot find -lcuda` (Kaggle has the driver but no `libcuda.so`). Run 2 (`risk-tests-vllm.ipynb`) tries: libcuda link fix → + enforce-eager → no FlashInfer → vLLM 0.17.x, within 60 minutes | Evals with Transformers or llama.cpp; serve on an L4/A10-class GPU in Module 10 |
-| 4 | vLLM serves the adapter as a LoRA module | `model="nova-test"` answers in the adapter's style | **FAIL** (run 1), blocked by test 3 | Not tested yet: the server failed with or without LoRA | Merge the adapter into the base (Module 10) |
+| 3 | vLLM serves the base model, one parsed tool call | `message.tool_calls` is filled | **PASS** (run 2, after a fix) | Run 1 failed: FlashInfer JIT-compiles a norm kernel for the T4 (sm75), and the link failed with `/usr/bin/ld: cannot find -lcuda` (Kaggle has the driver but no `libcuda.so`). Fix: `serving/t4_libcuda_fix.sh` (11 of the 60 minutes used, first attempt). Parsed call `get_order_status({"order_id": 4417})`; 50 tok/s greedy; first start 650 s | Not needed |
+| 4 | vLLM serves the adapter as a LoRA module | `model="nova-test"` answers in the adapter's style | **PASS** (run 2) | Run 1's adapter served as `nova-test`; replies differ from the base, in Bitext's style. Start with LoRA took 190 s | Not needed |
 
-Pinned versions that worked: `requirements-gpu.txt` (training, tests 1–2). Serving pins are added there once tests 3–4 are settled.
-Run 1 report: `notes/lesson-0.4/report-run1.txt`.
+Pinned versions that worked: `requirements-gpu.txt` (training, tests 1–2) and `requirements-serve.txt` (vLLM, tests 3–4), kept in separate environments.
+Reports: `notes/lesson-0.4/report-run1.txt` and `report-run2.txt`.
 
 ## Change log
 
@@ -68,3 +68,4 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-20 | Added "Check a refund's status" and "Say I don't know" rows; order status now also checks the reply; injection set includes indirect injection; pass-mark note added; escalation stays trained (decision recorded) | Review of the first draft |
 | 2026-11-20 | Tool schemas: estimate 700 → measured 656 (allotment kept at 700) | Lesson 0.3: rendered Qwen3.5-2B chat template with 6 draft tools; see `notes/lesson-0.3/` |
 | 2026-11-20 | New budget: max 1,500 tokens per user message, enforced in code, plus a trim order for over-long prompts | Long pastes would overflow the 8,192 window (vLLM rejects them), slow prefill, dilute a 2B model's attention and hide injections |
+| 2026-11-20 | Stack confirmed: Qwen3.5-2B + Unsloth LoRA for training, vLLM 0.34.0 with LoRA modules for serving; no fallbacks taken. Transformers is for training and offline checks only | Lesson 0.4 risk tests 1–4 pass on a T4; Transformers decodes at 11 tok/s against vLLM's 50 tok/s |

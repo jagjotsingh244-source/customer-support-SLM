@@ -1,0 +1,14 @@
+# Serving environment (vLLM) that passed risk tests 3-4 (Lesson 0.4, run 2).
+# Measured on Kaggle, GPU T4, 2026-11-20. Install it in its own environment, never next to the training pins:
+#   uv venv /tmp/vllm-env --python 3.12
+#   uv pip install --python /tmp/vllm-env/bin/python -r requirements-serve.txt
+# On a Kaggle T4, run `source serving/t4_libcuda_fix.sh` before `vllm serve`, or the engine fails to start
+# (FlashInfer cannot link: "ld: cannot find -lcuda").
+# Flags that worked: --dtype half --max-model-len 8192 --language-model-only
+#   --enable-auto-tool-choice --tool-call-parser qwen3_coder
+#   [--enable-lora --lora-modules nova-test=<adapter dir> --max-lora-rank 16]
+vllm==0.34.0
+torch==2.14.0
+transformers==5.22.2
+triton==3.8.0
+flashinfer-python==0.7.3
