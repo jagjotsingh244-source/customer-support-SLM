@@ -69,3 +69,21 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Did: `evals/run_eval.py` runs, saves, scores and reports per category; froze the scorer as `eval-v1` before seeing the floor's results. Floor 25/100 correct, ceiling 58/100. Read 30 floor failures and counted the types: treats general questions as order questions (7), runs out of calls (7), mishandles returns (4). Kept temperature 0.2 (9/30 against 5/30 for the model card's settings).
 - Surprised me: on strict checks the 2B beats Gemini (19 against 14), because Gemini searches 2.9 times per case. Several "failures" were the checks, not the models: negations ("No return has been created yet") and the customer's own words echoed back trip substring checks. A finished Kaggle run lost its files when the draft session restarted.
 - Next time: write results somewhere that outlives the session (Drive, or locally) from the first run; read traces before trusting a headline number.
+
+
+## Training data
+
+### 2026-11-22 · Looking at Bitext before training on it
+- Did: measured all 26,872 rows in `data_prep/bitext_eda.ipynb` (intent counts, reply tokens, duplicates, placeholders, phrasing flags, reply habits) and wrote five decisions with evidence in `data/DECISIONS.md`. Gemini read a 5-per-intent sample and drafted a note per intent; two notes promised things Nova cannot do and were corrected.
+- Surprised me: the counts look perfectly balanced (950 to 1,000 per intent) but 59% of `cancel_order` questions repeat an earlier one. Half the replies carry `{{...}}` slots, 8 per cancel reply on average, and a quarter of customer messages carry them too. 239 refund messages say "dollars" for a store that sells in rupees.
+- Next time: count distinct rows, not rows; a flat bar chart hid the biggest imbalance.
+
+### 2026-11-22 · Rewriting the replies, and the rewriter's own habits
+- Did: `data_prep/prepare_bitext.py` dedups, triages, fills customer placeholders with seeded NimbusCart values, samples 5,500 rows (rare phrasings at double weight) and has Gemini rewrite every reply content-free, then checks each one. Wrote a meaning judge and tested it on 20 planted pairs before using it.
+- Surprised me: the checks passed 99.9% of the first full run, and the run was still not usable: 31% of replies said "I'd be glad", and 21% of calm customers were told they were frustrated. The pass rate measured form; only counting phrases found the habits. Writing the judge's test showed two of my own "good" examples broke the rules. The judge then caught only 3 of my 6 hand rejections: it stops clear invented facts (PayPal) but not vague ones ("we offer a few different options"), which needed a pattern check.
+- Next time: after every generation run, count the most common openings, closings and phrases before looking at the pass rate.
+
+### 2026-11-22 · The chat template decides where the loss starts
+- Did: rendered examples with Qwen3.5-2B's template, wrote `training/masking.py` and a test (now in CI) that fails if any system or customer token is trained. `data_prep/build_chat_dataset.py` makes the splits, token stats and the dataset card.
+- Surprised me: every reply renders after an empty `<think></think>` block that the serving prompt already contains, so the usual marker (`<|im_start|>assistant\n`) would train the model to write that block. Earlier assistant turns render without it, so only the last turn of a conversation has the shape the model generates.
+- Next time: render the serving prompt and the training example side by side before choosing any marker.

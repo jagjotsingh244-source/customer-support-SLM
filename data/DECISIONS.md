@@ -123,6 +123,51 @@ The golden set gets cases with negation, offensive language, keyword-only messag
 **Expect:** the fine-tune's scores on typo, keyword and offensive messages are within a few points of its scores
 on clean messages; a larger gap means the data did not cover them.
 
+What happened: dedup thinned keyword messages (8.3% of raw rows, 5.8% of the deduped pool, 4.7% of a plain
+sample), so the sample gives rows with K, N, W or P double weight. Sampled shares: keyword 6.9%, negation 3.0%,
+offensive 8.4%, politeness 8.5%, all at or above their share of the deduped pool.
+
+Gap found: the golden set's first turns contain no offensive messages, 3 with heavy typos, 3 polite ones and 4
+keyword-length ones (negation is covered: 12). Until cases are added, the phrasing check above cannot be measured.
+
+## 6. Rewrite the replies with a larger model, and read the output for new habits
+
+Rewriting removes Bitext's content, but a rewriting model has habits of its own, and a 2B model trained on its
+output copies them. Each full run was measured for repeated phrases, and each habit found became a rule in the
+next prompt version (`PROMPT_VERSION` in `data_prep/prepare_bitext.py`). Rows that did not show the habit kept
+their earlier rewrite; only rows that did were redone.
+
+| Prompt | Found in its output | Rule added |
+|---|---|---|
+| v1 (50-row test) | stiff ("I do not", "I am"), filler ("I am here to help you") | contractions, no filler |
+| v2 (50-row test) | 19% opened "You're looking to"; invented rules ("not always possible once an order is placed") | ban stock openers; never explain when something is possible |
+| v3 (full run, 5,500) | 31% of replies said "I'd be glad" | ban "I'd be glad" / "I'd be happy" (v4) |
+| v4 | 21% of calm customers were told their situation was "frustrating"; 21% said "I don't have ... in front of me" before offering to check | name a feeling only if the customer shows one; go straight to the next step (v5) |
+
+Model `gemini-4-hydrogen` at thinking level "low" (the default level spent about 2,250 thinking tokens to write a
+50-token reply; "low" about 1,050). Automatic checks and the drop rate per intent:
+`data_prep/reports/bitext_rewrite_report.md`.
+
+The meaning judge (`data_prep/review_rewrites.py`) was tested first on 20 hand-written pairs with planted mistakes
+(`data_prep/check_judge.py`): it caught all 12 bad ones once the rule "exactly one next step" was spelled out.
+Writing the test also showed two of my own "good" pairs were not: one stated a refund rule, one offered two next steps.
+
+Results of the meaning check, and what it could not catch:
+- The judge accepted 5,277 of the 5,333 rows that passed the automatic checks. It caught every reply listing
+  payment methods (all 29 with "bank transfer", all 17 with "PayPal").
+- It caught only 3 of the 6 rows rejected in the 200-pair hand review. It let through vague claims about the
+  store ("We offer a few different shipping options": about half of 88 such rows) and one reply saying Nova cannot
+  hand off to a person. Vague quantity claims became an automatic check (`store_claim`, 108 rows dropped).
+- The hand review also found "I haven't seen your order details yet", the "can't see" filler in new words (31% of
+  `cancel_order` replies); it joined the banned habits and those 332 rows were redone.
+
+Final: **5,276 rows** (`data/processed/bitext_final.jsonl`). Split into train 4,447, validation 235 and
+`test_unseen_intents` 594. Rendered with the Qwen3.5-2B template, examples run to median 224 and at most 255
+tokens (p99 245), so **max_seq_length is 256**. Every example's trained tokens decode to exactly its reply plus
+`<|im_end|>`.
+
+**Expect:** no stock phrase in more than about 5% of Nova's replies after fine-tuning.
+
 ## Reading notes (5 rows per intent)
 
 Sample in `data/eda/reading_sample.md` (seed 3407, not in Git). One line per intent: what a good Nova reply would do differently.

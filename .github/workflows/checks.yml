@@ -50,3 +50,12 @@ jobs:
         run: uv run --frozen python evals/validate.py   # all 100 cases, every category at its quota
       - name: Bad inserts are rejected
         run: test "$(psql "$DB_URL" -f db/break.sql 2>&1 | grep -c '^psql.*ERROR')" = 10
+
+  loss-mask:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Only Nova's reply is trained (Qwen3.5-2B chat template)
+        # Only the tokenizer is needed, so no torch: transformers at the pinned version plus jinja2 for the template.
+        run: uv run --no-project --with pytest --with jinja2 --with "transformers==5.23.0" pytest -q tests/test_masking.py
