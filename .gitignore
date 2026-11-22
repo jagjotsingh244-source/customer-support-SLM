@@ -23,6 +23,7 @@ wandb/
 data/**/*
 !data/**/
 !data/**/.gitkeep
+!data/DECISIONS.md
 
 # macOS
 .DS_Store

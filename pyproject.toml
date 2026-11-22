@@ -12,6 +12,13 @@ dependencies = [
 ]
 
 [dependency-groups]
+data = [
+    "datasets>=5.2.0",
+    "ipykernel>=7.4.0",
+    "matplotlib>=3.11.2",
+    "nbconvert>=7.17.2",
+    "pandas>=3.1.1",
+]
 local-model = [
     "torch==2.15.0",
     "transformers==5.23.0",
