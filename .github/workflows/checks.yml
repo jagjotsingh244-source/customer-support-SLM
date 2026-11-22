@@ -46,5 +46,7 @@ jobs:
         run: |
           uv run --frozen python db/load_kb.py
           test "$(psql "$DB_URL" -At -c "SELECT section_id FROM kb_sections, websearch_to_tsquery('english', 'return opened electronics') q WHERE tsv @@ q ORDER BY ts_rank(tsv, q) DESC LIMIT 1")" = returns-electronics#opened-electronics
+      - name: Golden eval cases match the store and the help center
+        run: uv run --frozen python evals/validate.py --partial   # drop --partial once all 100 cases exist
       - name: Bad inserts are rejected
         run: test "$(psql "$DB_URL" -f db/break.sql 2>&1 | grep -c '^psql.*ERROR')" = 10
