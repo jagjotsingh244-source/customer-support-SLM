@@ -2,6 +2,7 @@
 
     uv run python evals/validate.py             # every category must be at its quota
     uv run python evals/validate.py --partial   # while writing: skip the quota check
+    uv run python evals/validate.py --probes    # the phrasing probes in evals/probes/
 
 A golden case states what is true, so every expectation must be traceable to the
 database or the help center. For each case in evals/golden/*.jsonl this checks:
@@ -17,6 +18,11 @@ database or the help center. For each case in evals/golden/*.jsonl this checks:
 6. Every expected `sources` section exists in kb_sections.
 7. Every must_include fact appears in what the expected tools return or in the
    expected sources, so no fact comes from memory.
+
+Phrasing probes (evals/probes/*.jsonl) are rewordings of golden cases: offensive, typo-heavy, polite or
+keyword-only versions of a clean message. Each names the golden case it rephrases and must keep that case's
+customer, scenario, category and expectations exactly, so a score difference between the two comes from the
+phrasing alone. They are checked like golden cases, kept out of the 100-case golden set, and reported apart.
 
 Exits non-zero on any failure.
 """
@@ -37,6 +43,7 @@ sys.path.insert(0, str(ROOT))
 from agent.tools_v0 import REGISTRY, Session, connect  # noqa: E402
 
 GOLDEN = ROOT / "evals" / "golden"
+PROBES = ROOT / "evals" / "probes"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
 
 QUOTAS = {"policy": 25, "order_lookup": 25, "returns": 15,
@@ -44,6 +51,7 @@ QUOTAS = {"policy": 25, "order_lookup": 25, "returns": 15,
 PREFIX = {"policy": "pol", "order_lookup": "ord", "returns": "ret",
           "unanswerable": "una", "escalation": "esc", "adversarial": "adv"}
 ORDER_TOOLS = {"get_order_status", "get_tracking", "propose_return"}
+PHRASING_QUOTAS = {"offensive": 3, "typos": 3, "polite": 3, "keyword": 3}
 
 
 class Strict(BaseModel):
@@ -77,15 +85,20 @@ class Case(Strict):
     notes: str = Field(min_length=10)
 
 
-def load() -> tuple[list[tuple[str, Case]], list[str]]:
+class ProbeCase(Case):
+    phrasing: Literal["offensive", "typos", "polite", "keyword"]
+    rephrases: str                    # id of the golden case this one rewords
+
+
+def load(directory: Path = GOLDEN, model: type[Case] = Case) -> tuple[list[tuple[str, Case]], list[str]]:
     cases, errors = [], []
-    for path in sorted(GOLDEN.glob("*.jsonl")):
+    for path in sorted(directory.glob("*.jsonl")):
         for n, line in enumerate(path.read_text().splitlines(), 1):
             if not line.strip():
                 continue
             where = f"{path.name}:{n}"
             try:
-                cases.append((where, Case.model_validate_json(line)))
+                cases.append((where, model.model_validate_json(line)))
             except ValidationError as e:
                 errors.append(f"{where}: bad format: {e.errors()[0]['loc']} {e.errors()[0]['msg']}")
     return cases, errors
@@ -187,10 +200,54 @@ def check(case: Case, conn) -> list[str]:
     return errs
 
 
+def load_probes() -> tuple[list[tuple[str, Case]], list[str]]:
+    return load(PROBES, ProbeCase)
+
+
+def check_probes(probes, golden) -> list[str]:
+    """Each probe rewords a golden case and keeps everything else about it."""
+    errors, by_id = [], {c.id: c for _, c in golden}
+    for where, p in probes:
+        g = by_id.get(p.rephrases)
+        if g is None:
+            errors.append(f"{where} {p.id}: rephrases '{p.rephrases}', which is not a golden case")
+            continue
+        for field in ("category", "scenario", "customer_id", "expect"):
+            if getattr(p, field) != getattr(g, field):
+                errors.append(f"{where} {p.id}: {field} differs from {g.id}")
+        if p.turns == g.turns:
+            errors.append(f"{where} {p.id}: same message as {g.id}; a probe must reword it")
+        if p.id in by_id:
+            errors.append(f"{where} {p.id}: id is also a golden case id")
+    counts = Counter(p.phrasing for _, p in probes)
+    print(f"{'phrasing':<14}{'cases':>6}{'quota':>7}")
+    for phr, quota in PHRASING_QUOTAS.items():
+        print(f"{phr:<14}{counts[phr]:>6}{quota:>7}")
+        if counts[phr] != quota:
+            errors.append(f"{phr}: {counts[phr]} probes, quota is {quota}")
+    return errors
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--partial", action="store_true", help="skip the per-category quota check")
+    ap.add_argument("--probes", action="store_true", help="check the phrasing probes instead of the golden set")
     a = ap.parse_args()
+
+    if a.probes:
+        golden, errors = load()
+        probes, errors_p = load_probes()
+        errors = errors + errors_p + check_probes(probes, golden)
+        conn = connect(DB_URL)
+        for where, case in probes:
+            errors += [f"{where} {case.id}: {msg}" for msg in check(case, conn)]
+        if errors:
+            print(f"\n{len(errors)} problem(s):")
+            for err in errors:
+                print(" -", err)
+            sys.exit(1)
+        print(f"\n{len(probes)} phrasing probes valid")
+        return
 
     cases, errors = load()
     ids = Counter(c.id for _, c in cases)

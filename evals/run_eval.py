@@ -14,6 +14,9 @@
     # re-score saved traces with the current metrics, without calling any model
     uv run python evals/run_eval.py --rescore evals/runs/2026-11-23_floor
 
+    # the 12 phrasing probes (evals/probes/), each next to its clean golden twin from a golden run
+    uv run python evals/run_eval.py --run 2026-11-23_floor-probes --cases probes --paired-run 2026-11-23_floor ...
+
 Each run writes evals/runs/<run>/:
   config.json   what was measured: model, provider, served models, prompt version, sampling, commit
   traces.jsonl  one line per case with every message, tool call, result and timing; written as it goes,
@@ -65,7 +68,7 @@ from agent.loop import run_turn  # noqa: E402
 from agent.prompts import PROMPT_VERSION, system_prompt  # noqa: E402
 from agent.tools_v0 import REGISTRY, TOOLS, Session, connect  # noqa: E402
 from config import now  # noqa: E402
-from evals.validate import QUOTAS, load, normalize  # noqa: E402
+from evals.validate import PHRASING_QUOTAS, QUOTAS, load, load_probes, normalize  # noqa: E402
 
 RUNS = ROOT / "evals" / "runs"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
@@ -120,17 +123,21 @@ def run_case(case, client, a, conn) -> dict:
 
 def git_commit() -> str:
     head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
-    dirty = subprocess.run(["git", "status", "--porcelain", "--", "agent", "evals/golden"],
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", "agent", "evals/golden", "evals/probes"],
                            capture_output=True, text=True, cwd=ROOT).stdout.strip()
     return head + ("+uncommitted changes" if dirty else "")
+
+
+def load_cases(case_set: str):
+    return load_probes() if case_set == "probes" else load()
 
 
 def run(a) -> Path:
     out = RUNS / a.run
     out.mkdir(parents=True, exist_ok=True)
-    cases, errors = load()
+    cases, errors = load_cases(a.cases)
     if errors:
-        sys.exit("golden set has format errors; run evals/validate.py")
+        sys.exit(f"{a.cases} cases have format errors; run evals/validate.py" + (" --probes" if a.cases == "probes" else ""))
     cases = [c for _, c in cases if (not a.ids or c.id in a.ids)]
     if a.limit:
         cases = cases[: a.limit]
@@ -147,7 +154,7 @@ def run(a) -> Path:
     config = {"run": a.run, "system": a.system, "provider": a.provider, "model": a.model,
               "base_url": a.base_url, "prompt_version": PROMPT_VERSION, "temperature": a.temperature,
               "sampling": a.sampling, "sampling_settings": SAMPLING[a.sampling], "max_model_calls_per_turn": a.max_calls,
-              "cases": len(cases), "commit": git_commit(), "db_host": DB_URL.split("@")[-1].split("/")[0],
+              "case_set": a.cases, "paired_run": a.paired_run, "cases": len(cases), "commit": git_commit(), "db_host": DB_URL.split("@")[-1].split("/")[0],
               "notes": a.notes}
     client, conn = make_client(a), connect(DB_URL)
     todo = [c for c in cases if c.id not in done]
@@ -231,23 +238,49 @@ def pct(k: int, n: int) -> str:
     return f"{k}/{n} ({100 * k / n:.0f}%)" if n else "-"
 
 
+def paired_rows(cases, scores, paired_run: str | None) -> list[str]:
+    """Probe runs: each probe next to its clean golden twin, scored the same way in a golden run."""
+    twin = {}
+    if paired_run and (RUNS / paired_run / "scores.json").exists():
+        twin = json.loads((RUNS / paired_run / "scores.json").read_text())["scores"]
+    rows = ["", f"Each probe next to its clean twin" + (f" in run `{paired_run}`" if twin else " (no --paired-run given)")
+            + " (all = every check passed, strict tools):", "",
+            "| Probe | Phrasing | Twin | Probe all | Twin all |", "|---|---|---|---|---|"]
+    for i, s in sorted(scores.items()):
+        c = cases[i]
+        t = twin.get(c.rephrases)
+        rows.append(f"| {i} | {c.phrasing} | {c.rephrases} | {'pass' if s['all'] else 'fail'} | "
+                    + ("-" if t is None else ("pass" if t["all"] else "fail")) + " |")
+    if twin:
+        both = [(s["all"], twin[cases[i].rephrases]["all"]) for i, s in scores.items() if cases[i].rephrases in twin]
+        rows += ["", f"Probes passed {sum(p for p, _ in both)}/{len(both)}; their clean twins passed "
+                 f"{sum(t for _, t in both)}/{len(both)}."]
+    return rows
+
+
 def report(out: Path) -> str:
     config = json.loads((out / "config.json").read_text())
-    cases = {c.id: c for _, c in load()[0]}
+    case_set = config.get("case_set", "golden")
+    cases = {c.id: c for _, c in load_cases(case_set)[0]}
     traces = [t for t in read_traces(out) if t["id"] in cases]
     scores = {t["id"]: score(cases[t["id"]], t) for t in traces}
     (out / "scores.json").write_text(json.dumps({"scorer_version": SCORER_VERSION, "scores": scores}, indent=1))
 
     by_cat = defaultdict(list)
+    group = (lambda t: cases[t["id"]].phrasing) if case_set == "probes" else (lambda t: t["category"])
+    order = PHRASING_QUOTAS if case_set == "probes" else QUOTAS
     for t in traces:
-        by_cat[t["category"]].append(scores[t["id"]])
-    rows = ["| Category | n | " + " | ".join(METRICS) + " |", "|---|---|" + "---|" * len(METRICS)]
-    for cat in [c for c in QUOTAS if c in by_cat]:
+        by_cat[group(t)].append(scores[t["id"]])
+    rows = [f"| {'Phrasing' if case_set == 'probes' else 'Category'} | n | " + " | ".join(METRICS) + " |",
+            "|---|---|" + "---|" * len(METRICS)]
+    for cat in [c for c in order if c in by_cat]:
         ss = by_cat[cat]
         rows.append(f"| {cat} | {len(ss)} | " + " | ".join(pct(sum(s[m] for s in ss), len(ss)) for m in METRICS) + " |")
     allss = list(scores.values())
     rows.append(f"| **all** | {len(allss)} | " + " | ".join(f"**{pct(sum(s[m] for s in allss), len(allss))}**"
                                                           for m in METRICS) + " |")
+    if case_set == "probes":
+        rows += paired_rows(cases, scores, config.get("paired_run"))
 
     ok = [t for t in traces if "error" not in t]
     turn_s = sorted(tr["turn_s"] for t in ok for tr in t["turns"])
@@ -294,6 +327,10 @@ def main() -> None:
     ap.add_argument("--max-calls", type=int, default=4, help="model calls per turn; change only for diagnostics")
     ap.add_argument("--limit", type=int, help="only the first N cases (smoke test)")
     ap.add_argument("--ids", nargs="*", help="only these case ids")
+    ap.add_argument("--cases", choices=["golden", "probes"], default="golden",
+                    help="the 100-case golden set, or the phrasing probes (reported apart)")
+    ap.add_argument("--paired-run", help="for --cases probes: a golden run of the same system, to show each "
+                    "probe next to its clean twin")
     ap.add_argument("--notes", default="", help="free text stored in config.json")
     ap.add_argument("--rescore", type=Path, help="re-score an existing run folder; no model calls")
     a = ap.parse_args()

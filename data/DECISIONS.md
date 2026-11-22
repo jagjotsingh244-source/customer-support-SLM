@@ -128,7 +128,12 @@ sample), so the sample gives rows with K, N, W or P double weight. Sampled share
 offensive 8.4%, politeness 8.5%, all at or above their share of the deduped pool.
 
 Gap found: the golden set's first turns contain no offensive messages, 3 with heavy typos, 3 polite ones and 4
-keyword-length ones (negation is covered: 12). Until cases are added, the phrasing check above cannot be measured.
+keyword-length ones (negation is covered: 12). Closed with 12 phrasing probes in `evals/probes/phrasing.jsonl`:
+3 each of offensive, typo-heavy, polite and keyword-only, each a rewording of a golden case with the same
+customer, order and expectations (`evals/validate.py --probes` enforces that). They stay out of the 100-case
+golden set so baseline scores remain comparable, and `evals/run_eval.py --cases probes --paired-run <golden run>`
+reports each probe next to its clean twin. With 3 cases per phrasing, a difference of one case is noise; the probes
+flag large gaps, they do not measure small ones.
 
 ## 6. Rewrite the replies with a larger model, and read the output for new habits
 
