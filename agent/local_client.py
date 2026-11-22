@@ -5,7 +5,8 @@ client.chat.completions.create(...) exactly as it does for vLLM; this client ren
 template with the same tool schemas, generates, and turns the model's tool calls back into
 OpenAI-style tool calls the way vLLM's qwen3_coder parser does.
 
-    client = LocalChatClient("Qwen/Qwen3.5-2B")
+    client = LocalChatClient("Qwen/Qwen3.5-2B")                       # the base model
+    client = LocalChatClient("Qwen/Qwen3.5-2B", adapter="<hub id>")   # with a LoRA adapter merged in
     run_turn(client, "Qwen/Qwen3.5-2B", messages, TOOLS, REGISTRY, session)
 
 Matching vLLM on purpose:
@@ -70,7 +71,7 @@ def _convert(value: str, schema: dict | None):
 
 def parse_tool_calls(text: str, tools: list[dict]) -> tuple[str | None, list[dict]]:
     """Model output -> (text before the first tool call, OpenAI-style tool calls)."""
-    props = {t["function"]["name"]: t["function"]["parameters"].get("properties", {}) for t in tools}
+    props = {t["function"]["name"]: t["function"]["parameters"].get("properties", {}) for t in tools or []}
     calls = []
     for i, m in enumerate(TOOL_CALL.finditer(text)):
         name, body = m.group(1), m.group(2)
@@ -96,15 +97,33 @@ def _for_template(messages: list[dict]) -> list[dict]:
     return out
 
 
+def attach_adapter(model, adapter: str):
+    """Loads a LoRA adapter (Hub id or folder) onto the base and merges it in, so generation runs at base speed.
+
+    Fails if the adapter wraps no layer: an adapter whose layer names do not match this model class would
+    otherwise load silently and leave the base model unchanged.
+    """
+    from peft import PeftModel
+
+    model = PeftModel.from_pretrained(model, adapter)
+    wrapped = sum(1 for _, m in model.named_modules() if hasattr(m, "lora_A") and len(m.lora_A) > 0)
+    if wrapped == 0:
+        raise RuntimeError(f"adapter {adapter} matched no layer of {type(model.base_model.model).__name__}")
+    print(f"adapter {adapter}: {wrapped} layers wrapped, merged into the base")
+    return model.merge_and_unload().eval()
+
+
 class LocalChatClient:
     """Exposes client.chat.completions.create(...), the one call agent/loop.py makes."""
 
-    def __init__(self, model_id: str, device: str | None = None):
+    def __init__(self, model_id: str, device: str | None = None, adapter: str | None = None):
         self.device = device or ("mps" if torch.backends.mps.is_available()
                                  else "cuda" if torch.cuda.is_available() else "cpu")
         model_cls = getattr(transformers, "AutoModelForMultimodalLM", None) or transformers.AutoModelForImageTextToText
         self.tok = AutoTokenizer.from_pretrained(model_id)
         self.model = model_cls.from_pretrained(model_id, dtype=torch.float16).to(self.device).eval()
+        if adapter:
+            self.model = attach_adapter(self.model, adapter)
         self.eos = [self.tok.convert_tokens_to_ids("<|im_end|>"), self.tok.convert_tokens_to_ids("<|endoftext|>")]
         self.model_id = model_id
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create))

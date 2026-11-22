@@ -8,6 +8,10 @@
     uv run --group local-model python evals/run_eval.py --run 2026-11-22_floor-mac --system floor \
         --provider local --model Qwen/Qwen3.5-2B
 
+    # a fine-tuned candidate the same way: the LoRA adapter merged into the base in the process
+    uv run --group local-model --with peft==0.21.2 python evals/run_eval.py --run 2026-11-23_sft1-mac \
+        --system candidate --provider local --model Qwen/Qwen3.5-2B --adapter 123jagjot/sft1-r16-lr2e-4-bitext_v1
+
     # ceiling: Gemini on Vertex AI (VERTEX_API_KEY and VERTEX_PROJECT set)
     uv run python evals/run_eval.py --run 2026-11-23_ceiling --provider gemini --model gemini-4-hydrogen
 
@@ -88,7 +92,7 @@ SAMPLING = {   # named settings for the sampling comparison; temperature is pass
 def make_client(a):
     if a.provider == "local":
         from agent.local_client import LocalChatClient
-        return LocalChatClient(a.model)
+        return LocalChatClient(a.model, adapter=a.adapter)
     if a.provider == "gemini":
         from agent.gemini_adapter import GeminiChatClient
         return GeminiChatClient(api_key=os.environ["VERTEX_API_KEY"], project=os.environ["VERTEX_PROJECT"],
@@ -151,7 +155,7 @@ def run(a) -> Path:
                 done[t["id"]] = t
         path.write_text("".join(json.dumps(t, default=str, ensure_ascii=False) + "\n" for t in done.values()))
 
-    config = {"run": a.run, "system": a.system, "provider": a.provider, "model": a.model,
+    config = {"run": a.run, "system": a.system, "provider": a.provider, "model": a.model, "adapter": a.adapter,
               "base_url": a.base_url, "prompt_version": PROMPT_VERSION, "temperature": a.temperature,
               "sampling": a.sampling, "sampling_settings": SAMPLING[a.sampling], "max_model_calls_per_turn": a.max_calls,
               "case_set": a.cases, "paired_run": a.paired_run, "cases": len(cases), "commit": git_commit(), "db_host": DB_URL.split("@")[-1].split("/")[0],
@@ -327,6 +331,7 @@ def main() -> None:
     ap.add_argument("--provider", choices=["openai", "gemini", "local"], default="openai")
     ap.add_argument("--base-url", help="OpenAI-compatible server, for --provider openai")
     ap.add_argument("--model")
+    ap.add_argument("--adapter", help="for --provider local: a LoRA adapter (Hub id or folder) merged into --model")
     ap.add_argument("--temperature", type=float, default=0.2)
     ap.add_argument("--sampling", choices=list(SAMPLING), default="default")
     ap.add_argument("--max-calls", type=int, default=4, help="model calls per turn; change only for diagnostics")
@@ -347,6 +352,8 @@ def main() -> None:
         ap.error("--run, --system and --model are required (or use --rescore)")
     if a.max_calls != 4 and a.system != "diagnostic":
         ap.error("--max-calls other than 4 is only for --system diagnostic (floor and ceiling share the same loop)")
+    if a.adapter and a.provider != "local":
+        ap.error("--adapter is for --provider local; a vLLM server takes the adapter as a LoRA module (--model <name>)")
     if a.provider == "openai" and not a.base_url:
         ap.error("--base-url is required with --provider openai")
     print(report(run(a)))
