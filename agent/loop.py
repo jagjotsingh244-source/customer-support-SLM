@@ -29,6 +29,7 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             "prompt_tokens": r.usage.prompt_tokens if r.usage else None,
             "completion_tokens": r.usage.completion_tokens if r.usage else None,
             "finish_reason": r.choices[0].finish_reason,
+            "served_model": r.model,                # recorded per call: what actually answered
         })
         msg = r.choices[0].message
         messages.append(msg.model_dump(exclude_none=True))

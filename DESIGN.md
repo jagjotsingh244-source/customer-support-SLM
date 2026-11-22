@@ -81,6 +81,34 @@ Postgres 16 to match local Docker, pgvector enabled, AWS US East 2 near Kaggle's
 - **Checked after the first copy (2026-11-22):** row counts match local in all 13 tables, the
   orders table is byte-identical (md5 over every row), and `db/verify_queries.py` passes 24/24 against Neon.
 
+## Systems compared in the baseline
+
+One loop (`agent/loop.py`), one prompt (`agent/prompts.py`, v0) and the same six tools (`agent/tools_v0.py`)
+for both systems, so the gap measures the model, not the setup. Every eval run records the model name it
+asked for and the model the provider says served each call (`served_model` in the trace).
+
+| | Floor | Ceiling |
+|---|---|---|
+| Model | `Qwen/Qwen3.5-2B`, base weights, no fine-tuning | `gemini-4-hydrogen` (Google) |
+| Where it runs | vLLM 0.34.0 on one Kaggle T4 | Vertex AI, `global` location, API key tied to one project |
+| How the loop reaches it | OpenAI-compatible API, directly | `agent/gemini_adapter.py` translates to Google's API; prompt, tools and loop unchanged |
+| Sampling | temperature 0.2 | temperature 0.2 |
+| Output cap per model call | 512 tokens | 8,192 tokens, because Gemini's thinking counts against the cap; the visible reply is held to "under 80 words" by the prompt |
+| Thinking | off (Qwen3.5 chat template default) | always on (cannot be disabled) |
+| Max model calls per turn | 4 | 4 |
+
+Latency for the delayed-order turn ("where is my order", customer 416), 6 runs each:
+
+| | Median | Slowest | Outcome |
+|---|---|---|---|
+| Floor | 3.10 s | 3.60 s (cold first run 6.5 s) | Answered in 6/6 runs with the right order and last scan; wrong about the date in 3/6 |
+| Ceiling | 8.7 s | 65.7 s (first run 15.5 s) | Never answered: in 6/6 runs it kept searching the help center for a delay policy, the keyword search found nothing useful, and the 4-call limit ran out, ending in the loop's fallback hand-off |
+
+The ceiling's failure is a tool limit, not a model limit: the rough keyword search needs every query word to
+appear in a section, so "late delivery delayed shipment" returns nothing although a "Delays and lost
+shipments" page exists. The baseline keeps v0 as it is (changing the loop or search would need both systems
+re-run); better retrieval is the planned fix.
+
 ## Change log
 
 Record every budget or mechanism change: old → new, and the evidence.
@@ -96,3 +124,4 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-22 | Eval database: managed Postgres on Neon, copied from local Docker | Kaggle notebooks cannot reach the laptop's Postgres; in-notebook Postgres adds minutes to every run, and a laptop-only CPU model would take hours for the eval |
 | 2026-11-22 | Hygiene items (earbuds, earphones, trimmers, pillows, screen protectors): not returnable once unsealed; returnable within the normal window while sealed | Data marked them not returnable even when sealed, while the help center said "once unsealed". The help center's rule is kept; the return check, store SQL, seed and help-center wording now agree |
 | 2026-11-22 | Latency measured for the prompted 2B: median 3.10 s, p95 3.60 s on a two-tool-call turn | First conversation run on a Kaggle T4 with vLLM and the database on Neon |
+| 2026-11-22 | Ceiling model: `gemini-4-hydrogen` on Vertex AI, through an adapter, same prompt, tools and loop as the floor | No Anthropic API access (a Claude Pro plan does not include it); the Vertex key reaches only Gemini models. First run: it never answered the delayed-order turn because the keyword search failed and the 4-call limit ran out |

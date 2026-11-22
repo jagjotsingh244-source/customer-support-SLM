@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "faker>=40.62.0",
+    "google-genai>=3.6.1",
     "openai>=3.57.0",
     "psycopg[binary]>=3.3.9",
     "pydantic>=2.14.4",

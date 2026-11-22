@@ -4,8 +4,9 @@
     uv run python -m agent.chat --base-url http://localhost:8000/v1 --model Qwen/Qwen3.5-2B \
         --customer 416 "hi where is my order?? it was supposed to come days ago"
 
-    # a frontier model: same prompt, tools and loop; only base_url, model and key change
-    OPENAI_API_KEY=... uv run python -m agent.chat --base-url https://... --model ... --customer 416 "..."
+    # Gemini on Vertex AI: same prompt, tools and loop, through agent/gemini_adapter.py.
+    # Needs VERTEX_API_KEY and VERTEX_PROJECT (the key's project number); location is global.
+    uv run python -m agent.chat --provider gemini --model gemini-4-hydrogen --customer 416 "..."
 
 Each extra positional argument is one more user turn (scripted: later turns do
 not react to Nova's replies). The database comes from DB_URL (default: local
@@ -48,7 +49,9 @@ def show(m: dict) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base-url", required=True)
+    ap.add_argument("--provider", choices=["openai", "gemini"], default="openai",
+                    help="openai: any OpenAI-compatible server such as vLLM; gemini: Vertex AI")
+    ap.add_argument("--base-url", help="server URL, for --provider openai")
     ap.add_argument("--model", required=True)
     ap.add_argument("--customer", type=int, required=True)
     ap.add_argument("--temperature", type=float, default=0.2)
@@ -56,7 +59,14 @@ def main() -> None:
     ap.add_argument("turns", nargs="+", help="user messages, one per turn")
     a = ap.parse_args()
 
-    client = OpenAI(base_url=a.base_url, api_key=os.environ.get("OPENAI_API_KEY", "EMPTY"))
+    if a.provider == "gemini":
+        from agent.gemini_adapter import GeminiChatClient
+        client = GeminiChatClient(api_key=os.environ["VERTEX_API_KEY"], project=os.environ["VERTEX_PROJECT"],
+                                  location=os.environ.get("VERTEX_LOCATION", "global"))
+    elif a.base_url:
+        client = OpenAI(base_url=a.base_url, api_key=os.environ.get("OPENAI_API_KEY", "EMPTY"))
+    else:
+        ap.error("--base-url is required with --provider openai")
     session = Session.open(connect(DB_URL), a.customer)
     messages = [{"role": "system", "content": system_prompt(now(), session.customer_name)}]
     show(messages[0])
@@ -81,7 +91,8 @@ def main() -> None:
     print(f"\nmodel={a.model} prompt={PROMPT_VERSION} temp={a.temperature} "
           f"median turn latency={statistics.median(turn_s):.2f}s")
     if a.out:
-        Path(a.out).write_text(json.dumps({"model": a.model, "prompt_version": PROMPT_VERSION,
+        Path(a.out).write_text(json.dumps({"provider": a.provider, "model": a.model,
+                                           "prompt_version": PROMPT_VERSION,
                                            "customer_id": a.customer, "temperature": a.temperature,
                                            "messages": messages, "traces": traces},
                                           indent=2, default=str))
