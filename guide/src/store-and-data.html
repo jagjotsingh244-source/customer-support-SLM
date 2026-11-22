@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nova: the store and its data</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 18mm 17mm;
+          @bottom-center { content: "Nova · the store and its data · " counter(page); font: 8pt -apple-system, Helvetica, sans-serif; color: #8a8f98; } }
+  @page :first { @bottom-center { content: none; } }
+  :root { --ink: #1d2330; --muted: #5b6270; --line: #dfe3ea; --soft: #f4f6f9; --accent: #2457c5; --accent-soft: #eaf0fc; --warn: #a1520d; --warn-soft: #fdf3e7; --ok: #1d7a46; --ok-soft: #e8f5ee; }
+  * { box-sizing: border-box; }
+  body { font: 10.2pt/1.5 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); margin: 0; background: #fff; }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 8pt; letter-spacing: -0.4pt; }
+  h2 { font-size: 15pt; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 2px solid var(--ink); letter-spacing: -0.2pt; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  code { font: 8.8pt/1.4 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); padding: 0.5pt 3pt; border-radius: 3px; }
+  pre { font: 8.4pt/1.45 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 7pt 9pt; margin: 4pt 0 9pt; white-space: pre-wrap; break-inside: avoid; }
+  pre code { background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 10pt; font-size: 8.9pt; line-height: 1.38; break-inside: auto; }
+  th { text-align: left; background: var(--soft); font-weight: 600; }
+  th, td { border: 1px solid var(--line); padding: 4pt 6pt; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .section { margin-top: 22pt; }
+  .section.first, .section.page { break-before: page; margin-top: 0; }
+  h2, h3 { break-after: avoid; }
+  svg { break-inside: avoid; }
+  .fig { break-inside: avoid; margin: 6pt 0 10pt; }
+  .fig .cap { font-size: 8.6pt; color: var(--muted); margin-top: 3pt; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.8pt; }
+  .say { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .say b:first-child { color: var(--accent); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .warn { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .warn b:first-child { color: var(--warn); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 6pt 0 10pt; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9pt; margin: 6pt 0 10pt; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 8pt 10pt; break-inside: avoid; }
+  .card h4 { margin: 0 0 3pt; font-size: 10pt; }
+  .card p { margin: 0; font-size: 9pt; }
+  .num { font-size: 18pt; font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .pass { color: var(--ok); font-weight: 700; }
+  .fail { color: #b42318; font-weight: 700; }
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover .kicker { font-size: 9pt; font-weight: 600; letter-spacing: 1.2pt; text-transform: uppercase; color: var(--accent); margin-bottom: 10pt; }
+  .cover .lede { font-size: 12pt; color: var(--muted); max-width: 140mm; }
+  .toc { border-top: 1px solid var(--line); padding-top: 10pt; columns: 2; column-gap: 14pt; font-size: 9.6pt; }
+  .toc div { break-inside: avoid; margin-bottom: 4pt; }
+  .toc span { color: var(--accent); font-weight: 700; display: inline-block; width: 16pt; }
+  .qa h3 { margin-top: 11pt; }
+  .qa p { margin-bottom: 4pt; }
+  svg text { font-family: -apple-system, Helvetica, Arial, sans-serif; }
+  svg .mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div>
+    <div class="kicker">Project guide · Part 2</div>
+    <h1>NimbusCart's world:<br>the store and its data</h1>
+    <p class="lede">Before Nova can be trained or measured, it needs a store to work in. This part explains how that store
+      was built: a Postgres schema designed from customer questions, state machines for every status, one frozen clock,
+      a train/eval split by customer, a seed that deliberately creates the hard cases, a help center written for retrieval,
+      and the checks that prove all of it is consistent.</p>
+  </div>
+  <div class="grid2" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="card"><div class="num">3,000</div><p>orders for 500 customers, each built from one of 15 scenarios</p></div>
+    <div class="card"><div class="num">19</div><p>invariant checks that must return zero rows after every seed</p></div>
+    <div class="card"><div class="num">18</div><p>help-center pages, every number checked against the seed</p></div>
+    <div class="card"><div class="num">24 / 24</div><p>query checks pass on every eval order, plus 521 scope checks</p></div>
+  </div>
+  <div class="toc">
+    <div><span>1</span>Why build the world first</div>
+    <div><span>2</span>Designing from customer questions</div>
+    <div><span>3</span>The schema and its rules</div>
+    <div><span>4</span>State machines: allowed moves</div>
+    <div><span>5</span>One clock and two worlds</div>
+    <div><span>6</span>Seeding the hard cases</div>
+    <div><span>7</span>A help center written for retrieval</div>
+    <div><span>8</span>Proving it: five layers of checks</div>
+    <div><span>9</span>Bugs and surprises worth telling</div>
+    <div><span>10</span>Defending the design: interview questions</div>
+    <div><span>11</span>Limits, what comes next, glossary</div>
+  </div>
+  <p class="small muted">Repository: github.com/jagjotsingh244-source/customer-support-SLM · Evidence for every claim here is in
+    <code>db/</code> (schema, states, seed, checks, queries), <code>kb/</code>, <code>config.py</code>,
+    <code>scripts/</code> and <code>.github/workflows/checks.yml</code>.</p>
+</div>
+
+<!-- 1 -->
+<div class="section first">
+<h2>1 · Why build the world first</h2>
+<p>The tempting order is to generate chat data and start training. The problem shows up later: synthetic chats say an order is
+  <i>"Dispatched"</i>, but the database says <code>shipped</code>, so the model learns words its tools never return. A customer
+  whose order came in two boxes asks where the second one is, and there is nothing to look up because the table holds one tracking
+  number per order. The model was never wrong; <b>the world it was trained on did not exist.</b></p>
+
+<p>So the store came first. Every later part of the project reads from it:</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 210" width="100%" role="img" aria-label="The store feeds tools, training data, evals and retrieval">
+  <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="11">
+    <rect x="10" y="40" width="210" height="130" rx="8" fill="#eaf0fc" stroke="#c4d4f5"/>
+    <text x="115" y="66" text-anchor="middle" font-weight="700" font-size="12.5">NimbusCart's world</text>
+    <text x="115" y="88" text-anchor="middle" fill="#5b6270" font-size="10">Postgres schema + seeded data</text>
+    <text x="115" y="104" text-anchor="middle" fill="#5b6270" font-size="10">frozen clock (config.NOW)</text>
+    <text x="115" y="120" text-anchor="middle" fill="#5b6270" font-size="10">train / eval customers</text>
+    <text x="115" y="136" text-anchor="middle" fill="#5b6270" font-size="10">18-page help center</text>
+    <text x="115" y="152" text-anchor="middle" fill="#5b6270" font-size="10">scenario label per order</text>
+
+    <rect x="300" y="4" width="190" height="42" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="395" y="22" text-anchor="middle" font-weight="600">Tool layer</text>
+    <text x="395" y="37" text-anchor="middle" fill="#5b6270" font-size="9.5">tool results are views of the schema</text>
+
+    <rect x="300" y="56" width="190" height="42" rx="7" fill="#f3ecfb" stroke="#dccbf2"/>
+    <text x="395" y="74" text-anchor="middle" font-weight="600">Synthetic training chats</text>
+    <text x="395" y="89" text-anchor="middle" fill="#5b6270" font-size="9.5">generated from train customers only</text>
+
+    <rect x="300" y="108" width="190" height="42" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/>
+    <text x="395" y="126" text-anchor="middle" font-weight="600">Golden eval cases</text>
+    <text x="395" y="141" text-anchor="middle" fill="#5b6270" font-size="9.5">written against eval customers only</text>
+
+    <rect x="300" y="160" width="190" height="42" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="395" y="178" text-anchor="middle" font-weight="600">Retrieval (RAG)</text>
+    <text x="395" y="193" text-anchor="middle" fill="#5b6270" font-size="9.5">help-center sections, current policy</text>
+
+    <path d="M220,80 L298,25" stroke="#5b6270" fill="none" marker-end="url(#a1)"/>
+    <path d="M220,95 L298,77" stroke="#5b6270" fill="none" marker-end="url(#a1)"/>
+    <path d="M220,115 L298,129" stroke="#5b6270" fill="none" marker-end="url(#a1)"/>
+    <path d="M220,135 L298,181" stroke="#5b6270" fill="none" marker-end="url(#a1)"/>
+
+    <text x="520" y="70" font-size="10" fill="#1d2330" font-weight="600">Change the schema late</text>
+    <text x="520" y="86" font-size="10" fill="#5b6270">and all four must be redone:</text>
+    <text x="520" y="102" font-size="10" fill="#5b6270">tool schemas, the training</text>
+    <text x="520" y="118" font-size="10" fill="#5b6270">data, the eval cases and</text>
+    <text x="520" y="134" font-size="10" fill="#5b6270">the help-center checks.</text>
+  </g>
+</svg>
+<div class="cap">The schema is treated like a public API: a contract that everything downstream depends on.</div>
+</div>
+
+<h3>What exists now</h3>
+<div class="grid3">
+  <div class="card"><h4>Store data</h4><p>500 customers, 60 products, 3,000 orders, 3,048 shipments, 4,575 order lines, 9,257 tracking events,
+    270 returns, 230 refunds, 132 tickets, 2,795 payment attempts.</p></div>
+  <div class="card"><h4>Rules written down</h4><p>11 store tables and 9 enums, 6 state machines, 19 invariants, one frozen clock and a
+    hash-based train/eval split.</p></div>
+  <div class="card"><h4>Knowledge and proof</h4><p>18 help-center pages (103 searchable sections), 16 customer questions with tested SQL,
+    and a CI workflow that rebuilds and checks everything on every push.</p></div>
+</div>
+
+<div class="say"><b>How I'd say it in an interview</b>"I treated the database as the contract. The tools, the training data and the evals are all
+  derived from it, so I designed it first, from the questions customers actually ask, and made bad data impossible to insert."</div>
+</div>
+
+<!-- 2 -->
+<div class="section">
+<h2>2 · Designing from customer questions</h2>
+<p>Martin Kleppmann's advice in <i>Designing Data-Intensive Applications</i> is to model data around how it will be read. Nova reads the
+  store to answer customers, so the design went backwards from their questions:</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 92" width="100%" role="img" aria-label="Questions to columns to SQL to gaps">
+  <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="10.5">
+    <rect x="4" y="14" width="150" height="64" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="79" y="38" text-anchor="middle" font-weight="600">1. Write the question</text>
+    <text x="79" y="54" text-anchor="middle" fill="#5b6270" font-size="9.5">as a customer says it</text>
+    <text x="79" y="68" text-anchor="middle" fill="#5b6270" font-size="9.5">16 in db/QUESTIONS.md</text>
+    <rect x="182" y="14" width="150" height="64" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="257" y="38" text-anchor="middle" font-weight="600">2. Name the columns</text>
+    <text x="257" y="54" text-anchor="middle" fill="#5b6270" font-size="9.5">that answer it</text>
+    <text x="257" y="68" text-anchor="middle" fill="#5b6270" font-size="9.5">missing one = GAP</text>
+    <rect x="360" y="14" width="150" height="64" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="435" y="38" text-anchor="middle" font-weight="600">3. Write the SQL</text>
+    <text x="435" y="54" text-anchor="middle" fill="#5b6270" font-size="9.5">for one customer,</text>
+    <text x="435" y="68" text-anchor="middle" fill="#5b6270" font-size="9.5">on hand-built rows</text>
+    <rect x="538" y="14" width="158" height="64" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="617" y="38" text-anchor="middle" font-weight="600">4. Fix the schema now</text>
+    <text x="617" y="54" text-anchor="middle" fill="#5b6270" font-size="9.5">13 gaps found before</text>
+    <text x="617" y="68" text-anchor="middle" fill="#5b6270" font-size="9.5">any data existed</text>
+    <path d="M154,46 L180,46" stroke="#5b6270" marker-end="url(#a2)"/>
+    <path d="M332,46 L358,46" stroke="#5b6270" marker-end="url(#a2)"/>
+    <path d="M510,46 L536,46" stroke="#5b6270" marker-end="url(#a2)"/>
+  </g>
+</svg>
+</div>
+
+<h3>The 16 questions</h3>
+<table>
+  <tr><th style="width:4%">#</th><th style="width:38%">Question</th><th>What it needs from the store</th></tr>
+  <tr><td>1</td><td>Where is my order?</td><td>Order status; per box: carrier, tracking number, ETA, latest scan</td></tr>
+  <tr><td>2</td><td>Why is it late?</td><td>ETA passed and not delivered; no scan for 7+ days means possible loss</td></tr>
+  <tr><td>3</td><td>Can I cancel?</td><td>Status: placed/packed = free cancel; shipped or later = refuse delivery or return</td></tr>
+  <tr><td>4</td><td>Can I return this?</td><td>Per line: category, returnable, opened, delivery date <i>of that line's box</i>, existing return</td></tr>
+  <tr><td>5</td><td>When will I get my money back?</td><td>Refund amount, method, status and dates, for cancellations and returns</td></tr>
+  <tr><td>6</td><td>Where is the second box?</td><td>Which item travels in which shipment</td></tr>
+  <tr><td>7</td><td>Show me my recent orders</td><td>The customer's orders, newest first</td></tr>
+  <tr><td>8</td><td>Why was I charged ₹548 when the item was ₹499?</td><td>Line prices plus the shipping charge</td></tr>
+  <tr><td>9</td><td>Can I change my delivery address?</td><td>Status, and the order's own address</td></tr>
+  <tr><td>10</td><td>How much do I get back for one item?</td><td>Value of the returned lines only</td></tr>
+  <tr><td>11</td><td>When is my return pickup?</td><td>Return status, pickup date</td></tr>
+  <tr><td>12</td><td>Why was my return rejected?</td><td>Rejection reason as a fixed list, not free text</td></tr>
+  <tr><td>13</td><td>It says delivered but I didn't get it</td><td>Delivered time, last scan, a ticket to follow up</td></tr>
+  <tr><td>14</td><td>What's happening with my complaint?</td><td>Ticket status, reason, dates</td></tr>
+  <tr><td>15</td><td>Is my item still under warranty?</td><td>Delivery date of the item's box + the product's warranty months</td></tr>
+  <tr><td>16</td><td>Money was taken but my order failed</td><td>Every payment attempt, including failed ones with no order</td></tr>
+</table>
+
+<h3>What the questions found</h3>
+<p>The starting schema (orders, shipments, items, events, products, customers) could answer only some of these. Each gap was fixed
+  <b>before</b> any data or training existed, when a change costs one line:</p>
+<table>
+  <tr><th style="width:32%">Gap</th><th style="width:22%">Found by</th><th>Fix</th></tr>
+  <tr><td>No shipping fee: total ≠ sum of items</td><td>Q8</td><td><code>orders.shipping_fee_inr</code> plus a check that total = items + fee</td></tr>
+  <tr><td>Address lived only on the customer</td><td>Q9</td><td>Each order keeps its own copy, so a profile edit never moves an order already placed</td></tr>
+  <tr><td>No returns, return lines, refunds</td><td>Q4, Q5, Q10, Q11</td><td><code>returns</code>, <code>return_items</code>, <code>refunds</code> (refunds for cancellations too, with <code>return_id</code> NULL)</td></tr>
+  <tr><td>COD refunds have no card to go back to</td><td>Q5</td><td>Refund status <code>awaiting_bank_details</code> and <code>bank_details_added_at</code></td></tr>
+  <tr><td>Rejection reason, warranty, tickets, payments</td><td>Q12–Q16</td><td>Enum <code>rejection_reason</code>, <code>products.warranty_months</code>, <code>tickets</code>, <code>payments</code></td></tr>
+  <tr><td>Why the customer is returning</td><td>Writing Q4's SQL</td><td>Enum <code>return_reason</code>: opened electronics are returnable only if faulty</td></tr>
+  <tr><td>A cancelled packed order's label stuck forever</td><td>Writing the state machine</td><td>Shipment status <code>cancelled</code> (label voided before pickup)</td></tr>
+</table>
+<div class="say"><b>The point</b>Writing the question first, the columns second and the SQL third found every one of these gaps on paper.
+  Found after the training data existed, each one would have meant regenerating data and rewriting eval cases.</div>
+</div>
+
+<!-- 3 -->
+<div class="section page">
+<h2>3 · The schema and its rules</h2>
+<p>Eleven store tables plus one metadata table (<code>db/schema.sql</code>, re-runnable). Arrows point from a table to the table its
+  foreign key references.</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 462" width="100%" role="img" aria-label="Entity relationship diagram of the NimbusCart schema">
+  <defs><marker id="fk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7a8190"/></marker></defs>
+  <style>
+    .tb { fill: #fff; stroke: #c9cfd8; }
+    .hd-c { fill: #e4e7ec; } .hd-o { fill: #c4d4f5; } .hd-r { fill: #bfe3cd; } .hd-s { fill: #f2d6b3; }
+    .tn { font-size: 10.5px; font-weight: 700; fill: #1d2330; }
+    .col { font-size: 8.6px; fill: #3a4150; font-family: "SF Mono", Menlo, monospace; }
+    .k { fill: #2457c5; font-weight: 700; }
+    .e { stroke: #7a8190; stroke-width: 1.1; fill: none; }
+  </style>
+
+  <!-- edges first, so boxes sit on top -->
+  <path class="e" d="M200,50 L162,50" marker-end="url(#fk)"/>
+  <path class="e" d="M85,160 L85,124" marker-end="url(#fk)"/>
+  <path class="e" d="M160,195 L198,128" marker-end="url(#fk)"/>
+  <path class="e" d="M10,315 H4 V80 H8" marker-end="url(#fk)"/>
+  <path class="e" d="M160,315 L198,146" marker-end="url(#fk)"/>
+  <path class="e" d="M160,420 H180 V100 H198" stroke-dasharray="4 3" marker-end="url(#fk)"/>
+  <path class="e" d="M282,215 L282,163" marker-end="url(#fk)"/>
+  <path class="e" d="M282,345 L282,319" marker-end="url(#fk)"/>
+  <path class="e" d="M200,400 H190 V155 H198" marker-end="url(#fk)"/>
+  <path class="e" d="M405,50 L367,50" marker-end="url(#fk)"/>
+  <path class="e" d="M405,205 L367,150" marker-end="url(#fk)"/>
+  <path class="e" d="M475,175 L475,137" marker-end="url(#fk)"/>
+  <path class="e" d="M545,215 L573,215" marker-end="url(#fk)"/>
+  <path class="e" d="M575,50 L547,50" marker-end="url(#fk)"/>
+  <path class="e" d="M405,355 L367,285" marker-end="url(#fk)"/>
+  <path class="e" d="M475,330 L475,279" marker-end="url(#fk)"/>
+
+  <!-- customers -->
+  <rect class="tb" x="10" y="20" width="150" height="102" rx="5"/><rect class="hd-c" x="10.5" y="20.5" width="149" height="18" rx="5"/>
+  <text class="tn" x="18" y="33">customers</text>
+  <text class="col" x="18" y="52"><tspan class="k">customer_id</tspan> PK</text>
+  <text class="col" x="18" y="65">full_name, email UNIQUE</text>
+  <text class="col" x="18" y="78">phone, city</text>
+  <text class="col" x="18" y="91">partition train|eval</text>
+  <text class="col" x="18" y="104">created_at</text>
+
+  <!-- tickets -->
+  <rect class="tb" x="10" y="160" width="150" height="89" rx="5"/><rect class="hd-c" x="10.5" y="160.5" width="149" height="18" rx="5"/>
+  <text class="tn" x="18" y="173">tickets</text>
+  <text class="col" x="18" y="192"><tspan class="k">ticket_id</tspan> PK</text>
+  <text class="col" x="18" y="205">customer_id → , order_id →</text>
+  <text class="col" x="18" y="218">reason enum</text>
+  <text class="col" x="18" y="231">status enum</text>
+  <text class="col" x="18" y="244">created_at, resolved_at</text>
+
+  <!-- payments -->
+  <rect class="tb" x="10" y="285" width="150" height="89" rx="5"/><rect class="hd-c" x="10.5" y="285.5" width="149" height="18" rx="5"/>
+  <text class="tn" x="18" y="298">payments</text>
+  <text class="col" x="18" y="317"><tspan class="k">payment_id</tspan> PK</text>
+  <text class="col" x="18" y="330">customer_id →</text>
+  <text class="col" x="18" y="343">order_id → (NULL if failed)</text>
+  <text class="col" x="18" y="356">status enum, amount_inr</text>
+  <text class="col" x="18" y="369">attempted_at, reversed_at</text>
+
+  <!-- scenarios -->
+  <rect class="tb" x="10" y="395" width="150" height="58" rx="5" stroke-dasharray="4 3"/><rect class="hd-s" x="10.5" y="395.5" width="149" height="18" rx="5"/>
+  <text class="tn" x="18" y="408">scenarios</text>
+  <text class="col" x="18" y="427"><tspan class="k">order_id</tspan> PK →</text>
+  <text class="col" x="18" y="440">scenario</text>
+  <text x="18" y="450" font-size="7.6" fill="#a1520d">never exposed to Nova's tools</text>
+
+  <!-- orders -->
+  <rect class="tb" x="200" y="20" width="165" height="141" rx="5"/><rect class="hd-o" x="200.5" y="20.5" width="164" height="18" rx="5"/>
+  <text class="tn" x="208" y="33">orders</text>
+  <text class="col" x="208" y="52"><tspan class="k">order_id</tspan> PK (from 10001)</text>
+  <text class="col" x="208" y="65">customer_id →</text>
+  <text class="col" x="208" y="78">status enum (8 values)</text>
+  <text class="col" x="208" y="91">payment_method</text>
+  <text class="col" x="208" y="104">total_inr NUMERIC</text>
+  <text class="col" x="208" y="117">shipping_fee_inr NUMERIC</text>
+  <text class="col" x="208" y="130">ship_address, city, pincode</text>
+  <text class="col" x="208" y="143">placed_at</text>
+  <text class="col" x="208" y="156">cancelled_at</text>
+
+  <!-- returns -->
+  <rect class="tb" x="200" y="215" width="165" height="102" rx="5"/><rect class="hd-r" x="200.5" y="215.5" width="164" height="18" rx="5"/>
+  <text class="tn" x="208" y="228">returns</text>
+  <text class="col" x="208" y="247"><tspan class="k">return_id</tspan> PK</text>
+  <text class="col" x="208" y="260">order_id →</text>
+  <text class="col" x="208" y="273">status enum, reason enum</text>
+  <text class="col" x="208" y="286">proposed / confirmed / …_at</text>
+  <text class="col" x="208" y="299">pickup_date</text>
+  <text class="col" x="208" y="312">rejection_reason enum</text>
+
+  <!-- refunds -->
+  <rect class="tb" x="200" y="345" width="165" height="102" rx="5"/><rect class="hd-r" x="200.5" y="345.5" width="164" height="18" rx="5"/>
+  <text class="tn" x="208" y="358">refunds</text>
+  <text class="col" x="208" y="377"><tspan class="k">refund_id</tspan> PK</text>
+  <text class="col" x="208" y="390">order_id →</text>
+  <text class="col" x="208" y="403">return_id → (NULL: cancel)</text>
+  <text class="col" x="208" y="416">amount_inr NUMERIC</text>
+  <text class="col" x="208" y="429">method, status enum</text>
+  <text class="col" x="208" y="442">initiated / completed_at</text>
+
+  <!-- shipments -->
+  <rect class="tb" x="405" y="20" width="140" height="115" rx="5"/><rect class="hd-o" x="405.5" y="20.5" width="139" height="18" rx="5"/>
+  <text class="tn" x="413" y="33">shipments</text>
+  <text class="col" x="413" y="52"><tspan class="k">shipment_id</tspan> PK</text>
+  <text class="col" x="413" y="65">order_id →</text>
+  <text class="col" x="413" y="78">carrier</text>
+  <text class="col" x="413" y="91">tracking_no UNIQUE</text>
+  <text class="col" x="413" y="104">status enum</text>
+  <text class="col" x="413" y="117">shipped_at, eta</text>
+  <text class="col" x="413" y="130">delivered_at</text>
+
+  <!-- order_items -->
+  <rect class="tb" x="405" y="175" width="140" height="102" rx="5"/><rect class="hd-o" x="405.5" y="175.5" width="139" height="18" rx="5"/>
+  <text class="tn" x="413" y="188">order_items</text>
+  <text class="col" x="413" y="207"><tspan class="k">(order_id, line_no)</tspan></text>
+  <text class="col" x="413" y="220">product_id →</text>
+  <text class="col" x="413" y="233">shipment_id → (its box)</text>
+  <text class="col" x="413" y="246">qty, unit_price_inr</text>
+  <text class="col" x="413" y="259">opened</text>
+  <text class="col" x="413" y="272" fill="#7a8190">order_id → orders</text>
+
+  <!-- return_items -->
+  <rect class="tb" x="405" y="330" width="140" height="64" rx="5"/><rect class="hd-r" x="405.5" y="330.5" width="139" height="18" rx="5"/>
+  <text class="tn" x="413" y="343">return_items</text>
+  <text class="col" x="413" y="362">(return_id, order_id) →</text>
+  <text class="col" x="413" y="375">(order_id, line_no) →</text>
+  <text class="col" x="413" y="388" fill="#7a8190">same order on both sides</text>
+
+  <!-- shipment_events -->
+  <rect class="tb" x="575" y="20" width="120" height="76" rx="5"/><rect class="hd-o" x="575.5" y="20.5" width="119" height="18" rx="5"/>
+  <text class="tn" x="583" y="33">shipment_events</text>
+  <text class="col" x="583" y="52">shipment_id →</text>
+  <text class="col" x="583" y="65">at</text>
+  <text class="col" x="583" y="78">location</text>
+  <text class="col" x="583" y="91">event</text>
+
+  <!-- products -->
+  <rect class="tb" x="575" y="175" width="120" height="89" rx="5"/><rect class="hd-o" x="575.5" y="175.5" width="119" height="18" rx="5"/>
+  <text class="tn" x="583" y="188">products</text>
+  <text class="col" x="583" y="207"><tspan class="k">product_id</tspan> PK</text>
+  <text class="col" x="583" y="220">category</text>
+  <text class="col" x="583" y="233">price_inr NUMERIC</text>
+  <text class="col" x="583" y="246">returnable</text>
+  <text class="col" x="583" y="259">warranty_months</text>
+
+  <!-- legend -->
+  <g font-size="8.6" fill="#5b6270">
+    <rect x="575" y="300" width="12" height="9" class="hd-c"/><text x="592" y="308">customer &amp; support</text>
+    <rect x="575" y="316" width="12" height="9" class="hd-o"/><text x="592" y="324">orders &amp; shipping</text>
+    <rect x="575" y="332" width="12" height="9" class="hd-r"/><text x="592" y="340">returns &amp; money</text>
+    <rect x="575" y="348" width="12" height="9" class="hd-s"/><text x="592" y="356">seed metadata</text>
+    <path d="M575,372 L598,372" class="e" marker-end="url(#fk)"/><text x="604" y="375">foreign key</text>
+  </g>
+</svg>
+<div class="cap">Why <code>order_items.shipment_id</code> matters: a split order has two boxes, and each line records the box it travels in,
+  so "where is the second box?" has an answer.</div>
+</div>
+
+<h3>Six rules, and why each exists</h3>
+<table>
+  <tr><th style="width:27%">Rule</th><th style="width:36%">Why</th><th>Example in the schema</th></tr>
+  <tr><td><b>Every status is an enum</b></td><td>Free-text statuses produce free-text answers. A fixed list is also what the tools return and what training data must use.</td>
+      <td><code>order_status</code> has exactly 8 values; inserting <code>'in transit'</code> fails.</td></tr>
+  <tr><td><b>Money is NUMERIC, never FLOAT</b></td><td>Floats drift by paise, so a refund total that is "correct" fails an exact eval check for no visible reason.</td>
+      <td><code>NUMERIC(10,2)</code> for every ₹ amount; positive checks on prices.</td></tr>
+  <tr><td><b>Store every timestamp a "when" question needs</b></td><td>"When" questions are the most common kind. If a time is not stored, the model guesses it.</td>
+      <td>placed, shipped, ETA, delivered, scans, proposed, confirmed, picked up, refunded, rejected.</td></tr>
+  <tr><td><b>Status and its timestamp agree</b></td><td>A status without its time (or a time without its status) is a contradiction the model would repeat.</td>
+      <td><code>CHECK ((status = 'cancelled') = (cancelled_at IS NOT NULL))</code>, the same for delivered, rejected, completed, resolved, reversed.</td></tr>
+  <tr><td><b>No free-text notes</b></td><td>A notes field is where prompt injections hide ("ignore your instructions…"), and no tool can check it.</td>
+      <td>Reasons are enums: <code>return_reason</code>, <code>rejection_reason</code>, <code>ticket_reason</code>.</td></tr>
+  <tr><td><b>Foreign keys everywhere, composite where needed</b></td><td>A row pointing at nothing is a fact Nova could state that is not true.</td>
+      <td><code>return_items</code> references both <code>returns(return_id, order_id)</code> and <code>order_items(order_id, line_no)</code>, so a line from order A cannot go into a return for order B.</td></tr>
+</table>
+
+<h3>Proving the rules: 10 bad inserts that must fail</h3>
+<p><code>db/break.sql</code> loads valid fixtures, then tries ten inserts that break a rule. CI counts the errors and fails unless there are exactly 10.
+  Everything runs inside one transaction and is rolled back, so the seeded data is untouched.</p>
+<div class="grid2" style="grid-template-columns: 1fr 1fr; gap: 6pt;">
+  <table style="margin:0">
+    <tr><td>1</td><td>free-text order status</td><td class="pass">rejected</td></tr>
+    <tr><td>2</td><td>negative price</td><td class="pass">rejected</td></tr>
+    <tr><td>3</td><td>item pointing at a missing product</td><td class="pass">rejected</td></tr>
+    <tr><td>4</td><td>unknown payment method</td><td class="pass">rejected</td></tr>
+    <tr><td>5</td><td>cancelled order with no <code>cancelled_at</code></td><td class="pass">rejected</td></tr>
+  </table>
+  <table style="margin:0">
+    <tr><td>6</td><td>delivered shipment with no <code>delivered_at</code></td><td class="pass">rejected</td></tr>
+    <tr><td>7</td><td>invalid pincode</td><td class="pass">rejected</td></tr>
+    <tr><td>8</td><td>rejected return with no reason</td><td class="pass">rejected</td></tr>
+    <tr><td>9</td><td>return line from a different order</td><td class="pass">rejected</td></tr>
+    <tr><td>10</td><td>zero-quantity item</td><td class="pass">rejected</td></tr>
+  </table>
+</div>
+<p class="small muted" style="margin-top:6pt">Indexes follow the access pattern: every tool looks up by customer or by order, so there are indexes on
+  <code>orders(customer_id, placed_at)</code>, <code>shipments(order_id)</code>, <code>shipment_events(shipment_id, at)</code> and the other lookup columns.</p>
+</div>
+
+<!-- 4 -->
+<div class="section page">
+<h2>4 · State machines: allowed moves</h2>
+<p>An enum says which statuses <i>exist</i>. A state machine says which status may <i>follow</i> which. <code>db/STATES.md</code> lists every
+  allowed move for orders, shipments, returns, refunds, tickets and payments; anything not listed is forbidden, such as
+  <code>delivered → packed</code>.</p>
+
+<div class="fig">
+<svg viewBox="0 0 712 250" width="100%" role="img" aria-label="Order status state machine">
+  <defs>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker>
+    <marker id="agr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d7a46"/></marker>
+  </defs>
+  <g font-size="10.5">
+    <!-- edges -->
+    <path d="M110,78 L148,78" stroke="#5b6270" marker-end="url(#ag)"/>
+    <path d="M250,78 L288,78" stroke="#5b6270" marker-end="url(#ag)"/>
+    <path d="M390,78 L428,78" stroke="#5b6270" marker-end="url(#ag)"/>
+    <path d="M550,78 L588,78" stroke="#5b6270" marker-end="url(#ag)"/>
+    <path d="M470,96 C455,135 375,135 352,98" stroke="#5b6270" fill="none" marker-end="url(#ag)"/>
+    <text x="412" y="140" text-anchor="middle" font-size="9" fill="#5b6270">delivery attempt failed</text>
+    <path d="M345,60 C385,22 590,22 630,58" stroke="#5b6270" fill="none" marker-end="url(#ag)"/>
+    <text x="488" y="20" text-anchor="middle" font-size="9" fill="#5b6270">last box delivered without an out-for-delivery scan</text>
+    <path d="M70,96 L118,186" stroke="#1d7a46" stroke-width="1.8" marker-end="url(#agr)"/>
+    <path d="M200,96 L158,186" stroke="#1d7a46" stroke-width="1.8" marker-end="url(#agr)"/>
+    <text x="135" y="150" text-anchor="middle" font-size="9" fill="#1d7a46" font-weight="600">cancel</text>
+    <path d="M622,96 L622,186" stroke="#1d7a46" stroke-width="1.8" marker-end="url(#agr)"/>
+    <text x="614" y="138" text-anchor="end" font-size="9" fill="#1d7a46" font-weight="600">confirm return</text>
+    <path d="M656,186 L656,98" stroke="#5b6270" marker-end="url(#ag)"/>
+    <text x="661" y="125" font-size="8.5" fill="#5b6270">rejected</text>
+    <text x="661" y="136" font-size="8.5" fill="#5b6270">at</text>
+    <text x="661" y="147" font-size="8.5" fill="#5b6270">inspection</text>
+    <path d="M578,206 L552,206" stroke="#5b6270" marker-end="url(#ag)"/>
+    <text x="565" y="232" text-anchor="middle" font-size="9" fill="#5b6270">refund issued</text>
+
+    <!-- nodes -->
+    <rect x="10" y="60" width="100" height="36" rx="18" fill="#f4f6f9" stroke="#c9cfd8"/><text x="60" y="82" text-anchor="middle" font-weight="600">placed</text>
+    <rect x="150" y="60" width="100" height="36" rx="18" fill="#f4f6f9" stroke="#c9cfd8"/><text x="200" y="82" text-anchor="middle" font-weight="600">packed</text>
+    <rect x="290" y="60" width="100" height="36" rx="18" fill="#eaf0fc" stroke="#c4d4f5"/><text x="340" y="82" text-anchor="middle" font-weight="600">shipped</text>
+    <rect x="430" y="60" width="120" height="36" rx="18" fill="#eaf0fc" stroke="#c4d4f5"/><text x="490" y="82" text-anchor="middle" font-weight="600">out for delivery</text>
+    <rect x="590" y="60" width="100" height="36" rx="18" fill="#eaf0fc" stroke="#c4d4f5"/><text x="640" y="82" text-anchor="middle" font-weight="600">delivered</text>
+    <rect x="80" y="188" width="110" height="36" rx="18" fill="#fff" stroke="#5b6270" stroke-width="2.2"/><text x="135" y="210" text-anchor="middle" font-weight="600">cancelled</text>
+    <rect x="430" y="188" width="120" height="36" rx="18" fill="#fff" stroke="#5b6270" stroke-width="2.2"/><text x="490" y="210" text-anchor="middle" font-weight="600">refunded</text>
+    <rect x="580" y="188" width="115" height="36" rx="18" fill="#e8f5ee" stroke="#bfe3cd"/><text x="637" y="210" text-anchor="middle" font-weight="600">return requested</text>
+  </g>
+  <g font-size="9" fill="#5b6270">
+    <line x1="14" y1="242" x2="40" y2="242" stroke="#1d7a46" stroke-width="1.8"/><text x="46" y="245">Nova may cause it, only after the customer says yes</text>
+    <line x1="290" y1="242" x2="316" y2="242" stroke="#5b6270"/><text x="322" y="245">warehouse, carrier or backend</text>
+  </g>
+</svg>
+<div class="cap">The order state machine. Thick borders mark terminal states. Only two moves belong to Nova: cancelling, and confirming a return.</div>
+</div>
+
+<h3>Rules that tie an order to its boxes</h3>
+<ul>
+  <li><b>An order follows its least advanced box.</b> One box delivered and one in transit means the order is <code>shipped</code>, not <code>delivered</code>.</li>
+  <li><b>A cancelled order stays <code>cancelled</code>.</b> Its money is tracked in <code>refunds</code>; <code>refunded</code> means "refunded after a return".</li>
+  <li><b>"Possible loss" is computed, not stored.</b> No scan for 7 days is a question about time, so it is worked out from the last event and <code>NOW</code>. The status <code>lost</code> means the carrier confirmed it.</li>
+  <li><b>Cancelling a packed order voids its labels</b> (shipment <code>label_created → cancelled</code>), so the order can still show its tracking number. This was found while writing the state machine: without it, the label had nowhere to go.</li>
+</ul>
+
+<h3>Money decisions, written down</h3>
+<table>
+  <tr><th style="width:32%">Situation</th><th>Decision</th></tr>
+  <tr><td>Cancellation refund</td><td>The full order total, shipping included.</td></tr>
+  <tr><td>Return refund</td><td>The returned items only; the shipping charge is not refunded. A check enforces refund = value of the returned lines.</td></tr>
+  <tr><td>COD return</td><td>The refund row is created at inspection as <code>awaiting_bank_details</code>; the return becomes <code>refunded</code> only once bank details are added.</td></tr>
+  <tr><td>Failed payment that took money</td><td>A payment <i>reversal</i> (5–7 business days), never a refund. Refunds are only for successful payments.</td></tr>
+</table>
+
+<h3>Three kinds of rule, three places</h3>
+<div class="grid3">
+  <div class="card"><h4>Schema CHECK</h4><p><b>One row, at insert time.</b><br>"A cancelled order has a <code>cancelled_at</code>." Postgres refuses the row.</p></div>
+  <div class="card"><h4>State machine</h4><p><b>One row, over time.</b><br>"<code>delivered → packed</code> is not allowed." Written in <code>STATES.md</code>; the tool layer only makes Nova's two moves.</p></div>
+  <div class="card"><h4>Invariant</h4><p><b>Many rows, in one snapshot.</b><br>"A delivered order has no undelivered box." A query in <code>checks.sql</code> that must return zero rows.</p></div>
+</div>
+<p class="small muted">Not built, on purpose: a <code>BEFORE UPDATE</code> trigger that looks up <code>(OLD.status, NEW.status)</code> in an
+  allowed-moves table would make Postgres enforce the state machine itself. The seed inserts final states and never updates, so it adds nothing
+  yet; it is the first thing to add if real updates arrive.</p>
+</div>
+
+<!-- 5 -->
+<div class="section page">
+<h2>5 · One clock and two worlds</h2>
+<p>Two cheap fixes made early, both painful to add late.</p>
+
+<h3>The clock is frozen</h3>
+<p>Return windows, "late by three days", "arriving tomorrow" and refund timelines all depend on today's date. If the seed or the checks read
+  the real clock, a correct eval case silently becomes wrong as weeks pass:</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 175" width="100%" role="img" aria-label="Timeline showing why the clock is frozen">
+  <g font-size="10">
+    <rect x="190" y="62" width="280" height="22" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="330" y="77" text-anchor="middle" fill="#17643a" font-weight="600" font-size="9.5">7-day electronics return window</text>
+    <line x1="30" y1="84" x2="520" y2="84" stroke="#5b6270" stroke-width="1.5"/>
+    <line x1="540" y1="84" x2="680" y2="84" stroke="#5b6270" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="530" y="88" text-anchor="middle" fill="#5b6270">//</text>
+    <!-- ticks: 10 Nov at x=30, 40px per day -->
+    <g fill="#5b6270" font-size="8.5" text-anchor="middle">
+      <text x="70" y="100">11 Nov</text><text x="150" y="100">13 Nov</text><text x="230" y="100">15 Nov</text><text x="310" y="100">17 Nov</text><text x="390" y="100">19 Nov</text><text x="470" y="100">21 Nov</text>
+    </g>
+    <circle cx="190" cy="84" r="5" fill="#2457c5"/>
+    <text x="190" y="44" text-anchor="middle" font-weight="600">electronics delivered</text>
+    <text x="190" y="56" text-anchor="middle" fill="#5b6270" font-size="9">14 Nov</text>
+    <line x1="446" y1="30" x2="446" y2="120" stroke="#2457c5" stroke-width="2"/>
+    <text x="446" y="22" text-anchor="middle" font-weight="700" fill="#2457c5">NOW = 20 Nov 2026, 10:00 IST</text>
+    <text x="446" y="136" text-anchor="middle" font-size="9.5">"Can I return it?" → <tspan font-weight="700" fill="#1d7a46">yes</tspan></text>
+    <text x="446" y="149" text-anchor="middle" font-size="9" fill="#5b6270">same answer on every run, forever</text>
+    <line x1="640" y1="44" x2="640" y2="120" stroke="#b42318" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text x="694" y="36" text-anchor="end" font-weight="600" fill="#b42318">real clock, months later</text>
+    <text x="694" y="136" text-anchor="end" font-size="9.5">→ <tspan font-weight="700" fill="#b42318">no</tspan>, window long gone</text>
+    <text x="694" y="149" text-anchor="end" font-size="9" fill="#5b6270">the eval case flips with no code change</text>
+  </g>
+</svg>
+</div>
+
+<p>So there is one clock: <code>config.NOW</code>, read only through <code>now()</code>. The seed, the system prompt ("Today is 20 November 2026"),
+  every eligibility check and every eval use it, and SQL receives it as a parameter (<code>:'now'</code>), never <code>now()</code>.
+  In production, <code>now()</code> is the single line that switches to real time.</p>
+<pre><code>NOW = datetime(2026, 11, 20, 10, 0, tzinfo=IST)   # frozen for development and evals
+
+def now() -> datetime:
+    """The only way any code in this repo asks for the time."""
+    return NOW</code></pre>
+<p><b>Enforced, not hoped for:</b> <code>scripts/check_clock.sh</code> runs in CI and fails if any Python outside <code>config.py</code> calls
+  <code>datetime.now()</code>, <code>date.today()</code> and similar, or any SQL uses <code>now()</code>, <code>current_date</code>,
+  <code>current_timestamp</code> or the other clock functions. It caught a comment I had written myself on its first run.</p>
+
+<h3>The world is split in two</h3>
+<div class="fig">
+<svg viewBox="0 0 700 200" width="100%" role="img" aria-label="Customers are split into train and eval by a hash of their id">
+  <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="10.5">
+    <rect x="6" y="56" width="118" height="56" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="65" y="80" text-anchor="middle" font-weight="700">500 customers</text>
+    <text x="65" y="96" text-anchor="middle" fill="#5b6270" font-size="9.5">3,000 orders</text>
+    <rect x="160" y="50" width="190" height="68" rx="7" fill="#fff" stroke="#5b6270"/>
+    <text x="255" y="72" text-anchor="middle" font-weight="600">partition_for(customer_id)</text>
+    <text x="255" y="90" text-anchor="middle" class="mono" font-size="9" fill="#3a4150">sha256(id) mod 100 &lt; 20</text>
+    <text x="255" y="106" text-anchor="middle" font-size="9" fill="#5b6270">→ eval, otherwise train</text>
+    <path d="M124,84 L158,84" stroke="#5b6270" marker-end="url(#a5)"/>
+
+    <rect x="400" y="6" width="130" height="56" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/>
+    <text x="465" y="28" text-anchor="middle" font-weight="700">eval</text>
+    <text x="465" y="44" text-anchor="middle" fill="#5b6270" font-size="9.5">88 customers · 521 orders</text>
+    <rect x="400" y="106" width="130" height="56" rx="7" fill="#f3ecfb" stroke="#dccbf2"/>
+    <text x="465" y="128" text-anchor="middle" font-weight="700">train</text>
+    <text x="465" y="144" text-anchor="middle" fill="#5b6270" font-size="9.5">412 customers · 2,479 orders</text>
+    <path d="M350,70 L398,38" stroke="#5b6270" marker-end="url(#a5)"/>
+    <path d="M350,98 L398,130" stroke="#5b6270" marker-end="url(#a5)"/>
+
+    <text x="548" y="30" font-weight="600">golden eval cases</text>
+    <text x="548" y="44" fill="#5b6270" font-size="9.5">the exam</text>
+    <text x="548" y="130" font-weight="600">synthetic training chats</text>
+    <text x="548" y="144" fill="#5b6270" font-size="9.5">the practice</text>
+    <path d="M530,34 L544,34" stroke="#5b6270" marker-end="url(#a5)"/>
+    <path d="M530,134 L544,134" stroke="#5b6270" marker-end="url(#a5)"/>
+
+    <rect x="160" y="150" width="190" height="44" rx="7" fill="#eaf0fc" stroke="#c4d4f5" stroke-dasharray="4 3"/>
+    <text x="255" y="168" text-anchor="middle" font-weight="600">help center: shared</text>
+    <text x="255" y="183" text-anchor="middle" fill="#5b6270" font-size="9">retrieved at answer time, not memorised</text>
+  </g>
+</svg>
+</div>
+<ul>
+  <li><b>Why split by customer, not by order.</b> Split by order, one customer's orders land on both sides, so training chats describe the very
+    people the eval asks about. The eval would partly measure memory.</li>
+  <li><b>Why a hash, not a random draw.</b> A customer's side never changes, even if the seed adds customers or the generation order changes.
+    It is sha256, not Python's <code>hash()</code>, which is salted per process for strings.</li>
+  <li><b>Why the help center can be shared.</b> Policies are retrieved at answer time, so seeing a policy in training doesn't leak an eval answer.
+    Order facts are per customer and come from tools; those are what the split protects.</li>
+  <li><b>The cost of a hash:</b> the split came out at 17.6% eval, not 20%. That is fine; a stable side matters more than an exact share.</li>
+</ul>
+<div class="say"><b>How I'd say it in an interview</b>"It's the train/test split from classic ML, applied to a database instead of a CSV, and keyed on the
+  entity that could leak: the customer. Kapoor and Narayanan's paper on leakage in ML-based science is the reason I took it seriously."</div>
+</div>
+
+<!-- 6 -->
+<div class="section page">
+<h2>6 · Seeding the hard cases</h2>
+<p>A realistic average day would be useless: real stores have very few lost parcels, so an eval would contain almost none and training would
+  never teach them. <code>db/seed.py</code> builds the store from <b>15 scenarios</b>, each a path through the state machines stopped at a
+  chosen point relative to <code>NOW</code>. 870 orders (29%) are deliberate hard cases.</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 362" width="100%" role="img" aria-label="Orders per scenario, split into eval and train customers">
+  <g font-size="9">
+    <rect x="182" y="6" width="10" height="10" rx="2" fill="#2457c5"/><text x="196" y="15" fill="#5b6270">orders on eval customers</text>
+    <rect x="322" y="6" width="10" height="10" rx="2" fill="#c4d4f5"/><text x="336" y="15" fill="#5b6270">orders on train customers</text>
+    <text x="482" y="15" fill="#5b6270" font-weight="600">bold = deliberate hard case</text>
+  </g>
+  <line x1="182" y1="22" x2="182" y2="356" stroke="#c9cfd8"/>
+    <text x="178" y="37" text-anchor="end" font-size="9.5" fill="#1d2330">delivered on time</text>
+  <rect x="182" y="26" width="67.9" height="15" rx="2" fill="#2457c5"/>
+  <rect x="251.9" y="26" width="330.1" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="588.0" y="37" font-size="9" fill="#5b6270">990 · 168 eval</text>
+  <text x="178" y="59" text-anchor="end" font-size="9.5" fill="#1d2330">in transit</text>
+  <rect x="182" y="48" width="32.7" height="15" rx="2" fill="#2457c5"/>
+  <rect x="216.7" y="48" width="147.1" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="369.8" y="59" font-size="9" fill="#5b6270">450 · 81 eval</text>
+  <text x="178" y="81" text-anchor="end" font-size="9.5" fill="#1d2330">return eligible</text>
+  <rect x="182" y="70" width="12.9" height="15" rx="2" fill="#2457c5"/>
+  <rect x="196.9" y="70" width="82.0" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="285.0" y="81" font-size="9" fill="#5b6270">240 · 32 eval</text>
+  <text x="178" y="103" text-anchor="end" font-size="9.5" font-weight="600" fill="#1d2330">delayed</text>
+  <rect x="182" y="92" width="17.0" height="15" rx="2" fill="#2457c5"/>
+  <rect x="201.0" y="92" width="78.0" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="285.0" y="103" font-size="9" fill="#5b6270">240 · 42 eval</text>
+  <text x="178" y="125" text-anchor="end" font-size="9.5" font-weight="600" fill="#1d2330">split shipment</text>
+  <rect x="182" y="114" width="14.5" height="15" rx="2" fill="#2457c5"/>
+  <rect x="198.5" y="114" width="56.2" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="260.7" y="125" font-size="9" fill="#5b6270">180 · 36 eval</text>
+  <text x="178" y="147" text-anchor="end" font-size="9.5" fill="#1d2330">cancelled before ship</text>
+  <rect x="182" y="136" width="11.7" height="15" rx="2" fill="#2457c5"/>
+  <rect x="195.7" y="136" width="46.9" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="248.6" y="147" font-size="9" fill="#5b6270">150 · 29 eval</text>
+  <text x="178" y="169" text-anchor="end" font-size="9.5" fill="#1d2330">return in progress</text>
+  <rect x="182" y="158" width="6.9" height="15" rx="2" fill="#2457c5"/>
+  <rect x="190.9" y="158" width="39.6" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="236.5" y="169" font-size="9" fill="#5b6270">120 · 17 eval</text>
+  <text x="178" y="191" text-anchor="end" font-size="9.5" font-weight="600" fill="#1d2330">lost</text>
+  <rect x="182" y="180" width="8.1" height="15" rx="2" fill="#2457c5"/>
+  <rect x="192.1" y="180" width="26.3" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="224.4" y="191" font-size="9" fill="#5b6270">90 · 20 eval</text>
+  <text x="178" y="213" text-anchor="end" font-size="9.5" font-weight="600" fill="#1d2330">opened electronics</text>
+  <rect x="182" y="202" width="6.1" height="15" rx="2" fill="#2457c5"/>
+  <rect x="190.1" y="202" width="28.3" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="224.4" y="213" font-size="9" fill="#5b6270">90 · 15 eval</text>
+  <text x="178" y="235" text-anchor="end" font-size="9.5" font-weight="600" fill="#1d2330">window just expired</text>
+  <rect x="182" y="224" width="6.5" height="15" rx="2" fill="#2457c5"/>
+  <rect x="190.5" y="224" width="27.9" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="224.4" y="235" font-size="9" fill="#5b6270">90 · 16 eval</text>
+  <text x="178" y="257" text-anchor="end" font-size="9.5" fill="#1d2330">not yet shipped</text>
+  <rect x="182" y="246" width="5.7" height="15" rx="2" fill="#2457c5"/>
+  <rect x="189.7" y="246" width="28.7" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="224.4" y="257" font-size="9" fill="#5b6270">90 · 14 eval</text>
+  <text x="178" y="279" text-anchor="end" font-size="9.5" fill="#1d2330">refunded</text>
+  <rect x="182" y="268" width="6.1" height="15" rx="2" fill="#2457c5"/>
+  <rect x="190.1" y="268" width="28.3" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="224.4" y="279" font-size="9" fill="#5b6270">90 · 15 eval</text>
+  <text x="178" y="301" text-anchor="end" font-size="9.5" font-weight="600" fill="#1d2330">return rejected</text>
+  <rect x="182" y="290" width="2.8" height="15" rx="2" fill="#2457c5"/>
+  <rect x="186.8" y="290" width="19.4" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="212.2" y="301" font-size="9" fill="#5b6270">60 · 7 eval</text>
+  <text x="178" y="323" text-anchor="end" font-size="9.5" font-weight="600" fill="#1d2330">ship then cancel request</text>
+  <rect x="182" y="312" width="4.8" height="15" rx="2" fill="#2457c5"/>
+  <rect x="188.8" y="312" width="17.4" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="212.2" y="323" font-size="9" fill="#5b6270">60 · 12 eval</text>
+  <text x="178" y="345" text-anchor="end" font-size="9.5" font-weight="600" fill="#1d2330">delivered not received</text>
+  <rect x="182" y="334" width="6.9" height="15" rx="2" fill="#2457c5"/>
+  <rect x="190.9" y="334" width="15.4" height="15" rx="2" fill="#c4d4f5"/>
+  <text x="212.2" y="345" font-size="9" fill="#5b6270">60 · 17 eval</text>
+</svg>
+<div class="cap">Orders per scenario (exact counts, shuffled). Every scenario has at least 7 orders on eval customers; the seed tops up any scenario
+  that falls below 5 and a check fails the build if one is still short.</div>
+</div>
+
+<h3>How a scenario is built</h3>
+<p>Each scenario has one builder function. A builder starts from a past "today" and walks forward through the real steps, so every timestamp is
+  consistent with the ones before it. Every timestamp goes through one helper that <b>asserts it is before <code>NOW</code></b>: a builder that
+  asks for the future crashes instead of writing a bad row.</p>
+<pre><code># the delayed scenario, in outline
+placed   = ago(days)                          # in the past, before NOW
+shipped  = later(placed, hours=…)             # forward from the last step
+eta      = shipped + transit_days(city)       # metro 2–4 days, other 4–7
+scan(box, hubs…)                              # tracking events, all &lt; NOW
+# stop here: ETA has passed, the box is still in transit, last scan recent
+</code></pre>
+
+<h3>Choices that make the seed trustworthy</h3>
+<table>
+  <tr><th style="width:30%">Choice</th><th>Why</th></tr>
+  <tr><td><b>Deterministic</b>: one seed (3407) for Python's RNG and Faker's <code>en_IN</code> locale</td><td>Two runs produce identical databases (checked by diffing two <code>pg_dump</code>s), so an eval case written today points at the same rows next month.</td></tr>
+  <tr><td><b>Exact counts, then shuffled</b></td><td>Shares like 3% become exactly 90 orders, not "about 90", so per-scenario scores always have the same denominators.</td></tr>
+  <tr><td><b>Order IDs follow time</b></td><td>Drafts are sorted by <code>placed_at</code> before IDs are assigned, as in a real store, so a newer order never has a smaller ID.</td></tr>
+  <tr><td><b>Policy numbers are named constants</b></td><td>Return windows, transit days, refund days and the ₹499 free-shipping line live in one place, so the help center and the return check can be compared against them.</td></tr>
+  <tr><td><b>Indian details</b></td><td>Prices in ₹, UPI/card/wallet/COD, 8 metro and 16 other cities with valid 6-digit pincodes, two carriers with distinct tracking prefixes.</td></tr>
+  <tr><td><b>A <code>scenarios</code> table</b></td><td>Evals and the training-data sampler need to know which situation an order was built from. Nova's tools must never see it: it would hand the model the answer.</td></tr>
+</table>
+
+<h3>19 invariants, zero rows each</h3>
+<p><code>db/checks.sql</code> holds one query per rule that spans rows or tables. The seed runs them all after loading and exits non-zero if any
+  returns a row. Grouped:</p>
+<div class="grid2">
+  <div class="card"><h4>Time</h4><p>Nothing after <code>NOW</code>; no order before its customer existed; no box shipped before its order was placed,
+    or delivered before it shipped; no tracking event outside shipped–delivered; no return proposed before its item was delivered.</p></div>
+  <div class="card"><h4>Money</h4><p>Total = items + shipping fee; the fee follows the rule (free above ₹499, else ₹49); no refund above what was paid;
+    a return refund equals the value of the returned lines.</p></div>
+  <div class="card"><h4>Status agreement</h4><p>Order status follows its least advanced box; a delivered order has no undelivered box; a cancelled order has
+    only voided boxes; a carrier-held box has a ship time and ETA; a shipped item is in a box; return statuses match the order's.</p></div>
+  <div class="card"><h4>Coverage</h4><p>Only electronics and hygiene items can be marked opened; every order has a scenario; every scenario has at least 5 eval orders.</p></div>
+</div>
+<div class="warn"><b>Testing the tests</b>All 19 checks passed on the first run, which proves nothing on its own. So I broke five things on purpose (a total off by 1 paisa,
+  an opened home item, a tracking scan in the future, a split order marked delivered while one box was in transit, and every eval
+  customer moved to train); the checks caught all five. A check that has never failed
+  is not yet known to work.</div>
+</div>
+
+<!-- 7 -->
+<div class="section page">
+<h2>7 · A help center written for retrieval</h2>
+<p>Nova answers policy questions from retrieved help-center text, and a 2B model copies what it retrieves. So the 18 pages in <code>kb/</code>
+  were written for a retriever and a checker as much as for a reader.</p>
+
+<table>
+  <tr><th style="width:26%">Writing rule</th><th style="width:37%">Why</th><th>Bad → good</th></tr>
+  <tr><td>One topic per page, one rule per <code>##</code> section</td><td>Each section becomes one retrievable chunk; a mixed chunk retrieves the wrong rule alongside the right one.</td><td>"Returns" (everything) → "Returning electronics", "Items you cannot return"</td></tr>
+  <tr><td>Every number in digits, with its unit</td><td>An answer can be checked by matching digits; a vague phrase invites the model to invent a number.</td><td>"about a week" → "within 7 days of delivery"</td></tr>
+  <tr><td>The exception sits next to its rule</td><td>If the exception is on another page, retrieval returns the rule alone and Nova states it wrongly.</td><td>"Opened electronics can be returned only if they are faulty" in the electronics page</td></tr>
+  <tr><td>One term per idea</td><td>Synonyms split retrieval and confuse the model about whether two things differ.</td><td>"parcel / package / box" → "shipment"; "working days" → "business days"</td></tr>
+  <tr><td>Plain, not marketing</td><td>Nova copies the style of what it retrieves.</td><td>"Hassle-free returns!" → "You can return… within 15 days"</td></tr>
+  <tr><td>Front matter on every page</td><td>Retrieval and citations need an id, a version and an effective date.</td><td><code>policy_version: 2</code>, <code>effective_date: 2026-10-01</code></td></tr>
+</table>
+
+<div class="grid2" style="grid-template-columns: 1.05fr 0.95fr;">
+<div>
+<p class="small" style="margin-bottom:2pt"><b>A real page</b> (<code>kb/returns-electronics.md</code>, first sections)</p>
+<pre style="margin-top:0"><code>---
+id: returns-electronics
+title: Returning electronics
+policy_version: 2
+effective_date: 2026-10-01
+tags: [returns, electronics]
+---
+# Returning electronics
+
+## Return window
+You can return unopened electronics within
+7 days of delivery.
+
+## Opened electronics
+Opened electronics can be returned only if
+they are faulty, within 7 days of delivery.
+
+## How we check a fault
+We check the fault during inspection, within
+2 days of pickup. …</code></pre>
+</div>
+<div>
+<p class="small" style="margin-bottom:2pt"><b>Policy numbers, one copy</b> (from the seed's constants)</p>
+<table style="margin-top:0">
+  <tr><td>Return window</td><td>7 days electronics, 15 days home and accessories</td></tr>
+  <tr><td>Shipping charge</td><td>free above ₹499, otherwise ₹49</td></tr>
+  <tr><td>Delivery after shipping</td><td>metros 2–4 days, other cities 4–7 days</td></tr>
+  <tr><td>Return pickup</td><td>1–2 days after you confirm</td></tr>
+  <tr><td>Inspection</td><td>within 2 days of pickup</td></tr>
+  <tr><td>Refund arrives</td><td>UPI/wallet 1–3, card/bank 5–7 business days</td></tr>
+  <tr><td>Failed-payment reversal</td><td>5–7 business days</td></tr>
+  <tr><td>Possible loss</td><td>no scan for 7 days</td></tr>
+  <tr><td>Delivered, not received</td><td>report within 48 hours</td></tr>
+  <tr><td>Support hours</td><td>9:00–21:00 IST, every day</td></tr>
+</table>
+</div>
+</div>
+
+<h3>The help center is checked against the seed</h3>
+<p><code>scripts/check_kb.py</code> runs in CI. It checks front matter, the 600-word limit and at least two sections per page, and flags vague timings
+  ("soon", "a few", "a week"), numbers in words ("seven days") and banned synonyms. Then the important part: it builds the facts each page
+  <b>must</b> state from the seed's own constants (for example <code>f"within {WINDOW_DAYS['home']} days of delivery"</code>) and fails if a page doesn't
+  say them. Change a window in code and the page that promises the old one fails the build. Five planted mistakes were all caught, including
+  a page that no longer matched the 15-day window.</p>
+
+<h3>Three supporting files</h3>
+<ul>
+  <li><b><code>kb/_archive/returns-general-v1.md</code></b>: an older 30-day returns page, never indexed. It tests later that Nova cites the current rule,
+    not an old one that sounds plausible.</li>
+  <li><b><code>kb/_customer_words.md</code></b>: how customers phrase things ("money back", "parcel", "didn't get it"), to test that retrieval finds
+    the right page when the customer's words differ from the page's.</li>
+  <li><b>Language scope:</b> English, including Indian English. Hinglish has no training data yet, so it appears only as an <b>unscored</b> probe that
+    measures the gap and never counts in a score.</li>
+</ul>
+<div class="say"><b>A detail interviewers like</b>"7 days" means three different things across the pages: the electronics return window, the no-scan time
+  before a parcel counts as possibly lost, and the time to report a faulty non-returnable item. Each is stated with what it counts from, so
+  retrieval can't swap them.</div>
+</div>
+
+<!-- 8 -->
+<div class="section page">
+<h2>8 · Proving it: five layers of checks</h2>
+<p>Each layer catches a different kind of mistake, and every one runs in CI on every push.</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 150" width="100%" role="img" aria-label="Five layers of checks">
+  <g font-size="10">
+    <rect x="4" y="10" width="130" height="130" rx="8" fill="#fdf3e7" stroke="#f2d6b3"/>
+    <text x="69" y="32" text-anchor="middle" font-weight="700">Schema</text>
+    <text x="69" y="50" text-anchor="middle" fill="#5b6270" font-size="9">at insert time</text>
+    <text x="69" y="80" text-anchor="middle" font-size="9.5">bad rows refused</text>
+    <text x="69" y="118" text-anchor="middle" font-weight="700" fill="#1d7a46" font-size="12">10 / 10</text>
+    <text x="69" y="132" text-anchor="middle" fill="#5b6270" font-size="8.5">bad inserts fail</text>
+
+    <rect x="144" y="10" width="130" height="130" rx="8" fill="#eaf0fc" stroke="#c4d4f5"/>
+    <text x="209" y="32" text-anchor="middle" font-weight="700">Invariants</text>
+    <text x="209" y="50" text-anchor="middle" fill="#5b6270" font-size="9">after every seed</text>
+    <text x="209" y="80" text-anchor="middle" font-size="9.5">rows agree with</text>
+    <text x="209" y="93" text-anchor="middle" font-size="9.5">each other</text>
+    <text x="209" y="118" text-anchor="middle" font-weight="700" fill="#1d7a46" font-size="12">19 × 0 rows</text>
+    <text x="209" y="132" text-anchor="middle" fill="#5b6270" font-size="8.5">checks.sql</text>
+
+    <rect x="284" y="10" width="130" height="130" rx="8" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="349" y="32" text-anchor="middle" font-weight="700">Query gate</text>
+    <text x="349" y="50" text-anchor="middle" fill="#5b6270" font-size="9">real SQL, real rows</text>
+    <text x="349" y="80" text-anchor="middle" font-size="9.5">each question gets</text>
+    <text x="349" y="93" text-anchor="middle" font-size="9.5">the right answer</text>
+    <text x="349" y="118" text-anchor="middle" font-weight="700" fill="#1d7a46" font-size="12">24 / 24</text>
+    <text x="349" y="132" text-anchor="middle" fill="#5b6270" font-size="8.5">+ 521 scope checks</text>
+
+    <rect x="424" y="10" width="130" height="130" rx="8" fill="#f3ecfb" stroke="#dccbf2"/>
+    <text x="489" y="32" text-anchor="middle" font-weight="700">Help center</text>
+    <text x="489" y="50" text-anchor="middle" fill="#5b6270" font-size="9">writing + numbers</text>
+    <text x="489" y="80" text-anchor="middle" font-size="9.5">pages promise what</text>
+    <text x="489" y="93" text-anchor="middle" font-size="9.5">the data does</text>
+    <text x="489" y="118" text-anchor="middle" font-weight="700" fill="#1d7a46" font-size="12">18 pages</text>
+    <text x="489" y="132" text-anchor="middle" fill="#5b6270" font-size="8.5">check_kb.py</text>
+
+    <rect x="564" y="10" width="132" height="130" rx="8" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="630" y="32" text-anchor="middle" font-weight="700">Clock guard</text>
+    <text x="630" y="50" text-anchor="middle" fill="#5b6270" font-size="9">whole repo</text>
+    <text x="630" y="80" text-anchor="middle" font-size="9.5">nothing reads the</text>
+    <text x="630" y="93" text-anchor="middle" font-size="9.5">real time</text>
+    <text x="630" y="118" text-anchor="middle" font-weight="700" fill="#1d7a46" font-size="12">0 hits</text>
+    <text x="630" y="132" text-anchor="middle" fill="#5b6270" font-size="8.5">check_clock.sh</text>
+  </g>
+</svg>
+</div>
+
+<h3>The query gate</h3>
+<p>The 16 queries live in one file, <code>db/questions.sql</code>, first tested on a small hand-built world (<code>db/fixtures.sql</code>: one
+  customer with one order per question). <code>db/verify_queries.py</code> then reads the <b>same</b> SQL from that file, so the tested
+  queries and the checked queries can't drift apart, and runs it against the full store:</p>
+<ul>
+  <li>Each of 24 cases pairs a question with a scenario and runs it for <b>every eval order</b> of that scenario, about 1,100 query runs. Example:
+    Q2 on every <code>delayed</code> order must report "late, ETA passed, not yet a possible loss"; on every <code>lost</code> order it must
+    report a possible loss; on every on-time <code>in_transit</code> order it must report nothing late.</li>
+  <li>The answer is compared with what the scenario's builder made, read straight from the tables.</li>
+  <li><b>Scope check:</b> Q1 is asked for each of the 521 eval orders by a <i>different</i> customer, and must return zero rows every time. Every query has
+    <code>customer_id = :cid</code> in its WHERE clause, even when an order ID is given.</li>
+  <li>Proof it can fail: changing one row's ETA made exactly that order's case fail.</li>
+</ul>
+
+<h3>What CI runs on every push</h3>
+<div class="fig">
+<svg viewBox="0 0 700 150" width="100%" role="img" aria-label="CI jobs">
+  <defs><marker id="a8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="9.5">
+    <rect x="4" y="8" width="150" height="40" rx="6" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="79" y="25" text-anchor="middle" font-weight="700">job: clock</text>
+    <text x="79" y="39" text-anchor="middle" fill="#5b6270" font-size="8.8">check_clock.sh</text>
+    <rect x="4" y="58" width="150" height="40" rx="6" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="79" y="75" text-anchor="middle" font-weight="700">job: help-center</text>
+    <text x="79" y="89" text-anchor="middle" fill="#5b6270" font-size="8.8">check_kb.py</text>
+
+    <rect x="174" y="8" width="522" height="134" rx="8" fill="#fff" stroke="#c4d4f5"/>
+    <text x="186" y="25" font-weight="700">job: store</text>
+    <text x="246" y="25" fill="#5b6270" font-size="8.8">fresh Postgres 16 + pgvector service container, a new database on every run</text>
+    <g font-size="9">
+      <rect x="186" y="40" width="92" height="44" rx="5" fill="#eaf0fc" stroke="#c4d4f5"/><text x="232" y="58" text-anchor="middle" font-weight="600">seed</text><text x="232" y="72" text-anchor="middle" fill="#5b6270" font-size="8.2">+ 19 invariants</text>
+      <rect x="290" y="40" width="92" height="44" rx="5" fill="#e8f5ee" stroke="#bfe3cd"/><text x="336" y="58" text-anchor="middle" font-weight="600">query gate</text><text x="336" y="72" text-anchor="middle" fill="#5b6270" font-size="8.2">24 cases + scope</text>
+      <rect x="394" y="40" width="92" height="44" rx="5" fill="#f3ecfb" stroke="#dccbf2"/><text x="440" y="58" text-anchor="middle" font-weight="600">load help</text><text x="440" y="72" text-anchor="middle" fill="#5b6270" font-size="8.2">center + search test</text>
+      <rect x="498" y="40" width="92" height="44" rx="5" fill="#fdf3e7" stroke="#f2d6b3"/><text x="544" y="58" text-anchor="middle" font-weight="600">eval cases</text><text x="544" y="72" text-anchor="middle" fill="#5b6270" font-size="8.2">match the store</text>
+      <rect x="602" y="40" width="86" height="44" rx="5" fill="#fdf3e7" stroke="#f2d6b3"/><text x="645" y="58" text-anchor="middle" font-weight="600">bad inserts</text><text x="645" y="72" text-anchor="middle" fill="#5b6270" font-size="8.2">exactly 10 errors</text>
+      <path d="M278,62 L288,62" stroke="#5b6270" marker-end="url(#a8)"/>
+      <path d="M382,62 L392,62" stroke="#5b6270" marker-end="url(#a8)"/>
+      <path d="M486,62 L496,62" stroke="#5b6270" marker-end="url(#a8)"/>
+      <path d="M590,62 L600,62" stroke="#5b6270" marker-end="url(#a8)"/>
+    </g>
+    <text x="186" y="108" fill="#5b6270" font-size="8.8">The store is rebuilt from code on every push, so "it works on my laptop" is never the evidence.</text>
+    <text x="186" y="124" fill="#5b6270" font-size="8.8">Loading the help center and checking eval cases belong to the next stage; they reuse this same seeded store.</text>
+  </g>
+</svg>
+</div>
+<p class="small muted">Run by hand: <code>uv run python -m db.seed</code>, <code>uv run python db/verify_queries.py</code>,
+  <code>psql "$DB_URL" -f db/break.sql</code>, <code>uv run python scripts/check_kb.py</code>, <code>bash scripts/check_clock.sh</code>.</p>
+</div>
+
+<!-- 9 -->
+<div class="section page">
+<h2>9 · Bugs and surprises worth telling</h2>
+<p>These are the stories that show the checks earning their place. Each is symptom → cause → fix.</p>
+<table>
+  <tr><th style="width:27%">Symptom</th><th style="width:36%">Cause</th><th>Fix</th></tr>
+  <tr><td>Dates could be a day off for early-morning times</td><td>The Docker Postgres runs in UTC, and <code>::date</code> uses the session time zone, so anything between 00:00 and 05:30 IST landed on the previous day.</td>
+      <td>Every query session sets <code>TIME ZONE 'Asia/Kolkata'</code>; verified that IST and UTC sessions now give identical output. The tool layer does the same.</td></tr>
+  <tr><td>"Can I cancel?" had nothing to look up</td><td>Counting order statuses before the gate showed zero <code>placed</code> or <code>packed</code> orders: no scenario stopped before shipping.</td>
+      <td>Added a <code>not_yet_shipped</code> scenario (3%). Takeaway: check every question has seeded rows behind it as soon as the scenarios are listed.</td></tr>
+  <tr><td>A packed order, once cancelled, kept a live shipping label</td><td>The shipment state machine had no exit from <code>label_created</code>.</td>
+      <td>Added shipment status <code>cancelled</code>; a check fails if a cancelled order has an unvoided box.</td></tr>
+  <tr><td>My own test data broke the split</td><td>The hand-built fixtures marked customer 1 as train; the hash says eval.</td>
+      <td>Fixtures follow <code>partition_for</code>. Even careful hand-written data broke a rule straight away, which is why the rules are checked by code.</td></tr>
+  <tr><td>The help-center checker misread amounts with a thousands comma (₹1,499)</td><td>Inside a Python f-string, the regex quantifier <code>{3}</code> silently became the literal <code>3</code>.</td>
+      <td>Escaped as <code>{{3}}</code>, so amounts with a comma are read whole.</td></tr>
+  <tr><td>Two "identical" seeds produced different dumps</td><td><code>pg_dump</code> writes a random <code>\restrict</code> token in each dump.</td>
+      <td>Compare with those lines excluded: the data is identical.</td></tr>
+  <tr><td>Sealed earbuds were marked not returnable</td><td>The data treated hygiene items as never returnable, while the help center said "once unsealed".</td>
+      <td>Kept the help center's rule (sealed follows the normal window); the return check, the SQL, the seed and the wording now agree. Recorded in the design log.</td></tr>
+  <tr><td>The clock guard failed on its first run</td><td>A comment in <code>questions.sql</code> mentioned the clock function by name.</td>
+      <td>Reworded it. Writing the guard before the code it protects pays off immediately.</td></tr>
+</table>
+
+<div class="say"><b>If asked "tell me about a hard bug"</b>"The time-zone one. Nothing errored: queries ran and returned dates. But <code>::date</code> depends on the
+  session time zone, and the Docker image defaults to UTC, so an order delivered at 2 a.m. IST showed the previous day. A return-window
+  answer could be wrong by a day, which is exactly the kind of error a customer notices. I set the session zone explicitly and checked the
+  output is identical whichever zone the server uses."</div>
+</div>
+
+<!-- 10 -->
+<div class="section page qa">
+<h2>10 · Defending the design: interview questions</h2>
+
+<h3>Why design the database before generating any training data?</h3>
+<p>Because the training data, the tool schemas and the eval cases are all derived from it. If the chats say "Dispatched" and the tool returns
+  <code>shipped</code>, the model learns vocabulary its tools never use. Designing from 16 real questions found 13 gaps on paper, when each
+  fix was a line of SQL rather than a regenerated dataset.</p>
+
+<h3>Why enums instead of text statuses?</h3>
+<p>A fixed list is a contract: the tool returns one of 8 values, training data uses the same 8, and an eval can compare exactly. Postgres refuses
+  anything else at insert time, so a typo can't become a "ninth status" Nova has to explain.</p>
+
+<h3>Why does each order line point at a shipment?</h3>
+<p>Split shipments are common. With one tracking number per order, "where is my second box?" has no answer. Linking each line to its box also
+  makes return windows correct: the window counts from the delivery of <i>that item's</i> box, not the order's first delivery.</p>
+
+<h3>Why copy the address onto each order?</h3>
+<p>An order ships to the address it was placed with. If it only lived on the customer profile, editing the profile would silently "move" orders
+  already in transit, and Nova would report the wrong destination.</p>
+
+<h3>Why freeze the clock? Isn't the real time more realistic?</h3>
+<p>Eligibility depends on dates. With the real clock, an eval case that is correct today becomes wrong in a month with no code change, and you
+  can't tell drift from regression. A frozen <code>NOW</code> makes every date answer reproducible. Production switches one function to real time,
+  and a CI guard makes sure nothing else reads the clock.</p>
+
+<h3>Why split by customer, and why a hash?</h3>
+<p>Splitting by order puts the same customer on both sides, so the eval partly tests memory of training chats. Hashing the ID keeps a customer's
+  side fixed forever, even when the seed grows; a random draw would reshuffle. The price is 17.6% eval instead of exactly 20%.</p>
+
+<h3>Real stores have far fewer problems. Why seed 29% hard cases?</h3>
+<p>Evals and training both need enough examples of each failure mode to measure and to learn. At a realistic 0.5% lost-parcel rate, the eval would
+  have two lost parcels and the score for that behaviour would be noise. Scores are reported per scenario, so the skew doesn't distort an average.</p>
+
+<h3>How do you know the generated data is correct?</h3>
+<p>Five layers: schema constraints refuse bad rows (10 bad inserts fail), 19 invariants check cross-table rules after every seed, the query gate runs
+  the real SQL on every eval order, the help center is checked against the seed's constants, and two seeds are compared for identical output.
+  Each checker was also tested by planting failures, because a check that has never failed isn't known to work.</p>
+
+<h3>Why isn't the state machine enforced by a trigger?</h3>
+<p>It could be: a <code>BEFORE UPDATE</code> trigger checking <code>(OLD.status, NEW.status)</code> against an allowed-moves table. The seed only inserts
+  final states, so a trigger would never fire. Nova's only two writes go through the tool layer, which checks eligibility. Once real updates exist,
+  the trigger is the first thing I'd add.</p>
+
+<h3>Why is every query filtered by customer, even with an order ID?</h3>
+<p>"Only show customers their own orders" must hold every time, so it is enforced in code, not left to the prompt. A customer who types someone
+  else's order number gets "not found". The gate proves it on all 521 eval orders.</p>
+
+<h3>Why check the help center with code?</h3>
+<p>Because the most damaging bug in support is a page that disagrees with the system, such as 10 days on the page and 7 in the eligibility check.
+  The checker builds the required sentences from the same constants the seed uses, so the two can't drift silently.</p>
+
+<h3>What would change at real scale?</h3>
+<p>Real time in <code>now()</code>; the state machine enforced in the database; tracking events arriving from carriers instead of a seed; the eval set
+  built from anonymised real conversations alongside the synthetic one, still split by customer; and monitoring for which help-center pages lead
+  to escalations, so those pages get rewritten first.</p>
+</div>
+
+<!-- 11 -->
+<div class="section">
+<h2>11 · Limits, what comes next, glossary</h2>
+<h3>Deliberately not modelled</h3>
+<ul>
+  <li><b>Cancelling after shipping.</b> Free cancellation ends when the order ships; after that the routes are refusing delivery or a return.</li>
+  <li><b>How a lost parcel ends.</b> The <code>lost</code> scenario stops while support is investigating.</li>
+  <li><b>A second return on one order.</b> One return per order keeps the world simple; revisit if a scenario needs it.</li>
+  <li><b>Distribution realism.</b> Synthetic names, prices and timings come from Faker and uniform ranges, so the data is consistent but smoother than
+    reality. It is built to test behaviour, not to model demand.</li>
+</ul>
+
+<h3>What comes next on this foundation</h3>
+<ul>
+  <li><b>Golden eval cases</b> written against eval customers, with every expected fact read from these tables or a help-center page.</li>
+  <li><b>The help center in Postgres</b> as 103 searchable sections, the starting point for retrieval.</li>
+  <li><b>A managed copy for GPU notebooks.</b> The local Docker database stays the source of truth; a copy on Neon (same Postgres 16 and pgvector) was
+    checked for matching row counts, byte-identical orders and a 24/24 query gate.</li>
+</ul>
+
+<h3>Glossary</h3>
+<table>
+  <tr><th style="width:24%">Term</th><th>Plain meaning</th></tr>
+  <tr><td>Schema</td><td>The tables, columns and rules of the database. Here it is the contract every other part depends on.</td></tr>
+  <tr><td>Enum</td><td>A column type that allows only a fixed list of values.</td></tr>
+  <tr><td>Foreign key</td><td>A column that must point at an existing row in another table.</td></tr>
+  <tr><td>CHECK constraint</td><td>A rule on one row that Postgres enforces at insert time.</td></tr>
+  <tr><td>State machine</td><td>The list of allowed moves from one status to another; anything not listed is forbidden.</td></tr>
+  <tr><td>Invariant</td><td>A rule that must hold across the whole database at any moment, checked by a query that must return zero rows.</td></tr>
+  <tr><td>Scenario</td><td>A recipe for one kind of order (delayed, split, lost…), stopped at a chosen point before <code>NOW</code>.</td></tr>
+  <tr><td>Partition (train / eval)</td><td>Which side of the split a customer is on. Training data uses only train customers; evals use only eval customers.</td></tr>
+  <tr><td>Leakage</td><td>When eval data, or something derived from it, ends up in training, so the score measures memory instead of skill.</td></tr>
+  <tr><td>Deterministic seed</td><td>A fixed random seed, so the generator produces the same data on every run.</td></tr>
+  <tr><td>Golden case</td><td>One eval question with its answer key written from the data, not from a model's output.</td></tr>
+  <tr><td>Chunk / section</td><td>The piece of a help-center page that retrieval returns. Here, one <code>##</code> section, one rule.</td></tr>
+</table>
+</div>
+
+</body>
+</html>
