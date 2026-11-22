@@ -1,0 +1,19 @@
+{
+  "run": "2026-11-22_ceiling",
+  "system": "ceiling",
+  "provider": "gemini",
+  "model": "gemini-4-hydrogen",
+  "base_url": null,
+  "prompt_version": "v0",
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "cases": 100,
+  "commit": "eea2239",
+  "db_host": "localhost:5433",
+  "notes": "Vertex AI global endpoint; run from a laptop in India against the local database copy (identical to Neon)",
+  "served_models": [
+    "gemini-4-hydrogen"
+  ]
+}

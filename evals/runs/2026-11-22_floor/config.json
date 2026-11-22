@@ -1,0 +1,19 @@
+{
+  "run": "2026-11-22_floor",
+  "system": "floor",
+  "provider": "local",
+  "model": "Qwen/Qwen3.5-2B",
+  "base_url": null,
+  "prompt_version": "v0",
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "cases": 100,
+  "commit": "1f8aefa",
+  "db_host": "localhost:5433",
+  "notes": "Apple M4 (MPS), Transformers 5.23.0, fp16, in-process; latency is not serving latency",
+  "served_models": [
+    "Qwen/Qwen3.5-2B"
+  ]
+}

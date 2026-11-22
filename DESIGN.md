@@ -42,6 +42,9 @@ Estimates get replaced by measurements as the project goes on.
   "where is my order" turn that needs **two** tool calls (three model passes): **median 3.10 s, p95 3.60 s** (6 runs,
   p95 = slowest of 5 warm runs; the cold first run took 6.5 s). Model passes were about 1.0–1.5 s each after warm-up,
   so a one-tool-call reply sits near 2 s, inside the target; two-tool-call turns are over it.
+  Over all 100 golden cases on the same setup (2026-11-22, Kaggle T4): **median 4.33 s, p95 7.71 s per turn**
+  (104 turns, 311 model calls, about 3 per turn). The baseline turns mostly make two or three tool calls, so the
+  p95 is over the 3 s target; fewer wasted calls (see `evals/reports/00_baseline_floor.md`) is the first lever.
 - **Context window: 8,192 tokens** — *target* for the total. The split is an *estimate*:
   - system prompt: 500 (*measured* with the tool schemas: system prompt v0 + 6 tool schemas + a 15-token user message = 939 tokens on the first model pass)
   - tool schemas: 700 (*measured* in the generation experiments: 656 tokens for the 6 draft tools, about 180 fixed + about 80 per tool; 700 leaves room for one more tool)
@@ -90,9 +93,9 @@ asked for and the model the provider says served each call (`served_model` in th
 | | Floor | Ceiling |
 |---|---|---|
 | Model | `Qwen/Qwen3.5-2B`, base weights, no fine-tuning | `gemini-4-hydrogen` (Google) |
-| Where it runs | vLLM 0.34.0 on one Kaggle T4 | Vertex AI, `global` location, API key tied to one project |
+| Where it runs | Serving: vLLM 0.34.0 on one Kaggle T4. The scored 100-case run: in-process on an Apple M4 (`agent/local_client.py`, Transformers, fp16, same template, tools and sampling), because the T4 session's files were lost | Vertex AI, `global` location, API key tied to one project |
 | How the loop reaches it | OpenAI-compatible API, directly | `agent/gemini_adapter.py` translates to Google's API; prompt, tools and loop unchanged |
-| Sampling | temperature 0.2 | temperature 0.2 |
+| Sampling | temperature 0.2 (chosen over the model card's settings on 30 cases: 9/30 correct against 5/30) | temperature 0.2 |
 | Output cap per model call | 512 tokens | 8,192 tokens, because Gemini's thinking counts against the cap; the visible reply is held to "under 80 words" by the prompt |
 | Thinking | off (Qwen3.5 chat template default) | always on (cannot be disabled) |
 | Max model calls per turn | 4 | 4 |
@@ -140,3 +143,5 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-22 | Latency measured for the prompted 2B: median 3.10 s, p95 3.60 s on a two-tool-call turn | First conversation run on a Kaggle T4 with vLLM and the database on Neon |
 | 2026-11-22 | Ceiling model: `gemini-4-hydrogen` on Vertex AI, through an adapter, same prompt, tools and loop as the floor | No Anthropic API access (a Claude Pro plan does not include it); the Vertex key reaches only Gemini models. First run: it never answered the delayed-order turn because the keyword search failed and the 4-call limit ran out |
 | 2026-11-22 | Scorer `eval-v1` frozen: adds the required-calls view next to the strict tool checks, and in unanswerable cases counts an explicit offer to hand off as handing off | Read from the ceiling's traces: 63 cases made every required call plus extra searches, and 7 unanswerable replies asked "Would you like me to hand this over to our support team?". Both were correct behaviour failed by over-strict checks. Frozen before the floor results, applied to every system |
+| 2026-11-22 | Baseline measured on all 100 golden cases (scorer `eval-v1`): floor 25/100 correct, ceiling 58/100; floor serving latency median 4.33 s, p95 7.71 s per turn | `evals/reports/00_baseline_floor.md` and `00_baseline_ceiling.md`; top three floor failure types counted from 30 read failures |
+| 2026-11-22 | Sampling: temperature 0.2 kept for the 2B (model card's 1.0 / top_k 20 / presence penalty 2.0 rejected) | Same 30 cases: 9/30 against 5/30 correct, 17/30 against 12/30 on facts, equal reply length |

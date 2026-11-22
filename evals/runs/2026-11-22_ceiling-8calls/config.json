@@ -1,0 +1,19 @@
+{
+  "run": "2026-11-22_ceiling-8calls",
+  "system": "diagnostic",
+  "provider": "gemini",
+  "model": "gemini-4-hydrogen",
+  "base_url": null,
+  "prompt_version": "v0",
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 8,
+  "cases": 31,
+  "commit": "eea2239",
+  "db_host": "localhost:5433",
+  "notes": "DIAGNOSTIC, not the ceiling: the 31 cases where the 4-call ceiling run ran out of calls, re-run with 8 calls per turn",
+  "served_models": [
+    "gemini-4-hydrogen"
+  ]
+}
