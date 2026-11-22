@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nova: foundations and design decisions</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 18mm 17mm;
+          @bottom-center { content: "Nova · foundations and design decisions · " counter(page); font: 8pt -apple-system, Helvetica, sans-serif; color: #8a8f98; } }
+  @page :first { @bottom-center { content: none; } }
+  :root { --ink: #1d2330; --muted: #5b6270; --line: #dfe3ea; --soft: #f4f6f9; --accent: #2457c5; --accent-soft: #eaf0fc; --warn: #a1520d; --warn-soft: #fdf3e7; --ok: #1d7a46; --ok-soft: #e8f5ee; }
+  * { box-sizing: border-box; }
+  body { font: 10.2pt/1.5 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); margin: 0; background: #fff; }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 8pt; letter-spacing: -0.4pt; }
+  h2 { font-size: 15pt; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 2px solid var(--ink); letter-spacing: -0.2pt; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  code { font: 8.8pt/1.4 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); padding: 0.5pt 3pt; border-radius: 3px; }
+  pre { font: 8.4pt/1.45 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 7pt 9pt; margin: 4pt 0 9pt; white-space: pre-wrap; break-inside: avoid; }
+  pre code { background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 10pt; font-size: 8.9pt; line-height: 1.38; break-inside: auto; }
+  th { text-align: left; background: var(--soft); font-weight: 600; }
+  th, td { border: 1px solid var(--line); padding: 4pt 6pt; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .section { margin-top: 22pt; }
+  .section.first { break-before: page; margin-top: 0; }
+  h2, h3 { break-after: avoid; }
+  svg { break-inside: avoid; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.8pt; }
+  .say { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .say b:first-child { color: var(--accent); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .warn { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .warn b:first-child { color: var(--warn); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 6pt 0 10pt; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 8pt 10pt; break-inside: avoid; }
+  .card h4 { margin: 0 0 3pt; font-size: 10pt; }
+  .card p { margin: 0; font-size: 9pt; }
+  .num { font-size: 18pt; font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .tag { display: inline-block; font-size: 7.6pt; font-weight: 600; padding: 0.5pt 5pt; border-radius: 8px; border: 1px solid var(--line); background: #fff; white-space: nowrap; }
+  .t-rag { background: #eaf0fc; border-color: #c4d4f5; color: #1e4aa8; }
+  .t-tool { background: #e8f5ee; border-color: #bfe3cd; color: #17643a; }
+  .t-ft { background: #f3ecfb; border-color: #dccbf2; color: #5b2d97; }
+  .t-code { background: #fdf3e7; border-color: #f2d6b3; color: #8a4508; }
+  .pass { color: var(--ok); font-weight: 700; }
+  .fail { color: #b42318; font-weight: 700; }
+  /* cover */
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover .kicker { font-size: 9pt; font-weight: 600; letter-spacing: 1.2pt; text-transform: uppercase; color: var(--accent); margin-bottom: 10pt; }
+  .cover .lede { font-size: 12pt; color: var(--muted); max-width: 140mm; }
+  .toc { border-top: 1px solid var(--line); padding-top: 10pt; columns: 2; column-gap: 14pt; font-size: 9.6pt; }
+  .toc div { break-inside: avoid; margin-bottom: 4pt; }
+  .toc span { color: var(--accent); font-weight: 700; display: inline-block; width: 16pt; }
+  .qa h3 { margin-top: 11pt; }
+  .qa p { margin-bottom: 4pt; }
+  svg text { font-family: -apple-system, Helvetica, Arial, sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div>
+    <div class="kicker">Project guide · Part 1</div>
+    <h1>Nova: foundations<br>and design decisions</h1>
+    <p class="lede">How a customer-support assistant on a 2-billion-parameter model was planned before any training:
+      where each capability lives, the budgets it must fit, how training survives free GPUs, how the model
+      actually produces a reply, and the four tests that proved the stack works on a T4.</p>
+  </div>
+  <div class="grid2" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="card"><div class="num">12</div><p>capabilities mapped to a mechanism and a measurement</p></div>
+    <div class="card"><div class="num">3 s</div><p>p95 latency target for a reply with one tool call</p></div>
+    <div class="card"><div class="num">4 / 4</div><p>GPU risk tests passed on a Kaggle T4, no fallback taken</p></div>
+    <div class="card"><div class="num">4.5×</div><p>vLLM vs Transformers decode speed on the same GPU</p></div>
+  </div>
+  <div class="toc">
+    <div><span>1</span>The project in one page</div>
+    <div><span>2</span>Where each capability lives</div>
+    <div><span>3</span>Budgets: numbers before code</div>
+    <div><span>4</span>Why Qwen3.5-2B</div>
+    <div><span>5</span>Training on free GPUs that disconnect</div>
+    <div><span>6</span>Local development setup</div>
+    <div><span>7</span>How the model produces a reply</div>
+    <div><span>8</span>GPU risk tests and the vLLM fix</div>
+    <div><span>9</span>Defending the design: interview questions</div>
+    <div><span>10</span>Limits, open questions, glossary</div>
+  </div>
+  <p class="small muted">Repository: github.com/jagjotsingh244-source/customer-support-SLM · Evidence for every number in this guide is in
+    <code>DESIGN.md</code>, <code>notes/generation-experiments/</code> and <code>notes/gpu-risk-tests/</code>.</p>
+</div>
+
+<!-- 1 -->
+<div class="section first">
+<h2>1 · The project in one page</h2>
+<p><b>Nova</b> is the support assistant for <b>NimbusCart</b>, a made-up Indian online store (prices in ₹). Customers ask
+  the questions every store gets: <i>where is my order, can I return this, when do I get my refund, why is it late</i>.
+  Nova answers from the store's real data and the current help center, and hands off to a human when it should.</p>
+
+<p>It is built on <b>Qwen3.5-2B</b>, a small open model, fine-tuned with <b>LoRA</b>, served with <b>vLLM</b>, and
+  surrounded by code: a tool layer over Postgres, retrieval over the help center, guardrails and an eval harness.</p>
+
+<h3>Why build it this way</h3>
+<p>The common approach is to send every question to a large hosted model with a long prompt. For a narrow job like
+  support that is expensive per conversation, slow, and hard to control. The bet here is that <b>a small model plus the
+  right surrounding system</b> does the narrow job better:</p>
+<ul>
+  <li>facts come from documents and the database, not from the model's memory;</li>
+  <li>behaviour (tone, when to call a tool, when to escalate) is trained into the model;</li>
+  <li>rules that must never break are enforced in code, whatever the model says.</li>
+</ul>
+
+<h3>The planned request flow</h3>
+<svg viewBox="0 8 700 226" width="92%" style="display:block;margin:0 auto" role="img" aria-label="Request flow from customer through guard, model, tools and retrieval">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="11">
+    <rect x="8" y="95" width="92" height="52" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="54" y="118" text-anchor="middle" font-weight="600">Customer</text>
+    <text x="54" y="134" text-anchor="middle" fill="#5b6270" font-size="9.5">signed in</text>
+
+    <rect x="130" y="88" width="118" height="66" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/>
+    <text x="189" y="110" text-anchor="middle" font-weight="600">Guard (code)</text>
+    <text x="189" y="126" text-anchor="middle" fill="#5b6270" font-size="9.5">1,500-token cap</text>
+    <text x="189" y="140" text-anchor="middle" fill="#5b6270" font-size="9.5">trim history to fit 8K</text>
+
+    <rect x="280" y="78" width="150" height="86" rx="7" fill="#f3ecfb" stroke="#dccbf2"/>
+    <text x="355" y="100" text-anchor="middle" font-weight="600">Nova model</text>
+    <text x="355" y="116" text-anchor="middle" fill="#5b6270" font-size="9.5">Qwen3.5-2B + LoRA</text>
+    <text x="355" y="130" text-anchor="middle" fill="#5b6270" font-size="9.5">served by vLLM</text>
+    <text x="355" y="146" text-anchor="middle" fill="#5b6270" font-size="9.5">non-thinking, low temp</text>
+
+    <rect x="470" y="14" width="140" height="70" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="540" y="36" text-anchor="middle" font-weight="600">Tool layer (code)</text>
+    <text x="540" y="52" text-anchor="middle" fill="#5b6270" font-size="9.5">scoped to the customer</text>
+    <text x="540" y="66" text-anchor="middle" fill="#5b6270" font-size="9.5">checks return eligibility</text>
+
+    <rect x="470" y="158" width="140" height="70" rx="7" fill="#eaf0fc" stroke="#c4d4f5"/>
+    <text x="540" y="180" text-anchor="middle" font-weight="600">Retrieval (RAG)</text>
+    <text x="540" y="196" text-anchor="middle" fill="#5b6270" font-size="9.5">help-center sections</text>
+    <text x="540" y="210" text-anchor="middle" fill="#5b6270" font-size="9.5">current policy text</text>
+
+    <rect x="634" y="86" width="60" height="70" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="664" y="112" text-anchor="middle" font-weight="600">Postgres</text>
+    <text x="664" y="128" text-anchor="middle" fill="#5b6270" font-size="9.5">+ pgvector</text>
+  </g>
+  <g stroke="#5b6270" stroke-width="1.4" fill="none">
+    <line x1="100" y1="121" x2="128" y2="121" marker-end="url(#a)"/>
+    <line x1="248" y1="121" x2="278" y2="121" marker-end="url(#a)"/>
+    <path d="M430 100 L468 60" marker-end="url(#a)"/>
+    <path d="M430 142 L468 182" marker-end="url(#a)"/>
+    <path d="M610 50 L640 88" marker-end="url(#a)"/>
+    <path d="M610 192 L640 154" marker-end="url(#a)"/>
+  </g>
+  <text x="452" y="104" font-size="9" fill="#5b6270">tool call</text>
+  <text x="452" y="146" font-size="9" fill="#5b6270">search</text>
+</svg>
+<p class="small muted">Orange = code that must hold every time · purple = trained behaviour · green = per-customer data · blue = retrieved policy.</p>
+
+<h3>What the foundations phase delivered</h3>
+<table>
+  <tr><th style="width:34%">Deliverable</th><th>Where it lives</th></tr>
+  <tr><td>Capability map, four rules, budgets, change log</td><td><code>DESIGN.md</code></td></tr>
+  <tr><td>A training setup that survives disconnects (config + script + thin notebook)</td><td><code>training/train.py</code>, <code>training/configs/</code>, <code>training/notebooks/template.ipynb</code></td></tr>
+  <tr><td>Local Postgres 16 + pgvector in Docker</td><td><code>docker-compose.yml</code></td></tr>
+  <tr><td>Measured behaviour of the model: prompt format, tokens, stop tokens, decoding, thinking</td><td><code>notes/generation-experiments/</code></td></tr>
+  <tr><td>Four GPU risk tests, the vLLM fix, pinned versions</td><td><code>notes/gpu-risk-tests/</code>, <code>requirements-gpu.txt</code>, <code>requirements-serve.txt</code>, <code>serving/t4_libcuda_fix.sh</code></td></tr>
+</table>
+
+<div class="say"><b>Say it in 30 seconds</b>
+"I'm building a support assistant on a 2B open model. Before training anything I decided where each capability lives:
+policies are retrieved, customer data comes from tools, behaviour is fine-tuned, and hard rules like who can see which
+order are enforced in code. I set latency, context and cost budgets up front, built a training setup that survives free-GPU
+disconnects, and ran four risk tests on a T4. The serving engine failed at first; I traced it to a missing <code>libcuda.so</code>
+link and fixed it in eleven minutes."</div>
+</div>
+
+<!-- 2 -->
+<div class="section">
+<h2>2 · Where each capability lives</h2>
+<p>There are four ways to give a model a capability: write it in the <b>prompt</b>, <b>retrieve</b> it (RAG), fetch it with a
+  <b>tool</b>, or <b>fine-tune</b> it in. A fifth option, <b>code</b>, takes the decision away from the model entirely.
+  Choosing wrongly is the most common failure in LLM products, so the choice is written down per capability.</p>
+
+<h3>The four rules</h3>
+<div class="grid2">
+  <div class="card"><h4><span class="tag t-rag">RAG</span> If it changes often, retrieve it</h4><p>Policies, shipping charges, warranty terms. Updating a document is an edit; updating weights is a training run. The answer can cite the current text.</p></div>
+  <div class="card"><h4><span class="tag t-tool">Tool</span> If it belongs to one customer, fetch it</h4><p>Orders, tracking, refunds, returns. This data is live and private; it can never be in the weights or the help center.</p></div>
+  <div class="card"><h4><span class="tag t-ft">Fine-tune</span> If it describes how to act, train it</h4><p>Tone, one question at a time, calling the right tool before talking about an order, escalating after two failed turns.</p></div>
+  <div class="card"><h4><span class="tag t-code">Code</span> If it is a hard rule, enforce it in code</h4><p>Who may see which order, whether a return is eligible, what counts as a confirmed write. A prompt is followed "most of the time"; these must hold every time.</p></div>
+</div>
+
+<h3>The rules as a decision flow</h3>
+<svg viewBox="0 0 700 172" width="100%" role="img" aria-label="Decision flow: hard rule goes to code, per-customer data to a tool, changing facts to RAG, otherwise fine-tune">
+  <defs><marker id="d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="10" y="10" width="150" height="58" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="85" y="34" font-weight="600">Must it hold every time,</text>
+    <text x="85" y="50" font-weight="600">whatever the model says?</text>
+    <rect x="200" y="10" width="150" height="58" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="275" y="34" font-weight="600">Does it belong to</text>
+    <text x="275" y="50" font-weight="600">one customer?</text>
+    <rect x="390" y="10" width="150" height="58" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="465" y="34" font-weight="600">Is it a fact that</text>
+    <text x="465" y="50" font-weight="600">changes over time?</text>
+    <rect x="575" y="10" width="118" height="58" rx="7" fill="#f3ecfb" stroke="#dccbf2"/>
+    <text x="634" y="31" font-weight="700" fill="#5b2d97">Fine-tune</text>
+    <text x="634" y="46" font-size="9.5" fill="#5b6270">tone, tool timing,</text>
+    <text x="634" y="59" font-size="9.5" fill="#5b6270">escalation</text>
+
+    <rect x="10" y="112" width="150" height="50" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/>
+    <text x="85" y="132" font-weight="700" fill="#8a4508">Code</text>
+    <text x="85" y="149" font-size="9.5" fill="#5b6270">who sees which order</text>
+    <rect x="200" y="112" width="150" height="50" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="275" y="132" font-weight="700" fill="#17643a">Tool</text>
+    <text x="275" y="149" font-size="9.5" fill="#5b6270">orders, tracking, refunds</text>
+    <rect x="390" y="112" width="150" height="50" rx="7" fill="#eaf0fc" stroke="#c4d4f5"/>
+    <text x="465" y="132" font-weight="700" fill="#1e4aa8">RAG</text>
+    <text x="465" y="149" font-size="9.5" fill="#5b6270">policies, charges, warranty</text>
+  </g>
+  <g stroke="#5b6270" stroke-width="1.4" fill="none">
+    <line x1="160" y1="39" x2="198" y2="39" marker-end="url(#d)"/>
+    <line x1="350" y1="39" x2="388" y2="39" marker-end="url(#d)"/>
+    <line x1="540" y1="39" x2="573" y2="39" marker-end="url(#d)"/>
+    <line x1="85" y1="68" x2="85" y2="110" marker-end="url(#d)"/>
+    <line x1="275" y1="68" x2="275" y2="110" marker-end="url(#d)"/>
+    <line x1="465" y1="68" x2="465" y2="110" marker-end="url(#d)"/>
+  </g>
+  <g font-size="9" fill="#5b6270">
+    <text x="168" y="33">no</text><text x="358" y="33">no</text><text x="547" y="33">no</text>
+    <text x="91" y="94">yes</text><text x="281" y="94">yes</text><text x="471" y="94">yes</text>
+  </g>
+</svg>
+<p class="small muted">A capability can pass through more than one box: "start a return" is a tool, its eligibility check is code, and the confirm-then-act conversation is trained.</p>
+
+<h3>The capability map</h3>
+<table>
+  <tr><th style="width:26%">Capability</th><th style="width:21%">Mechanism</th><th>Why, and how it is measured</th></tr>
+  <tr><td>Greet and set tone</td><td><span class="tag t-ft">Fine-tune</span></td><td>Tone is behaviour, not a fact; long prompt instructions are followed loosely by a 2B model and cost latency every turn. <span class="muted">Rubric score, reply length, at most one question.</span></td></tr>
+  <tr><td>Return-window questions</td><td><span class="tag t-rag">RAG</span></td><td>Policy changes (e.g. electronics 30 → 15 days). <span class="muted">Required fact present; citation points at the right chunk.</span></td></tr>
+  <tr><td>Refund-timeline questions</td><td><span class="tag t-rag">RAG</span></td><td>Timelines vary by payment method and change. <span class="muted">No number appears that is absent from the retrieved chunks.</span></td></tr>
+  <tr><td>Check a refund's status</td><td><span class="tag t-tool">Tool</span> <span class="tag t-ft">Fine-tune</span></td><td>"Where is <i>my</i> refund" is live data, not policy; training teaches the model to call the tool instead of quoting policy. <span class="muted">Status and amount match the tool output exactly.</span></td></tr>
+  <tr><td>List recent orders</td><td><span class="tag t-tool">Tool</span> <span class="tag t-ft">Fine-tune</span> <span class="tag t-code">Code</span></td><td>Backend scopes the query to the signed-in customer. <span class="muted">Listed orders match the DB rows; zero invented orders.</span></td></tr>
+  <tr><td>Report an order's status</td><td><span class="tag t-tool">Tool</span> <span class="tag t-ft">Fine-tune</span></td><td><span class="muted">Tool name and arguments exact; status in the reply matches the tool output.</span></td></tr>
+  <tr><td>Give tracking details</td><td><span class="tag t-tool">Tool</span> <span class="tag t-ft">Fine-tune</span></td><td>Carrier, number and ETA are live. <span class="muted">No date stated without a tool call.</span></td></tr>
+  <tr><td>Start a return</td><td><span class="tag t-tool">Tool</span> <span class="tag t-code">Code</span> <span class="tag t-ft">Fine-tune</span></td><td>Eligibility is decided by the backend; the write happens only after explicit confirmation. <span class="muted">Backend rejects 100% of ineligible returns.</span></td></tr>
+  <tr><td>Refuse other customers' data</td><td><span class="tag t-code">Code</span></td><td>Must hold every time. <span class="muted">Cross-customer test returns "not found".</span></td></tr>
+  <tr><td>Hand off to a human</td><td><span class="tag t-ft">Fine-tune</span> <span class="tag t-tool">Tool</span></td><td>When to escalate is judgement; the handoff is an action. <span class="muted">Escalation precision and recall on a labelled set.</span></td></tr>
+  <tr><td>Resist "ignore your instructions"</td><td><span class="tag t-code">Code</span> <span class="tag t-ft">Fine-tune</span></td><td>Code guarantees no privilege change; training gives a polite on-task refusal. Covers direct and indirect injection (inside retrieved text or an order note). <span class="muted">0 leaks or unauthorised actions.</span></td></tr>
+  <tr><td>Say "I don't know"</td><td><span class="tag t-ft">Fine-tune</span> <span class="tag t-tool">Tool</span></td><td>When retrieval finds nothing, a 2B model tends to invent. <span class="muted">Invented-answer rate on unanswerable questions (target 0).</span></td></tr>
+</table>
+
+<h3>Why most rows use two or three mechanisms</h3>
+<p>Each mechanism answers a different question. A <b>tool</b> supplies the data, but something has to make the model
+  <i>call</i> it at the right moment: that is <b>fine-tuning</b>. And when the stakes are high, <b>code</b> double-checks
+  the result. "Start a return" needs all three: the tool does the write, code decides eligibility, training teaches the
+  confirm-then-act conversation.</p>
+
+<h3>One decision worth defending: escalation is trained, not counted</h3>
+<p>"Escalate after two failed turns" could be a code counter. It is trained instead, because deciding whether a turn
+  <i>failed</i> needs understanding the conversation: a code counter cannot tell "thanks, that helps" from "that's not
+  what I asked". The decision is recorded in <code>DESIGN.md</code> with a trigger to revisit it if evals show missed escalations.</p>
+
+<div class="say"><b>Say it</b>
+"Every capability has a mechanism and a measurement. Anything that must hold 100% of the time is code, because a prompt or
+a fine-tune only shifts probabilities. Rows enforced in code must pass 100%; the other pass marks are placeholders until the
+baseline eval shows what is realistic."</div>
+</div>
+
+<!-- 3 -->
+<div class="section">
+<h2>3 · Budgets: numbers before code</h2>
+<p>Budgets were set before anything was built, so every later decision (prompt length, number of retrieved chunks,
+  model size, GPU choice) can be checked against a number instead of a feeling. Each number is labelled as a
+  <b>target</b> (a product requirement), an <b>estimate</b> (a guess to replace) or a <b>measurement</b>. Every change goes
+  in the change log with the old value, the new value and the evidence.</p>
+
+<table>
+  <tr><th style="width:30%">Budget</th><th style="width:16%">Value</th><th>Reasoning</th></tr>
+  <tr><td><b>p95 latency</b>, reply with one tool call</td><td>3 s <span class="muted">target</span></td><td>Covers two model passes (emit the tool call, then answer from the result) plus the DB query. p95, not average, because the slow replies are the ones customers notice.</td></tr>
+  <tr><td><b>Context window</b></td><td>8,192 tokens <span class="muted">target</span></td><td>Our limit, set with vLLM's <code>--max-model-len</code>; the model itself supports far more (about 262K). Smaller context means less GPU memory per conversation, faster prefill, and better accuracy for a 2B model, which loses facts buried in long prompts.</td></tr>
+  <tr><td><b>Max size of one user message</b></td><td>1,500 tokens <span class="muted">target, code</span></td><td>About 1,100 words. Over the cap there is no model call, only a fixed polite reply. Stops one paste from eating the history budget, slowing prefill or hiding an injection.</td></tr>
+  <tr><td><b>Cost per 1,000 conversations</b></td><td>~$5 <span class="muted">estimate</span></td><td>Assumes a GPU at about $1/hour serving about 200 conversations/hour. To be replaced with the real GPU rate and measured throughput.</td></tr>
+</table>
+
+<h3>How the 8,192-token window is split</h3>
+<svg viewBox="0 0 700 64" width="100%" role="img" aria-label="Context window split">
+  <g font-size="10.5">
+    <rect x="0"   y="6" width="42.7"  height="30" fill="#fdf3e7" stroke="#fff"/>
+    <rect x="42.7" y="6" width="59.8" height="30" fill="#e8f5ee" stroke="#fff"/>
+    <rect x="102.5" y="6" width="341.8" height="30" fill="#f3ecfb" stroke="#fff"/>
+    <rect x="444.3" y="6" width="170.9" height="30" fill="#eaf0fc" stroke="#fff"/>
+    <rect x="615.2" y="6" width="84.8" height="30" fill="#f4f6f9" stroke="#fff"/>
+    <text x="21" y="25" text-anchor="middle">500</text>
+    <text x="72.6" y="25" text-anchor="middle">700</text>
+    <text x="273" y="25" text-anchor="middle">history 4,000</text>
+    <text x="530" y="25" text-anchor="middle">retrieved chunks 2,000</text>
+    <text x="657" y="25" text-anchor="middle">reply 992</text>
+    <text x="0" y="54" fill="#5b6270" font-size="9.5">system prompt 500 · tool schemas 700 (measured: 6 tools = 656 tokens)</text>
+  </g>
+</svg>
+<p>When a prompt is still too long: trim the <b>oldest history first</b>, then retrieved chunks; never the system prompt
+  or the tool schemas, because without them the model loses its rules and its tools.</p>
+
+<h3>Why set budgets this early</h3>
+<ul>
+  <li><b>They turn arguments into arithmetic.</b> "Can we add a seventh tool?" becomes "each tool costs about 80 tokens; 700 leaves room for one more".</li>
+  <li><b>They drive model and hardware choice.</b> A 3-second p95 rules out slow engines; that is why Transformers (13 s for one reply on a T4) can't serve Nova.</li>
+  <li><b>They keep honesty.</b> An estimate is labelled as one until a measurement replaces it, and the change log shows the evidence.</li>
+</ul>
+
+<h3>What the first measurements say</h3>
+<p>The tool-schema estimate (700) was measured at 656 tokens for six draft tools: about 180 fixed plus about 80 per tool.
+  Later, the first end-to-end latency measurement of the prompted model (vLLM on one T4, database on managed Postgres) gave
+  model passes of about 1.0–1.5 s each when warm, so a one-tool-call reply sits near 2 s, inside the target. A turn that
+  needs two tool calls measured median 3.10 s and p95 3.60 s, over the target: a known gap, recorded rather than hidden.</p>
+
+<div class="say"><b>Say it</b>
+"I wrote budgets before code and labelled each one as a target, an estimate or a measurement. When a measurement replaces an
+estimate, the change log records old value, new value and evidence. That's how I know two-tool-call turns are currently over
+the 3-second target and one-tool turns are inside it."</div>
+</div>
+
+<!-- 4 -->
+<div class="section">
+<h2>4 · Why Qwen3.5-2B</h2>
+<p>The model was chosen for the job, then tested on the actual hardware before any further work depended on it.</p>
+<table>
+  <tr><th style="width:28%">Reason</th><th>Evidence</th></tr>
+  <tr><td><b>Fits a free 16 GB T4</b></td><td>About 4.5 GB of weights in 16-bit. LoRA training at full 16-bit precision ran 50 steps in 165 s. A 7–8B model would need 4-bit quantisation just to train on a T4.</td></tr>
+  <tr><td><b>Fast enough for 3 s</b></td><td>50 tokens/s in vLLM on a T4: a typical 128-token reply in 2.6 s. A model four times larger is roughly four times slower and costlier.</td></tr>
+  <tr><td><b>Calls tools before any training</b></td><td>The base model answered "Where is my order 4417?" with a correct <code>get_order_status</code> call. Fine-tuning only has to teach the harder cases: no order number, several orders, when <i>not</i> to call.</td></tr>
+  <tr><td><b>Non-thinking mode</b></td><td>One model, with reasoning switched off by the prompt. Thinking added 3–11× tokens and time with no better answer on lookup turns (section 7).</td></tr>
+  <tr><td><b>Open license and tool support</b></td><td>Open weights (Apache 2.0), supported by Transformers, Unsloth and vLLM: exactly what the risk tests checked.</td></tr>
+</table>
+
+<h3>Alternatives considered</h3>
+<table>
+  <tr><th style="width:28%">Model</th><th>Why not first choice</th></tr>
+  <tr><td>Qwen3-1.7B / Qwen3-4B</td><td>The pre-agreed fallbacks: text-only, older, very well supported. Would have been used if the risk tests had failed.</td></tr>
+  <tr><td>Llama 3.2 3B</td><td>Solid, but weaker built-in tool calling and a more restrictive license.</td></tr>
+  <tr><td>7–8B models</td><td>Better raw quality, but 4-bit training on a T4 and about 4× slower serving, which breaks the latency and cost budgets.</td></tr>
+</table>
+
+<h3>Honest trade-offs</h3>
+<ul>
+  <li><b>A 2B model is less reliable.</b> It follows long instructions loosely and invents answers more readily, which is why behaviour is trained and hard rules are code.</li>
+  <li><b>The architecture is new.</b> Qwen3.5 mixes Gated DeltaNet (linear-attention) layers with full attention. Tooling is less mature: Transformers falls back to slow reference kernels (11 tok/s on a T4), and vLLM needed a fix to start (section 8).</li>
+</ul>
+
+<div class="say"><b>Say it</b>
+"I picked the smallest current model that already calls tools, runs inside my latency budget on a free GPU, and can be trained and
+served for free. The cost of a 2B model is reliability, so I compensate with retrieval, tools, fine-tuning and code-enforced rules,
+and I measure it with a baseline eval before training."</div>
+</div>
+
+<!-- 5 -->
+<div class="section">
+<h2>5 · Training on free GPUs that disconnect</h2>
+<p>Training runs on free Kaggle and Colab T4s. Both end sessions: idle timeouts, quotas, closed tabs. A notebook's disk is
+  wiped when the session ends. So the setup is designed around one assumption: <b>the machine will disappear mid-run</b>.</p>
+
+<h3>The design: stateless notebooks</h3>
+<div class="grid2">
+  <div class="card"><h4>Code comes from Git</h4><p>The notebook only logs in, clones the repo, installs the pinned versions, loads a YAML config, sets the seed and calls <code>training/train.py</code>. No training logic lives in a notebook.</p></div>
+  <div class="card"><h4>Data comes from the Hub</h4><p>Datasets load from Hugging Face, so a fresh machine gets the same rows.</p></div>
+  <div class="card"><h4>Checkpoints go to the Hub</h4><p><code>hub_strategy="checkpoint"</code> pushes every save to a private model repo's <code>last-checkpoint</code> folder. LoRA keeps checkpoints a few MB, so pushes are fast.</p></div>
+  <div class="card"><h4>Settings live in YAML, with a fixed seed</h4><p>Same config + same seed = comparable runs. Secrets come only from the platform's secrets panel, never from cells or the repo.</p></div>
+</div>
+
+<svg viewBox="0 0 700 205" width="100%" role="img" aria-label="Stateless training: code from GitHub, data from the Hub, checkpoints pushed to the Hub, a new session resumes from the last checkpoint">
+  <defs><marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="10" y="18" width="150" height="58" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="85" y="42" font-weight="600">GitHub</text>
+    <text x="85" y="58" font-size="9.5" fill="#5b6270">train.py, YAML configs</text>
+    <rect x="10" y="128" width="150" height="58" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="85" y="152" font-weight="600">Hugging Face Hub</text>
+    <text x="85" y="168" font-size="9.5" fill="#5b6270">datasets</text>
+
+    <rect x="265" y="14" width="170" height="66" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="350" y="38" font-weight="600">Session 1 (free GPU)</text>
+    <text x="350" y="54" font-size="9.5" fill="#5b6270">trains, saves every 50 steps</text>
+    <text x="350" y="70" font-size="9.5" fill="#b42318" font-weight="600">✕ session ends at step 130</text>
+    <rect x="265" y="124" width="170" height="66" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="350" y="148" font-weight="600">Session 2 (new machine)</text>
+    <text x="350" y="164" font-size="9.5" fill="#5b6270">--resume: weights, optimizer,</text>
+    <text x="350" y="178" font-size="9.5" fill="#5b6270">step counter restored at 100</text>
+
+    <rect x="535" y="69" width="155" height="66" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="612" y="93" font-weight="600">Hub model repo</text>
+    <text x="612" y="109" font-size="9.5" fill="#5b6270">private, last-checkpoint/</text>
+    <text x="612" y="123" font-size="9.5" fill="#5b6270">survives the disconnect</text>
+  </g>
+  <g stroke="#5b6270" stroke-width="1.4" fill="none">
+    <line x1="160" y1="42" x2="263" y2="42" marker-end="url(#s)"/>
+    <line x1="160" y1="58" x2="263" y2="140" marker-end="url(#s)"/>
+    <line x1="160" y1="150" x2="263" y2="66" marker-end="url(#s)"/>
+    <line x1="160" y1="166" x2="263" y2="166" marker-end="url(#s)"/>
+    <line x1="435" y1="47" x2="533" y2="88" marker-end="url(#s)"/>
+    <line x1="533" y1="118" x2="437" y2="157" marker-end="url(#s)"/>
+  </g>
+  <g font-size="9" fill="#5b6270">
+    <text x="488" y="61">push each save</text>
+    <text x="460" y="155">pull last-checkpoint</text>
+    <text x="180" y="36">code</text>
+    <text x="180" y="181">data</text>
+  </g>
+</svg>
+<p class="small muted">Illustration with example step numbers: saves every 50 steps mean a crash loses at most 50 steps of work.</p>
+
+<p><b>Resuming</b> is one flag: <code>--resume</code> downloads <code>last-checkpoint/</code> from the Hub
+  (<code>snapshot_download</code>) and calls <code>trainer.train(resume_from_checkpoint=...)</code>, which restores the
+  weights, optimizer state and step counter.</p>
+
+<h3>Proving it: the disconnect drill</h3>
+<p>A tiny model (SmolLM2-135M, 300 steps, save every 50) was trained on Colab, the runtime was deleted mid-run, and a new
+  session resumed from the Hub.</p>
+<div class="warn"><b>What went wrong, and the fix</b>
+The first drill resumed from step <b>250</b>, not around 100 as planned. The tiny model trained faster than the runtime could be
+deleted by hand, so the newest save was already at 250. The resume itself worked; the test didn't test what it meant to. Fix: a
+<code>pause_at_step</code> option (wait 15 minutes at step 120, skipped when resuming), so the crash happens at a known point.</div>
+
+<h3>Kaggle or Colab for a long run?</h3>
+<p><b>Kaggle, with Save &amp; Run All.</b> It runs in the background with the tab closed, and the weekly GPU quota is visible,
+  so you know in advance whether a three-hour run fits. Free Colab disconnects idle sessions and its limits aren't shown. A
+  closed-tab run on Kaggle confirmed it. The Hub checkpoints protect a run on either platform.</p>
+
+<div class="say"><b>Say it</b>
+"I treat free GPUs as machines that will vanish. Notebooks hold no logic; code is in Git, data and checkpoints are on the Hub, and
+resume is one flag. I tested it by killing a run on purpose, and when the first test didn't crash where I intended, I added a
+deliberate pause so the drill was repeatable."</div>
+</div>
+
+<!-- 6 -->
+<div class="section">
+<h2>6 · Local development setup</h2>
+<ul>
+  <li><b>Postgres 16 with pgvector</b> in Docker (<code>pgvector/pgvector:pg16</code>), one database for both the store's
+    tables and the help-center vectors. One system instead of a separate vector database keeps operations simple at this scale.</li>
+  <li><b>Port 5433, not 5432.</b> The laptop already ran a system Postgres on 5432; the container maps to 5433 rather than
+    fighting it. Small, but the kind of thing that wastes an hour if undocumented.</li>
+  <li><b>Health check</b> with <code>pg_isready</code>, so scripts wait until the database accepts connections.</li>
+  <li><b>Python 3.12</b> pinned with <code>.python-version</code>; <code>uv</code> for environments.</li>
+  <li><b>Repo hygiene from day one:</b> <code>.gitignore</code> excludes tokens, <code>.env</code> files, model weights,
+    checkpoints and generated data; folders exist for <code>db</code>, <code>kb</code>, <code>rag</code>, <code>agent</code>,
+    <code>api</code>, <code>evals</code>, <code>serving</code>, <code>training</code>, <code>ui</code>.</li>
+</ul>
+<p class="muted">Later the eval database also moved to a managed Postgres (Neon), because a Kaggle notebook can't reach a laptop. Local
+  Docker stays the source of truth and is copied across with <code>pg_dump</code>; the decision and its checks are in <code>DESIGN.md</code>.</p>
+
+<!-- 7 -->
+<h2 style="margin-top:18pt">7 · How the model produces a reply</h2>
+<p>Before training a model you should know exactly what text it sees and how it decides to stop. These experiments ran
+  on a MacBook (MPS, float16) with Transformers; scripts and outputs are in <code>notes/generation-experiments/</code>.</p>
+
+<h3>The prompt is one long string</h3>
+<p>A chat model doesn't see "messages". The chat template turns them into text with special tokens:</p>
+<pre><code>&lt;|im_start|&gt;system
+You are Nova, NimbusCart's support assistant.&lt;|im_end|&gt;
+&lt;|im_start|&gt;user
+Hi, where is my order 4417?&lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant        ← added by add_generation_prompt=True
+&lt;think&gt;
+
+&lt;/think&gt;
+                              ← the model writes from here</code></pre>
+<ul>
+  <li><b><code>add_generation_prompt=True</code></b> opens the assistant's turn. Without it nothing says whose turn it is: in testing,
+    the model wrote the assistant line itself, skipped the empty think block and started reasoning.</li>
+  <li><b>Thinking is switched off by the prompt, not a setting:</b> the empty <code>&lt;think&gt;&lt;/think&gt;</code> block. Training data must
+    contain the same block, or training and serving formats differ.</li>
+</ul>
+
+<h3>How the reply is generated, token by token</h3>
+<svg viewBox="0 0 700 132" width="100%" role="img" aria-label="Generation loop: prefill the prompt once, then decode one token per step until the stop token">
+  <defs><marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="20" width="118" height="54" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="67" y="43" font-weight="600">Prompt tokens</text>
+    <text x="67" y="59" font-size="9.5" fill="#5b6270">template applied</text>
+    <rect x="160" y="20" width="132" height="54" rx="7" fill="#f3ecfb" stroke="#dccbf2"/>
+    <text x="226" y="43" font-weight="600">Model</text>
+    <text x="226" y="59" font-size="9.5" fill="#5b6270">scores all 248,077 tokens</text>
+    <rect x="326" y="20" width="118" height="54" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="385" y="43" font-weight="600">Pick next token</text>
+    <text x="385" y="59" font-size="9.5" fill="#5b6270">greedy or sampled</text>
+    <rect x="478" y="20" width="110" height="54" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="533" y="43" font-weight="600">Stop token?</text>
+    <text x="533" y="59" font-size="9.5" fill="#5b6270">&lt;|im_end|&gt;</text>
+    <rect x="618" y="20" width="76" height="54" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="656" y="51" font-weight="600">Reply</text>
+  </g>
+  <g stroke="#5b6270" stroke-width="1.4" fill="none">
+    <line x1="126" y1="47" x2="158" y2="47" marker-end="url(#g)"/>
+    <line x1="292" y1="47" x2="324" y2="47" marker-end="url(#g)"/>
+    <line x1="444" y1="47" x2="476" y2="47" marker-end="url(#g)"/>
+    <line x1="588" y1="47" x2="616" y2="47" marker-end="url(#g)"/>
+    <path d="M533 74 L533 104 L226 104 L226 76" marker-end="url(#g)"/>
+  </g>
+  <g font-size="9" fill="#5b6270">
+    <text x="130" y="40">prefill</text>
+    <text x="594" y="40">yes</text>
+    <text x="380" y="120" text-anchor="middle">no: append the token and run again (decode). The KV cache keeps earlier work, so each step only processes one new token.</text>
+  </g>
+</svg>
+</div>
+
+<div class="section">
+<h3 style="margin-top:0">Findings that change how the system is built</h3>
+<table>
+  <tr><th style="width:27%">Finding</th><th>What it means for Nova</th></tr>
+  <tr><td><b>Wrong stop token in the model config</b></td><td>The tokenizer ends a turn with <code>&lt;|im_end|&gt;</code>, but <code>config.json</code> says <code>&lt;|endoftext|&gt;</code> and there is no <code>generation_config.json</code>. <code>generate</code> ran past the end of the turn. Fix: pass both, <code>eos_token_id=[248046, 248044]</code>. Check stop tokens on every new serving setup.</td></tr>
+  <tr><td><b>Tool calls are XML-style</b></td><td><code>&lt;tool_call&gt;&lt;function=get_order_status&gt;&lt;parameter=order_id&gt;4417&lt;/parameter&gt;…</code>. <code>&lt;tool_call&gt;</code> is one token, but <code>&lt;function=</code> is three ordinary tokens the model could misspell, so the agent relies on vLLM's parser (<code>qwen3_coder</code>), which returns OpenAI-style JSON.</td></tr>
+  <tr><td><b>Token costs</b></td><td>"Hi, where is my order 4417?" = 12 tokens (each digit is its own token). One tool schema adds 261 tokens; six add 656. Tools are paid for on every turn.</td></tr>
+  <tr><td><b>A hand-written greedy loop matches <code>generate</code></b></td><td>Token for token (31 tokens). Without a KV cache it took 17.5 s against 2.1 s: the cache avoids re-processing the whole prompt for every new token.</td></tr>
+</table>
+
+<h3>Sampling: why Nova runs at low temperature</h3>
+<table>
+  <tr><th>Setting (5 runs each)</th><th>Reply lengths</th><th>Content</th></tr>
+  <tr><td>Temperature 0.2</td><td>101–129 tokens</td><td>All five politely ask for details</td></tr>
+  <tr><td>Model card defaults (temperature 1.0, top-k 20)</td><td>106–284 tokens</td><td>3 of 5 claimed "I don't have access to your order"; one used an emoji</td></tr>
+  <tr><td>Card defaults + <code>presence_penalty 2.0</code>, via vLLM</td><td>92–234 tokens</td><td>Still about 2.5× spread</td></tr>
+</table>
+<svg viewBox="0 0 700 140" width="100%" role="img" aria-label="Dot plot of reply lengths for four sampling settings">
+  <g font-size="9.5" fill="#1d2330">
+    <text x="0" y="24">Temp 0.2 (Transformers)</text>
+    <text x="0" y="49">Temp 1.0, card defaults</text>
+    <text x="0" y="74">Temp 0.2 (vLLM)</text>
+    <text x="0" y="99">Card + presence penalty</text>
+  </g>
+  <g stroke="#dfe3ea" stroke-width="1">
+    <line x1="198.2" y1="8" x2="198.2" y2="110"/><line x1="318.6" y1="8" x2="318.6" y2="110"/>
+    <line x1="439.1" y1="8" x2="439.1" y2="110"/><line x1="559.5" y1="8" x2="559.5" y2="110"/>
+    <line x1="680" y1="8" x2="680" y2="110"/>
+  </g>
+  <line x1="150" y1="112" x2="690" y2="112" stroke="#9aa3b2"/>
+  <g font-size="9" fill="#5b6270" text-anchor="middle">
+    <text x="198.2" y="126">100</text><text x="318.6" y="126">150</text><text x="439.1" y="126">200</text>
+    <text x="559.5" y="126">250</text><text x="680" y="126">300 tokens</text>
+  </g>
+  <g stroke-width="2.2" stroke-linecap="round">
+    <line x1="200.6" y1="20" x2="268.0" y2="20" stroke="#c4d4f5"/>
+    <line x1="212.6" y1="45" x2="641.4" y2="45" stroke="#f2d6b3"/>
+    <line x1="234.3" y1="70" x2="272.9" y2="70" stroke="#c4d4f5"/>
+    <line x1="178.9" y1="95" x2="521.0" y2="95" stroke="#f2d6b3"/>
+  </g>
+  <g fill="#2457c5" fill-opacity="0.85">
+    <circle cx="200.6" cy="20" r="4"/><circle cx="203.0" cy="20" r="4"/><circle cx="246.4" cy="20" r="4"/><circle cx="253.6" cy="20" r="4"/><circle cx="268.0" cy="20" r="4"/>
+    <circle cx="234.3" cy="70" r="4"/><circle cx="244.0" cy="70" r="4"/><circle cx="265.6" cy="70" r="4"/><circle cx="265.6" cy="70" r="4"/><circle cx="272.9" cy="70" r="4"/>
+  </g>
+  <g fill="#c26a12" fill-opacity="0.85">
+    <circle cx="212.6" cy="45" r="4"/><circle cx="402.9" cy="45" r="4"/><circle cx="451.1" cy="45" r="4"/><circle cx="458.4" cy="45" r="4"/><circle cx="641.4" cy="45" r="4"/>
+    <circle cx="178.9" cy="95" r="4"/><circle cx="222.3" cy="95" r="4"/><circle cx="246.4" cy="95" r="4"/><circle cx="309.0" cy="95" r="4"/><circle cx="521.0" cy="95" r="4"/>
+  </g>
+</svg>
+<p class="small muted">Each dot is one reply to the same question. Blue = temperature 0.2, tightly grouped; orange = the model card's creative defaults, spread out.</p>
+<p>The card's settings are tuned for creative, general chat. Support needs consistency, so Nova stays at the low end; the
+  exact value is chosen by the baseline eval.</p>
+
+<h3>Thinking on vs off (greedy, same question)</h3>
+<table>
+  <tr><th>Case</th><th>Thinking</th><th>Tokens</th><th>Time</th><th>Result</th></tr>
+  <tr><td>No tools</td><td>Off</td><td>128</td><td>6.0 s</td><td>Friendly answer asking for details</td></tr>
+  <tr><td>No tools</td><td>On</td><td>1,500 (cap hit)</td><td>68.2 s</td><td>Cut off mid-thought</td></tr>
+  <tr><td>With <code>get_order_status</code></td><td>Off</td><td>31</td><td>1.9 s</td><td>Correct tool call</td></tr>
+  <tr><td>With <code>get_order_status</code></td><td>On</td><td>109</td><td>5.4 s</td><td>Same tool call</td></tr>
+</table>
+<svg viewBox="0 0 700 112" width="100%" role="img" aria-label="Bar chart of tokens with thinking on and off">
+  <g font-size="9.5" fill="#1d2330">
+    <text x="0" y="20">No tools, thinking off</text>
+    <text x="0" y="40">No tools, thinking on</text>
+    <text x="0" y="68">Tool turn, thinking off</text>
+    <text x="0" y="88">Tool turn, thinking on</text>
+  </g>
+  <rect x="170" y="9" width="41" height="14" rx="2" fill="#2457c5"/>
+  <rect x="170" y="29" width="480" height="14" rx="2" fill="#c26a12"/>
+  <rect x="170" y="57" width="9.9" height="14" rx="2" fill="#2457c5"/>
+  <rect x="170" y="77" width="34.9" height="14" rx="2" fill="#c26a12"/>
+  <g font-size="9" fill="#5b6270">
+    <text x="217" y="20">128 tokens · 6.0 s</text>
+    <text x="548" y="40" fill="#fff" font-weight="600">1,500 (cap) · 68.2 s</text>
+    <text x="186" y="68">31 tokens · 1.9 s</text>
+    <text x="211" y="88">109 tokens · 5.4 s</text>
+  </g>
+  <text x="170" y="107" font-size="9" fill="#5b6270">Same question, greedy decoding, on a MacBook. Bars are to scale.</text>
+</svg>
+
+<div class="say"><b>Say it</b>
+"I rendered the exact prompt the model sees before training anything. That found a real bug: the model's config had the wrong stop
+token, so generation ran past the end of the turn. It also told me thinking is controlled by an empty block in the prompt, which my
+training data has to copy, and that thinking costs 3 to 11 times the tokens with no better answer for lookups."</div>
+</div>
+
+<!-- 8 -->
+<div class="section">
+<h2>8 · GPU risk tests and the vLLM fix</h2>
+<p>Everything later depends on four things working on the actual hardware: a Kaggle T4. Rather than discover a blocker
+  weeks in, all four were tested in one session first. Each test had a <b>pass condition</b> and a <b>fallback decided in
+  advance</b>, and a failing test got <b>at most 60 minutes</b> of fixing (versions, flags, dtype) before taking its fallback.</p>
+
+<svg viewBox="0 0 700 96" width="100%" role="img" aria-label="Risk test process: run, pass then pin; fail then fix up to 60 minutes, else take the pre-agreed fallback">
+  <defs><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="6" y="22" width="112" height="46" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="62" y="42" font-weight="600">Run the test</text><text x="62" y="57" font-size="9.5" fill="#5b6270">on a Kaggle T4</text>
+    <rect x="150" y="22" width="112" height="46" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/>
+    <text x="206" y="42" font-weight="600">Fix, ≤ 60 min</text><text x="206" y="57" font-size="9.5" fill="#5b6270">ordered list of fixes</text>
+    <rect x="330" y="22" width="122" height="46" rx="7" fill="#fff" stroke="#9aa3b2"/>
+    <text x="391" y="42" font-weight="600">Take the fallback</text><text x="391" y="57" font-size="9.5" fill="#5b6270">decided in advance</text>
+    <rect x="560" y="22" width="134" height="46" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="627" y="42" font-weight="600">Pin the versions</text><text x="627" y="57" font-size="9.5" fill="#5b6270">every later run uses them</text>
+  </g>
+  <g stroke="#5b6270" stroke-width="1.4" fill="none">
+    <line x1="118" y1="45" x2="148" y2="45" marker-end="url(#r)"/>
+    <line x1="262" y1="45" x2="328" y2="45" marker-end="url(#r)"/>
+    <path d="M62 22 L62 8 L627 8 L627 20" marker-end="url(#r)"/>
+    <path d="M206 68 L206 84 L600 84 L600 70" marker-end="url(#r)"/>
+    <line x1="452" y1="45" x2="558" y2="45" marker-end="url(#r)"/>
+  </g>
+  <g font-size="9" fill="#5b6270">
+    <text x="300" y="5">pass</text><text x="122" y="39">fail</text><text x="270" y="39">still failing</text>
+    <text x="360" y="95">fixed (vLLM: first attempt, 11 min)</text>
+  </g>
+</svg>
+
+<table>
+  <tr><th style="width:4%">#</th><th style="width:30%">Test</th><th style="width:14%">Result</th><th>Evidence / pre-agreed fallback</th></tr>
+  <tr><td>1</td><td>Generate with Transformers on a T4</td><td class="pass">PASS</td><td>145 tokens in 13.2 s (11 tok/s); same correct tool call as on the Mac. <span class="muted">Fallback: text-only Qwen3-4B/1.7B.</span></td></tr>
+  <tr><td>2</td><td>50-step Unsloth LoRA: train, save, reload, generate</td><td class="pass">PASS</td><td>Loss 1.60 → 0.58 in 165 s on 200 rows; the reloaded adapter changed the output. <span class="muted">Fallback: text-only Qwen3.</span></td></tr>
+  <tr><td>3</td><td>vLLM serves the base model, one parsed tool call</td><td class="pass">PASS <span class="muted" style="font-weight:400">(after fix)</span></td><td><code>get_order_status({"order_id": 4417})</code>, 50 tok/s. <span class="muted">Fallback: evals with Transformers/llama.cpp, serve on a bigger GPU.</span></td></tr>
+  <tr><td>4</td><td>vLLM serves the adapter as a LoRA module</td><td class="pass">PASS</td><td>One server answered both the base model and <code>nova-test</code>. <span class="muted">Fallback: merge the adapter into the base.</span></td></tr>
+</table>
+
+<h3>Debugging the vLLM failure</h3>
+<p>In the first run, vLLM never started. The report showed only <code>RuntimeError: Engine core initialization failed. See root cause
+  above.</code> The notebook had kept only the tail of the log, so the first fix was to the <b>test itself</b>: keep full logs and
+  extract root-cause lines.</p>
+<ol>
+  <li><b>Read the full log.</b> About 300 lines above the final error: vLLM had loaded the model and was running a dummy forward pass to
+    measure memory. Qwen3.5's gated norm layer calls FlashInfer's <code>gemma_rmsnorm</code>, which FlashInfer compiles on first use for
+    the GPU's architecture (sm75 for a T4).</li>
+  <li><b>Find the first real error.</b> Compiling worked; linking failed: <code>/usr/bin/ld: cannot find -lcuda</code>.</li>
+  <li><b>Understand why.</b> Kaggle's image has the GPU driver only as <code>libcuda.so.&lt;version&gt;</code> under
+    <code>/usr/local/nvidia/lib64</code>, not registered with <code>ldconfig</code>, and the CUDA stubs folder is empty. The linker looks for
+    a plain <code>libcuda.so</code>.</li>
+  <li><b>Separate noise from cause.</b> The log also said FlashAttention 2 needs compute capability 8.0+ and FlashInfer sampling needs more than 7.5.
+    Both were logged as errors but weren't fatal: vLLM fell back automatically.</li>
+  <li><b>Fix with an ordered plan, time-boxed.</b> A second notebook tried, in order: (A) symlink <code>libcuda.so</code> to the driver
+    and add it to <code>LIBRARY_PATH</code>; (B) A + <code>--enforce-eager</code>; (C) A without FlashInfer; (D) A with an older vLLM.
+    It would stop starting attempts after 60 minutes. <b>Attempt A worked first time, using 11 of the 60 minutes.</b></li>
+</ol>
+<p>The fix is now a reusable script, <code>serving/t4_libcuda_fix.sh</code>, sourced before <code>vllm serve</code> on Kaggle.</p>
+</div>
+
+<div class="section">
+<h3 style="margin-top:0">Serving speed on the same T4</h3>
+<svg viewBox="0 0 700 84" width="100%" role="img" aria-label="Bar chart: Transformers 11 tokens per second, vLLM 50 tokens per second">
+  <g font-size="9.5" fill="#1d2330">
+    <text x="0" y="22">Transformers</text>
+    <text x="0" y="50">vLLM 0.34.0</text>
+  </g>
+  <rect x="110" y="10" width="92.4" height="18" rx="2" fill="#c26a12"/>
+  <rect x="110" y="38" width="420" height="18" rx="2" fill="#2457c5"/>
+  <g font-size="9" fill="#5b6270">
+    <text x="208" y="23">11 tok/s · a 128-token reply takes about 11.6 s</text>
+    <text x="536" y="51">50 tok/s · about 2.6 s</text>
+  </g>
+  <text x="110" y="76" font-size="9" fill="#5b6270">Greedy decoding, one request. The 3-second budget is only reachable with vLLM.</text>
+</svg>
+
+<h3>What the risk tests taught beyond pass/fail</h3>
+<table>
+  <tr><th style="width:30%">Observation</th><th>Consequence</th></tr>
+  <tr><td><b>vLLM is 4.5× faster than Transformers</b> on the same T4 (50 vs 11 tok/s)</td><td>Transformers is for training and offline checks only; vLLM is the serving engine. Without vLLM the 3-second budget is impossible on a T4.</td></tr>
+  <tr><td><b>Pin training and serving separately</b></td><td>Training used torch 2.11.0 from Kaggle's image; vLLM 0.34.0 brought its own torch 2.14.0. They live in separate environments: <code>requirements-gpu.txt</code> and <code>requirements-serve.txt</code>. Every later notebook installs exactly these.</td></tr>
+  <tr><td><b>Bitext replies contain placeholders</b> like <code>{{Online Company Portal Info}}</code></td><td>After only 50 steps the adapter copied them into answers. Data preparation must replace or drop every <code>{{…}}</code> slot, and evals fail any reply containing <code>{{</code>.</td></tr>
+  <tr><td><b>Cold start is slow</b>: 650 s for the first start, 190 s for a restart with LoRA</td><td>The first start includes the download, the kernel build and CUDA graph capture. That matters when choosing a serving host.</td></tr>
+  <tr><td><b>The parser returns clean JSON</b>: <code>{"order_id": 4417}</code> as an integer, <code>content</code> empty</td><td>The agent loop reads <code>message.tool_calls</code> and never parses raw <code>&lt;tool_call&gt;</code> text.</td></tr>
+  <tr><td><b>The first request is slower</b> (4.0 s for the first tool call after start-up)</td><td>Latency is measured warm, with the cold run reported separately.</td></tr>
+</table>
+
+<div class="say"><b>Say it</b>
+"I tested the four riskiest assumptions on the real GPU before building on them, each with a fallback agreed in advance and a 60-minute
+fix limit. vLLM failed with a generic error; the real cause was 300 lines up in the log: a linker couldn't find <code>libcuda.so</code>
+because Kaggle only ships the versioned driver file. I wrote an ordered list of fixes, the first one worked in eleven minutes, and I turned
+it into a script. The broader takeaway: newer serving stacks assume newer GPUs, so on a T4 expect kernels to be built on the spot."</div>
+</div>
+
+<!-- 9 -->
+<div class="section qa">
+<h2>9 · Defending the design: interview questions</h2>
+
+<h3>Why not just call GPT-4 (or any large hosted model) with a good prompt?</h3>
+<p>For a narrow, high-volume job, a large hosted model costs more per conversation, adds network latency, and sends customer data to a
+  third party. It is also harder to control: a prompt shifts probabilities, it doesn't guarantee behaviour. A small model I host, with
+  retrieval, tools and code-enforced rules, is cheaper, faster, private, and every hard rule holds regardless of the model.</p>
+
+<h3>Why RAG for policies instead of fine-tuning them in?</h3>
+<p>Policies change. With RAG, a change is a document edit that takes effect immediately, and the answer can cite the current text. In the
+  weights, a change needs a training run, and the model may still mix old and new numbers with no way to check where an answer came from.</p>
+
+<h3>The base model already calls tools. Why fine-tune at all?</h3>
+<p>It handles the easy case: an order number given in the message. Fine-tuning targets the hard cases: no order number, several orders,
+  when <i>not</i> to call a tool, confirming before a write, escalating, and tone. It also replaces long prompt instructions, which a 2B
+  model follows loosely and which cost latency on every turn.</p>
+
+<h3>Why is "only show customers their own orders" in code, not the prompt?</h3>
+<p>Because it must hold 100% of the time. A prompt is followed most of the time, and an attacker can try "ignore your instructions". The
+  tool layer only ever queries the signed-in customer's rows, so even a fully compromised model can't leak another customer's order.</p>
+
+<h3>Why an 8K context when the model supports about 262K?</h3>
+<p>Memory, speed and accuracy. Each token in context costs GPU memory (KV cache), so a smaller window serves more conversations per GPU.
+  Prefill time grows with prompt length, against a 3-second budget. And a 2B model finds facts less reliably in very long prompts. A support
+  turn fits in 8K: system prompt, tools, recent history, four chunks and a reply.</p>
+
+<h3>Why does a long system prompt slow every turn?</h3>
+<p>The whole prompt is re-sent and re-processed in prefill on every request, until prefix caching lets the server reuse the part it has
+  already processed. A system prompt that's 1,000 tokens longer is 1,000 extra tokens of prefill on every single turn.</p>
+
+<h3>Why non-thinking mode?</h3>
+<p>Measured: thinking used 3–11× the tokens and time on lookup turns and gave the same tool call. Without a tool it hit a 1,500-token cap and
+  cut off. Support turns are lookups, not puzzles, and the latency budget is 3 seconds.</p>
+
+<h3>Why vLLM and not Transformers or llama.cpp?</h3>
+<p>vLLM decoded 4.5× faster than Transformers on the same T4, serves several conversations at once (continuous batching), has prefix caching,
+  parses Qwen's tool calls into OpenAI JSON, and serves LoRA adapters next to the base model. llama.cpp was the pre-agreed fallback.</p>
+
+<h3>How do you make training reproducible on machines that disappear?</h3>
+<p>Stateless notebooks: code from Git, data and checkpoints on the Hub, settings in YAML, fixed seeds, pinned versions. Resume is a flag that
+  pulls the last checkpoint. I proved it with a deliberate crash.</p>
+
+<h3>Tell me about a hard bug.</h3>
+<p>The vLLM start-up failure (section 8): a generic error, the real cause 300 lines up, a missing <code>libcuda.so</code> symlink. What I'd
+  stress: I fixed the test first so it captured root causes, separated fatal errors from logged-but-harmless ones, and ran an ordered,
+  time-boxed list of fixes instead of trial and error.</p>
+
+<h3>What would you do differently?</h3>
+<p>Capture full logs in every automated test from the start. Check stop tokens and the chat template before anything else on a new model.
+  Validate training data for template artefacts like <code>{{…}}</code> before the first run, not after.</p>
+</div>
+
+<!-- 10 -->
+<div class="section">
+<h2>10 · Limits, open questions, glossary</h2>
+<h3>Known limits and open questions</h3>
+<ul>
+  <li><b>Cost is still an estimate.</b> $5 per 1,000 conversations assumes $1/hour and 200 conversations/hour; it needs measured throughput on the chosen host.</li>
+  <li><b>Two-tool-call turns are over budget</b> (p95 3.60 s against 3 s). Options: fewer passes per turn after fine-tuning, a shorter prompt, or a faster GPU.</li>
+  <li><b>All pass marks except the code-enforced ones are placeholders</b> until the baseline eval of the untrained model.</li>
+  <li><b>Escalation is trained, not counted.</b> If evals show missed escalations, a code backstop gets added.</li>
+  <li><b>English only, including Indian English.</b> Hinglish is out of scope until there is training data for it, and an unscored probe measures the gap.</li>
+  <li><b>The T4 is an old GPU.</b> Fast attention kernels need newer hardware, so production serving will likely use an L4/A10-class GPU.</li>
+</ul>
+
+<h3>Glossary</h3>
+<table>
+  <tr><th style="width:24%">Term</th><th>Plain meaning</th></tr>
+  <tr><td>LoRA</td><td>Fine-tuning that trains small add-on matrices instead of all 2B weights. The adapter is a few MB, and the base model stays unchanged.</td></tr>
+  <tr><td>Adapter</td><td>The saved LoRA weights. vLLM can serve several next to one base model (<code>--lora-modules</code>).</td></tr>
+  <tr><td>RAG</td><td>Retrieval-augmented generation: search documents at answer time and put the relevant text in the prompt.</td></tr>
+  <tr><td>Tool call</td><td>The model outputs a structured request (function name + arguments); code runs it and returns the result.</td></tr>
+  <tr><td>Chat template</td><td>The rule that turns a list of messages into the single string, with special tokens, that the model reads.</td></tr>
+  <tr><td>EOS / stop token</td><td>The token that means "turn finished". If generation doesn't stop on it, the model keeps writing.</td></tr>
+  <tr><td>Prefill / decode</td><td>Prefill reads the whole prompt in one pass; decode then writes one token at a time. Long prompts make prefill slow.</td></tr>
+  <tr><td>KV cache</td><td>Stored intermediate results for tokens already processed, so each new token doesn't re-read the whole prompt. It uses GPU memory per token.</td></tr>
+  <tr><td>Prefix caching</td><td>Reusing the KV cache for a prompt start (like the system prompt) shared across requests.</td></tr>
+  <tr><td>p95 latency</td><td>95% of replies are at least this fast. It describes the slow tail customers notice, not the average.</td></tr>
+  <tr><td>Temperature</td><td>How random the next-token choice is. Low means consistent; high means varied.</td></tr>
+  <tr><td>vLLM</td><td>A high-throughput inference server with batching, prefix caching, tool-call parsing and LoRA serving.</td></tr>
+  <tr><td>Unsloth</td><td>A library that makes LoRA fine-tuning faster and lighter on memory.</td></tr>
+  <tr><td>pgvector</td><td>A Postgres extension that stores embeddings and searches by similarity, so retrieval lives in the same database as orders.</td></tr>
+  <tr><td>Hub checkpoint</td><td>A training save pushed to Hugging Face, so a new machine can resume where the old one stopped.</td></tr>
+</table>
+</div>
+
+</body>
+</html>
