@@ -87,3 +87,8 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Did: rendered examples with Qwen3.5-2B's template, wrote `training/masking.py` and a test (now in CI) that fails if any system or customer token is trained. `data_prep/build_chat_dataset.py` makes the splits, token stats and the dataset card.
 - Surprised me: every reply renders after an empty `<think></think>` block that the serving prompt already contains, so the usual marker (`<|im_start|>assistant\n`) would train the model to write that block. Earlier assistant turns render without it, so only the last turn of a conversation has the shape the model generates.
 - Next time: render the serving prompt and the training example side by side before choosing any marker.
+
+### 2026-11-23 · Counting the adapter before training it
+- Did: `training/lora_budget.py` builds Qwen3.5-2B from its config with no weights, counts LoRA parameters by hand for r = 8, 16, 64, checks them against PEFT, and estimates training memory. Results and the target-module decision are in `DESIGN.md`.
+- Surprised me: only 6 of the 24 layers have `q/k/v/o_proj`; the other 18 are linear-attention layers with different names, so the usual target list never touches their attention. The model also carries a 331M-parameter vision tower that `all-linear` would quietly train. And the biggest activation cost is the logits: a 248k vocabulary makes them about 1 GB for one batch of 512 tokens.
+- Next time: print the model before choosing target modules; a recipe's names only mean something for the architecture it was written for.

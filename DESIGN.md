@@ -68,6 +68,66 @@ Run on a Kaggle T4 in one session with `training/notebooks/risk-tests.ipynb`. A 
 Pinned versions that worked: `requirements-gpu.txt` (training, tests 1–2) and `requirements-serve.txt` (vLLM, tests 3–4), kept in separate environments.
 Reports: `notes/gpu-risk-tests/report-run1.txt` and `report-run2.txt`.
 
+## Fine-tuning: adapter size and training memory
+
+Fine-tunes are LoRA adapters in 16-bit over the frozen base (not 4-bit QLoRA: Unsloth advises against quantized
+training for Qwen3.5, and 16-bit already fits a T4). Numbers below come from `training/lora_budget.py`, which reads
+the real layer shapes from the model's config on a laptop CPU.
+
+**The model.** Qwen3.5-2B has 2,213,241,664 parameters: 1,881,825,088 in the text model (508,559,360 of them in the
+embeddings, which the output head shares) and 331,416,576 in a vision tower that Nova never uses. Its 24 text
+layers are not all alike: 6 use full attention (`q/k/v/o_proj`) and 18 use linear attention (Gated DeltaNet, with
+`in_proj_qkv`, `in_proj_z`, `in_proj_a`, `in_proj_b`, `out_proj`). Every layer has the same MLP. `q_proj` is
+4,096 wide, not 2,048, because it also produces the attention output gate (8 heads × 256 × 2).
+
+**Adapter size.** A LoRA adapter on a layer of shape d_out × d_in trains r × (d_in + d_out) parameters. With
+Unsloth's seven targets (`q/k/v/o_proj`, `gate/up/down_proj`):
+
+| Module | Shape (out × in) | Layers | r = 8 | r = 16 | r = 64 |
+|---|---|---|---|---|---|
+| q_proj | 4096 × 2048 | 6 | 294,912 | 589,824 | 2,359,296 |
+| k_proj | 512 × 2048 | 6 | 122,880 | 245,760 | 983,040 |
+| v_proj | 512 × 2048 | 6 | 122,880 | 245,760 | 983,040 |
+| o_proj | 2048 × 2048 | 6 | 196,608 | 393,216 | 1,572,864 |
+| gate_proj | 6144 × 2048 | 24 | 1,572,864 | 3,145,728 | 12,582,912 |
+| up_proj | 6144 × 2048 | 24 | 1,572,864 | 3,145,728 | 12,582,912 |
+| down_proj | 2048 × 6144 | 24 | 1,572,864 | 3,145,728 | 12,582,912 |
+| **Total** | | 96 | **5,455,872** | **10,911,744** | **43,646,976** |
+| Share of the model | | | 0.25% | 0.49% | 1.97% |
+
+That is 681,984 parameters per unit of rank. PEFT's own count of trainable parameters matches the hand count
+exactly at all three ranks, with 96 layers wrapped and none in the vision tower. At r = 16 the adapter is about
+44 MB in fp32 (22 MB in 16-bit).
+
+**Decision: keep the seven targets.** They reach every MLP but only the 6 full-attention layers; the 18
+linear-attention layers' own projections get no adapter. Adding them would cost 5.9M more parameters at r = 16
+(+54%). The seven are Unsloth's tested recipe for Qwen3.5, and SFT-1 teaches tone, which the MLPs in all 24 layers
+can carry. Revisit if a fine-tune fails to move behaviour the evals care about. `target_modules="all-linear"` is
+ruled out: on this model it also wraps 98 layers of the vision tower.
+
+**Memory for one training step** (r = 16, batch 2, max_seq_length 256 from the dataset card, `adamw_8bit`,
+gradient checkpointing):
+
+| What | Estimate | How |
+|---|---|---|
+| Frozen base weights, 16-bit | 3.76 GB text only / 4.43 GB with the vision tower | 2 bytes × parameters |
+| LoRA weights + gradients, fp32 | 0.09 GB | 8 bytes × 10.9M |
+| Adam moments, 8-bit | 0.02 GB | 2 bytes × 10.9M |
+| Saved layer inputs | 0.05 GB | batch × seq × 2,048 × 2 bytes × 24 layers |
+| Logits and their gradient, fp32 | up to 1.02 GB | batch × seq × 248,320 vocab × 4 bytes × 2; Unsloth's chunked loss keeps most of it from existing at once |
+| **Total** | **4.9–5.6 GB** | Unsloth lists about 5 GB for a 16-bit LoRA on this model |
+
+The vocabulary is the surprise: at 248,320 entries, the logits for one batch of 512 tokens weigh more than every
+activation the layers save. Batch size and sequence length raise that term linearly.
+
+**Why full fine-tuning does not fit.** Full fine-tuning with Adam in mixed precision costs about 16 bytes per
+parameter: 16-bit weights (2) and gradients (2), a 32-bit master copy of the weights (4), and Adam's two 32-bit
+moments (8). For the 1.88B text parameters that is 30.1 GB (35.4 GB with the vision tower) before activations,
+twice a T4's 15 GB. LoRA trains 0.49% of the parameters, so the optimizer state that dominates the full fine-tune
+nearly vanishes, and what is left is the frozen weights.
+
+**Measured peak memory** (`torch.cuda.max_memory_allocated()`): *to be measured on the first full training run.*
+
 ## Where the eval database lives
 
 The model runs on a Kaggle GPU, and its tools need the store's database. A Kaggle notebook cannot
@@ -145,3 +205,4 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-22 | Scorer `eval-v1` frozen: adds the required-calls view next to the strict tool checks, and in unanswerable cases counts an explicit offer to hand off as handing off | Read from the ceiling's traces: 63 cases made every required call plus extra searches, and 7 unanswerable replies asked "Would you like me to hand this over to our support team?". Both were correct behaviour failed by over-strict checks. Frozen before the floor results, applied to every system |
 | 2026-11-22 | Baseline measured on all 100 golden cases (scorer `eval-v1`): floor 25/100 correct, ceiling 58/100; floor serving latency median 4.33 s, p95 7.71 s per turn | `evals/reports/00_baseline_floor.md` and `00_baseline_ceiling.md`; top three floor failure types counted from 30 read failures |
 | 2026-11-22 | Sampling: temperature 0.2 kept for the 2B (model card's 1.0 / top_k 20 / presence penalty 2.0 rejected) | Same 30 cases: 9/30 against 5/30 correct, 17/30 against 12/30 on facts, equal reply length |
+| 2026-11-23 | Fine-tuning: 16-bit LoRA, r = 16 / alpha = 16 to start, Unsloth's seven target modules (10.9M trainable parameters, 0.49%); estimated 4.9–5.6 GB per training step | `training/lora_budget.py`: hand count matches PEFT at r = 8, 16, 64. The seven names miss the 18 linear-attention layers' projections (kept as a known choice); `all-linear` would wrap the vision tower. Full fine-tuning needs about 30 GB, twice a T4 |
