@@ -4,6 +4,10 @@
     uv run python evals/run_eval.py --run 2026-11-23_floor --provider openai \\
         --base-url http://localhost:8000/v1 --model Qwen/Qwen3.5-2B
 
+    # floor without a GPU server: the model runs inside the process with Transformers (e.g. a Mac's GPU)
+    uv run --group local-model python evals/run_eval.py --run 2026-11-22_floor-mac --system floor \
+        --provider local --model Qwen/Qwen3.5-2B
+
     # ceiling: Gemini on Vertex AI (VERTEX_API_KEY and VERTEX_PROJECT set)
     uv run python evals/run_eval.py --run 2026-11-23_ceiling --provider gemini --model gemini-4-hydrogen
 
@@ -79,6 +83,9 @@ SAMPLING = {   # named settings for the sampling comparison; temperature is pass
 # Running ---------------------------------------------------------------------------
 
 def make_client(a):
+    if a.provider == "local":
+        from agent.local_client import LocalChatClient
+        return LocalChatClient(a.model)
     if a.provider == "gemini":
         from agent.gemini_adapter import GeminiChatClient
         return GeminiChatClient(api_key=os.environ["VERTEX_API_KEY"], project=os.environ["VERTEX_PROJECT"],
@@ -279,7 +286,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--run", help="run name, e.g. 2026-11-23_floor (folder under evals/runs)")
     ap.add_argument("--system", choices=["floor", "ceiling", "candidate", "diagnostic"], help="what the run measures")
-    ap.add_argument("--provider", choices=["openai", "gemini"], default="openai")
+    ap.add_argument("--provider", choices=["openai", "gemini", "local"], default="openai")
     ap.add_argument("--base-url", help="OpenAI-compatible server, for --provider openai")
     ap.add_argument("--model")
     ap.add_argument("--temperature", type=float, default=0.2)
