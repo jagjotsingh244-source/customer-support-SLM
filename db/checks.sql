@@ -20,9 +20,10 @@ SELECT o.order_id FROM orders o JOIN order_items i USING (order_id)
 GROUP BY o.order_id
 HAVING o.shipping_fee_inr <> CASE WHEN sum(i.qty * i.unit_price_inr) > 499 THEN 0 ELSE 49 END;
 
--- check: item marked opened that is not electronics
+-- check: item marked opened that is neither electronics nor a hygiene item
+-- (opened = unsealed; it only changes the return rules for those two)
 SELECT i.order_id, i.line_no FROM order_items i JOIN products p USING (product_id)
-WHERE i.opened AND p.category <> 'electronics';
+WHERE i.opened AND p.category <> 'electronics' AND p.returnable;
 
 -- check: any timestamp after NOW
 SELECT 'customers', customer_id FROM customers WHERE created_at > :'now'

@@ -80,7 +80,7 @@ SELECT i.line_no, p.name, p.category, p.returnable, i.opened,
        s.delivered_at::date AS delivered_on,
        w.window_ends::date AS window_ends,
        CASE WHEN s.delivered_at IS NULL                     THEN 'not_delivered'
-            WHEN NOT p.returnable                           THEN 'not_returnable'
+            WHEN NOT p.returnable AND i.opened              THEN 'not_returnable'  -- once unsealed
             WHEN :'now'::timestamptz > w.window_ends        THEN 'outside_window'
             WHEN ri.return_id IS NOT NULL                   THEN 'already_returning'
             WHEN p.category = 'electronics' AND i.opened     THEN 'only_if_faulty'

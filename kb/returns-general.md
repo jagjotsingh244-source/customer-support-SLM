@@ -18,8 +18,8 @@ in. If your order arrived in more than one shipment, each item has its own
 return window.
 
 ## Items you cannot return
-Some items are marked "Not returnable" on the product page. They cannot be
-returned for a change of mind (see "Items you cannot return").
+Some items are marked "Not returnable" on the product page. Once unsealed,
+they cannot be returned for a change of mind (see "Items you cannot return").
 
 ## Reasons for a return
 You can return an item because it is faulty, damaged in transit, the wrong item,
@@ -40,8 +40,9 @@ We inspect the item within 2 days of pickup. If it passes, we send your refund
 
 ## Why a return can be rejected
 A return is rejected if it is outside the return window, if the item is marked
-"Not returnable", if opened electronics are not faulty, or if the item fails
-inspection. If an item fails inspection after pickup, we send it back to you.
+"Not returnable" and has been unsealed, if opened electronics are not faulty, or
+if the item fails inspection. If an item fails inspection after pickup, we send
+it back to you.
 
 ## Returning part of an order
 You can return one item and keep the rest. You get a refund for the returned

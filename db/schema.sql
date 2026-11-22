@@ -55,7 +55,7 @@ CREATE TABLE products (
   name            TEXT NOT NULL,
   category        TEXT NOT NULL CHECK (category IN ('electronics','home','accessories')),
   price_inr       NUMERIC(10,2) NOT NULL CHECK (price_inr > 0),
-  returnable      BOOLEAN NOT NULL DEFAULT true,
+  returnable      BOOLEAN NOT NULL DEFAULT true,   -- false: hygiene item, not returnable once unsealed (order_items.opened)
   warranty_months INT NOT NULL DEFAULT 0 CHECK (warranty_months >= 0)   -- Q15
 );
 

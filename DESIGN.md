@@ -38,8 +38,12 @@ Targets are product requirements: change them only deliberately, with a written 
 Estimates get replaced by measurements as the project goes on.
 
 - **p95 latency, reply with one tool call: 3 s** — *target*. Covers both model passes (emit the tool call, then answer from the result) plus the DB query.
+  *Measured* for the prompted Qwen3.5-2B (vLLM 0.34.0, one T4, prompt v0, temperature 0.2, database on Neon), on a
+  "where is my order" turn that needs **two** tool calls (three model passes): **median 3.10 s, p95 3.60 s** (6 runs,
+  p95 = slowest of 5 warm runs; the cold first run took 6.5 s). Model passes were about 1.0–1.5 s each after warm-up,
+  so a one-tool-call reply sits near 2 s, inside the target; two-tool-call turns are over it.
 - **Context window: 8,192 tokens** — *target* for the total. The split is an *estimate*:
-  - system prompt: 500 (measure in the baseline eval)
+  - system prompt: 500 (*measured* with the tool schemas: system prompt v0 + 6 tool schemas + a 15-token user message = 939 tokens on the first model pass)
   - tool schemas: 700 (*measured* in the generation experiments: 656 tokens for the 6 draft tools, about 180 fixed + about 80 per tool; 700 leaves room for one more tool)
   - history: 4,000 (refine with synthetic conversations and the eval harness)
   - retrieved chunks: 2,000, e.g. 4 × 500 (refine when retrieval is built)
@@ -90,3 +94,5 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-20 | Stack confirmed: Qwen3.5-2B + Unsloth LoRA for training, vLLM 0.34.0 with LoRA modules for serving; no fallbacks taken. Transformers is for training and offline checks only | Risk tests 1–4 pass on a T4; Transformers decodes at 11 tok/s against vLLM's 50 tok/s |
 | 2026-11-21 | Language scope: English only; Hinglish measured by an unscored probe, never counted in scores | Training data (Bitext, synthetic conversations) is English; scoring Hinglish would measure a capability Nova was never taught |
 | 2026-11-22 | Eval database: managed Postgres on Neon, copied from local Docker | Kaggle notebooks cannot reach the laptop's Postgres; in-notebook Postgres adds minutes to every run, and a laptop-only CPU model would take hours for the eval |
+| 2026-11-22 | Hygiene items (earbuds, earphones, trimmers, pillows, screen protectors): not returnable once unsealed; returnable within the normal window while sealed | Data marked them not returnable even when sealed, while the help center said "once unsealed". The help center's rule is kept; the return check, store SQL, seed and help-center wording now agree |
+| 2026-11-22 | Latency measured for the prompted 2B: median 3.10 s, p95 3.60 s on a two-tool-call turn | First conversation run on a Kaggle T4 with vLLM and the database on Neon |

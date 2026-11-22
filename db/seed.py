@@ -427,6 +427,7 @@ def build_return_rejected(d):
         d.items[0]["opened"] = True
     elif why == "not_returnable":
         d.items = lines(1, 1, returnable=False)
+        d.items[0]["opened"] = True                      # hygiene items are returnable while sealed
     else:
         d.items = one_category_lines()
     if why == "outside_window":

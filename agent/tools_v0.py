@@ -168,7 +168,7 @@ def propose_return(session: Session, order_id: int, line_no: int, reason: str) -
         verdict = "already_returning"
     elif now() > it["window_ends"]:
         verdict = "outside_window"
-    elif not it["returnable"]:
+    elif not it["returnable"] and it["opened"]:      # hygiene item, unsealed; sealed ones follow the window
         verdict = "not_returnable" if reason == "changed_mind" else "report_for_replacement"
     elif it["category"] == "electronics" and it["opened"] and reason == "changed_mind":
         verdict = "opened_not_faulty"
