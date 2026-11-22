@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Make vLLM start on a Kaggle T4 (GPU risk test 3, notes/gpu-risk-tests/).
+# Make vLLM start on a free T4 (Kaggle or Colab; GPU risk test 3, notes/gpu-risk-tests/).
 #
 # Why: on first use FlashInfer compiles a norm kernel for the GPU (sm75 on a T4) and links it with -lcuda.
 # Kaggle's image has the driver (/usr/local/nvidia/lib64/libcuda.so.<version>) but no plain libcuda.so,
@@ -14,7 +14,8 @@ set -u
 LINK_DIR=/tmp/cuda-link
 LIBCUDA=""
 for f in /usr/local/cuda*/lib64/stubs/libcuda.so /usr/lib/x86_64-linux-gnu/libcuda.so* \
-         /usr/local/nvidia/lib64/libcuda.so* /usr/lib64/libcuda.so*; do
+         /usr/local/nvidia/lib64/libcuda.so* /usr/lib64/libcuda.so* \
+         /usr/lib64-nvidia/libcuda.so*; do   # the last one is where Colab keeps the driver
   if [ -e "$f" ]; then LIBCUDA="$f"; break; fi
 done
 
