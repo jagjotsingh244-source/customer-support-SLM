@@ -1,0 +1,21 @@
+{
+  "run": "2026-11-23_floor-twins",
+  "system": "floor",
+  "provider": "local",
+  "model": "Qwen/Qwen3.5-2B",
+  "base_url": null,
+  "prompt_version": "v0",
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 12,
+  "commit": "3a99d84",
+  "db_host": "localhost:5433",
+  "notes": "rerun of the 12 golden cases the phrasing probes reword, to measure run-to-run variation; same setup as 2026-11-22_floor",
+  "served_models": [
+    "Qwen/Qwen3.5-2B"
+  ]
+}

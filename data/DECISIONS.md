@@ -133,7 +133,8 @@ keyword-length ones (negation is covered: 12). Closed with 12 phrasing probes in
 customer, order and expectations (`evals/validate.py --probes` enforces that). They stay out of the 100-case
 golden set so baseline scores remain comparable, and `evals/run_eval.py --cases probes --paired-run <golden run>`
 reports each probe next to its clean twin. With 3 cases per phrasing, a difference of one case is noise; the probes
-flag large gaps, they do not measure small ones.
+flag large gaps, they do not measure small ones. Baseline: `evals/reports/01_phrasing_probes_baseline.md` (the
+ceiling shows no wording effect; the floor fails one rude return its clean twin passes in two runs out of two).
 
 ## 6. Rewrite the replies with a larger model, and read the output for new habits
 

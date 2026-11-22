@@ -1,0 +1,137 @@
+{
+ "scorer_version": "eval-v1",
+ "scores": {
+  "esc-004": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false
+  },
+  "ord-003": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false
+  },
+  "ord-006": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "ord-015": {
+   "tool_names": true,
+   "tool_args": true,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": true,
+   "all_required": true
+  },
+  "ord-017": {
+   "tool_names": true,
+   "tool_args": true,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "pol-001": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "pol-009": {
+   "tool_names": true,
+   "tool_args": true,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "pol-010": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false
+  },
+  "ret-001": {
+   "tool_names": true,
+   "tool_args": true,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": true,
+   "all_required": true
+  },
+  "ret-004": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "ret-013": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "una-002": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false
+  }
+ }
+}

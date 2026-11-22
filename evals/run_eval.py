@@ -244,17 +244,22 @@ def paired_rows(cases, scores, paired_run: str | None) -> list[str]:
     if paired_run and (RUNS / paired_run / "scores.json").exists():
         twin = json.loads((RUNS / paired_run / "scores.json").read_text())["scores"]
     rows = ["", f"Each probe next to its clean twin" + (f" in run `{paired_run}`" if twin else " (no --paired-run given)")
-            + " (all = every check passed, strict tools):", "",
-            "| Probe | Phrasing | Twin | Probe all | Twin all |", "|---|---|---|---|---|"]
+            + " (all = every check passed with the strict tool checks; all_required = with required_calls):", "",
+            "| Probe | Phrasing | Twin | Probe all | Twin all | Probe all_required | Twin all_required |",
+            "|---|---|---|---|---|---|---|"]
+    def mark(x, m):
+        return "-" if x is None else ("pass" if x[m] else "fail")
     for i, s in sorted(scores.items()):
         c = cases[i]
         t = twin.get(c.rephrases)
-        rows.append(f"| {i} | {c.phrasing} | {c.rephrases} | {'pass' if s['all'] else 'fail'} | "
-                    + ("-" if t is None else ("pass" if t["all"] else "fail")) + " |")
+        rows.append(f"| {i} | {c.phrasing} | {c.rephrases} | {mark(s, 'all')} | {mark(t, 'all')} | "
+                    f"{mark(s, 'all_required')} | {mark(t, 'all_required')} |")
     if twin:
-        both = [(s["all"], twin[cases[i].rephrases]["all"]) for i, s in scores.items() if cases[i].rephrases in twin]
-        rows += ["", f"Probes passed {sum(p for p, _ in both)}/{len(both)}; their clean twins passed "
-                 f"{sum(t for _, t in both)}/{len(both)}."]
+        paired = [(s, twin[cases[i].rephrases]) for i, s in scores.items() if cases[i].rephrases in twin]
+        rows.append("")
+        for m in ("all", "all_required"):
+            rows.append(f"{m}: probes passed {sum(p[m] for p, _ in paired)}/{len(paired)}, "
+                        f"their clean twins {sum(t[m] for _, t in paired)}/{len(paired)}.  ")
     return rows
 
 

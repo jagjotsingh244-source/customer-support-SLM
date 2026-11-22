@@ -1,0 +1,137 @@
+{
+ "scorer_version": "eval-v1",
+ "scores": {
+  "ord-phr-01": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false
+  },
+  "ret-phr-02": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": false,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "pol-phr-03": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true
+  },
+  "ord-phr-04": {
+   "tool_names": true,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true
+  },
+  "pol-phr-05": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true
+  },
+  "ret-phr-06": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "ord-phr-07": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true
+  },
+  "pol-phr-08": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false
+  },
+  "esc-phr-09": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false
+  },
+  "ord-phr-10": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true
+  },
+  "ret-phr-11": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true
+  },
+  "una-phr-12": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false
+  }
+ }
+}

@@ -1,0 +1,21 @@
+{
+  "run": "2026-11-23_floor-probes",
+  "system": "floor",
+  "provider": "local",
+  "model": "Qwen/Qwen3.5-2B",
+  "base_url": null,
+  "prompt_version": "v0",
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "probes",
+  "paired_run": "2026-11-22_floor",
+  "cases": 12,
+  "commit": "3a99d84",
+  "db_host": "localhost:5433",
+  "notes": "phrasing probes; same setup as 2026-11-22_floor (Transformers on the Mac GPU, local database copy)",
+  "served_models": [
+    "Qwen/Qwen3.5-2B"
+  ]
+}
