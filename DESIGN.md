@@ -109,6 +109,20 @@ appear in a section, so "late delivery delayed shipment" returns nothing althoug
 shipments" page exists. The baseline keeps v0 as it is (changing the loop or search would need both systems
 re-run); better retrieval is the planned fix.
 
+## Evaluation rules
+
+- **One golden set, one scorer, every system.** The floor, the ceiling and every fine-tuned candidate run the
+  same 100 cases (`evals/golden/`) and are scored by the same code (`evals/run_eval.py`, `SCORER_VERSION`).
+  Traces are saved, so any run can be re-scored for free (`--rescore`).
+- **Frozen while systems are compared.** `eval-v1` was frozen on 2026-11-22, before the floor results were seen.
+  A change to a case or a check needs a written reason in the change log, a new scorer version, and a
+  re-score of every run, so all reports stay on one version. Cases change only when they are wrong, never
+  to make a system pass.
+- **Same loop for every scored system:** prompt v0, the six tools, at most 4 model calls per turn. Runs with
+  other settings are labelled `diagnostic` and never reported as the floor or ceiling.
+- **Two views of tool use:** strict (exact calls, nothing extra: correct and efficient) and required calls
+  (every needed call, in order, with the right arguments; extras allowed: correct). Both are reported.
+
 ## Change log
 
 Record every budget or mechanism change: old → new, and the evidence.
@@ -125,3 +139,4 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-22 | Hygiene items (earbuds, earphones, trimmers, pillows, screen protectors): not returnable once unsealed; returnable within the normal window while sealed | Data marked them not returnable even when sealed, while the help center said "once unsealed". The help center's rule is kept; the return check, store SQL, seed and help-center wording now agree |
 | 2026-11-22 | Latency measured for the prompted 2B: median 3.10 s, p95 3.60 s on a two-tool-call turn | First conversation run on a Kaggle T4 with vLLM and the database on Neon |
 | 2026-11-22 | Ceiling model: `gemini-4-hydrogen` on Vertex AI, through an adapter, same prompt, tools and loop as the floor | No Anthropic API access (a Claude Pro plan does not include it); the Vertex key reaches only Gemini models. First run: it never answered the delayed-order turn because the keyword search failed and the 4-call limit ran out |
+| 2026-11-22 | Scorer `eval-v1` frozen: adds the required-calls view next to the strict tool checks, and in unanswerable cases counts an explicit offer to hand off as handing off | Read from the ceiling's traces: 63 cases made every required call plus extra searches, and 7 unanswerable replies asked "Would you like me to hand this over to our support team?". Both were correct behaviour failed by over-strict checks. Frozen before the floor results, applied to every system |
