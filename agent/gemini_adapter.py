@@ -27,13 +27,16 @@ What it translates, and the differences that remain:
 """
 
 import json
+import time
 from types import SimpleNamespace
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 from openai.types.chat import ChatCompletion
 
 MIN_OUTPUT_TOKENS = 8192
+RETRY_CODES = {429, 500, 503}          # rate limit (free tier: requests per minute) and transient server errors
+RETRY_WAITS = (10, 20, 40, 60, 60)     # seconds; about 3 minutes in all before giving up
 FINISH = {"STOP": "stop", "MAX_TOKENS": "length", "SAFETY": "content_filter"}
 
 
@@ -105,11 +108,21 @@ class GeminiChatClient:
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create))
 
     def create(self, *, model, messages, tools, temperature, max_tokens, **_):
+        """One model call. Sampling settings other than temperature are ignored (vLLM-only).
+
+        Rate-limit and server errors are retried with waits; the waiting counts in the
+        call's measured latency, so ceiling latency is an upper bound on a free tier.
+        """
         system, contents = _contents(messages)
-        resp = self._genai.models.generate_content(
-            model=model, contents=contents,
-            config=types.GenerateContentConfig(
-                system_instruction=system, tools=_declarations(tools), temperature=temperature,
-                max_output_tokens=max(max_tokens, MIN_OUTPUT_TOKENS),
-                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)))
-        return _completion(resp, model)
+        config = types.GenerateContentConfig(
+            system_instruction=system, tools=_declarations(tools), temperature=temperature,
+            max_output_tokens=max(max_tokens, MIN_OUTPUT_TOKENS),
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True))
+        for wait in (*RETRY_WAITS, None):
+            try:
+                resp = self._genai.models.generate_content(model=model, contents=contents, config=config)
+                return _completion(resp, model)
+            except errors.APIError as e:
+                if wait is None or e.code not in RETRY_CODES:
+                    raise
+                time.sleep(wait)

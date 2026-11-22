@@ -12,18 +12,19 @@ import time
 FALLBACK_REPLY = "Let me connect you with a teammate."
 
 
-def run_turn(client, model, messages, tools, registry, session, max_steps=4, temperature=0.2):
+def run_turn(client, model, messages, tools, registry, session, max_steps=4, temperature=0.2, sampling=None):
     """Answer the last user message in `messages` (appended to in place).
 
     Returns (reply, trace). The trace keeps what the scorecard needs: every tool
     call with its raw argument string, whether it parsed, and its result; and
-    every model call with its latency and token counts.
+    every model call with its latency and token counts. `sampling` adds extra
+    request settings (e.g. top_p, presence_penalty) on top of temperature.
     """
     trace = {"tool_calls": [], "model_calls": [], "escalated": False}
     for _ in range(max_steps):
         t0 = time.perf_counter()
         r = client.chat.completions.create(model=model, messages=messages, tools=tools,
-                                           temperature=temperature, max_tokens=512)
+                                           temperature=temperature, max_tokens=512, **(sampling or {}))
         trace["model_calls"].append({
             "latency_s": round(time.perf_counter() - t0, 3),
             "prompt_tokens": r.usage.prompt_tokens if r.usage else None,
