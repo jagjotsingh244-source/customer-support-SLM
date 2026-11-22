@@ -8,6 +8,7 @@ explain it end to end.
 |---|---|
 | [foundations.pdf](foundations.pdf) | Where each capability lives, the budgets, the model choice, training on free GPUs, how the model produces a reply, the GPU risk tests and the vLLM fix, and likely interview questions with answers |
 | [store-and-data.pdf](store-and-data.pdf) | The store Nova works in: the schema designed from customer questions, state machines, the frozen clock and train/eval split, the scenario seed, the help center written for retrieval, the five layers of checks, bugs found, and likely interview questions with answers |
+| [baseline-and-scorecard.pdf](baseline-and-scorecard.pdf) | Measuring Nova before improving it: the agent loop, tools and prompt v0, the Neon database, the help center as searchable sections, floor (Qwen3.5-2B) against ceiling (Gemini) on one loop, the 100 golden cases and their validator, the frozen scorer, the results, 30 failures read and counted, sampling and latency, what went wrong, and likely interview questions with answers |
 
 Each PDF is built from the HTML file of the same name in `src/`. After editing it, rebuild with:
 

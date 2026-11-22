@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nova: the baseline and the scorecard</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 18mm 17mm;
+          @bottom-center { content: "Nova · the baseline and the scorecard · " counter(page); font: 8pt -apple-system, Helvetica, sans-serif; color: #8a8f98; } }
+  @page :first { @bottom-center { content: none; } }
+  :root { --ink: #1d2330; --muted: #5b6270; --line: #dfe3ea; --soft: #f4f6f9; --accent: #2457c5; --accent-soft: #eaf0fc; --warn: #a1520d; --warn-soft: #fdf3e7; --ok: #1d7a46; --ok-soft: #e8f5ee; }
+  * { box-sizing: border-box; }
+  body { font: 10.2pt/1.5 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); margin: 0; background: #fff; }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 8pt; letter-spacing: -0.4pt; }
+  h2 { font-size: 15pt; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 2px solid var(--ink); letter-spacing: -0.2pt; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  code { font: 8.8pt/1.4 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); padding: 0.5pt 3pt; border-radius: 3px; }
+  pre { font: 8.4pt/1.45 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 7pt 9pt; margin: 4pt 0 9pt; white-space: pre-wrap; break-inside: avoid; }
+  pre code { background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 10pt; font-size: 8.9pt; line-height: 1.38; break-inside: auto; }
+  th { text-align: left; background: var(--soft); font-weight: 600; }
+  th, td { border: 1px solid var(--line); padding: 4pt 6pt; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .section { margin-top: 22pt; }
+  .section.first, .section.page { break-before: page; margin-top: 0; }
+  h2, h3 { break-after: avoid; }
+  svg { break-inside: avoid; }
+  .fig { break-inside: avoid; margin: 6pt 0 10pt; }
+  .fig .cap { font-size: 8.6pt; color: var(--muted); margin-top: 3pt; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.8pt; }
+  .say { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .say b:first-child { color: var(--accent); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .warn { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .warn b:first-child { color: var(--warn); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 6pt 0 10pt; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9pt; margin: 6pt 0 10pt; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 8pt 10pt; break-inside: avoid; }
+  .card h4 { margin: 0 0 3pt; font-size: 10pt; }
+  .card p { margin: 0; font-size: 9pt; }
+  .num { font-size: 18pt; font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .pass { color: var(--ok); font-weight: 700; }
+  .fail { color: #b42318; font-weight: 700; }
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover .kicker { font-size: 9pt; font-weight: 600; letter-spacing: 1.2pt; text-transform: uppercase; color: var(--accent); margin-bottom: 10pt; }
+  .cover .lede { font-size: 12pt; color: var(--muted); max-width: 140mm; }
+  .toc { border-top: 1px solid var(--line); padding-top: 10pt; columns: 2; column-gap: 14pt; font-size: 9.6pt; }
+  .toc div { break-inside: avoid; margin-bottom: 4pt; }
+  .toc span { color: var(--accent); font-weight: 700; display: inline-block; width: 16pt; }
+  .qa h3 { margin-top: 11pt; }
+  .qa p { margin-bottom: 4pt; }
+  svg text { font-family: -apple-system, Helvetica, Arial, sans-serif; }
+  svg .mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+  .seq { display: flex; flex-wrap: wrap; gap: 4pt; align-items: center; margin: 3pt 0 6pt; }
+  .seq span { font: 8.4pt "SF Mono", Menlo, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 2pt 5pt; background: #fff; }
+  .seq span.req { background: var(--ok-soft); border-color: #bfe3cd; }
+  .seq span.extra { background: var(--soft); color: var(--muted); }
+  .seq i { color: var(--muted); font-style: normal; }
+  .chat { border: 1px solid var(--line); border-radius: 6px; padding: 7pt 10pt; margin: 4pt 0 10pt; font-size: 9.2pt; break-inside: avoid; }
+  .chat p { margin: 0 0 4pt; display: grid; grid-template-columns: 58pt 1fr; }
+  .chat p.small { display: block; padding-left: 58pt; }
+  .chat .who { font-weight: 700; color: var(--muted); font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.4pt; }
+  .chat .tool { font: 8.4pt "SF Mono", Menlo, monospace; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div>
+    <div class="kicker">Project guide · Part 3</div>
+    <h1>The baseline:<br>measuring Nova before improving it</h1>
+    <p class="lede">Before any fine-tuning, the cheapest version of Nova that could work was built and measured: a prompt, six rough
+      tools and a plain loop around the untrained Qwen3.5-2B (the floor), and the same setup around a frontier model (the ceiling).
+      This part explains how the agent, the 100 golden test cases and the scorer were built, why each choice was made, what the
+      two systems scored, and what reading their failures says Nova must learn first.</p>
+  </div>
+  <div class="grid2" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="card"><div class="num">100</div><p>golden cases in six categories, each checked against the database</p></div>
+    <div class="card"><div class="num">25 / 100</div><p>correct for the floor: Qwen3.5-2B with a prompt, nothing trained</p></div>
+    <div class="card"><div class="num">58 / 100</div><p>correct for the ceiling: Gemini with the same prompt, tools and loop</p></div>
+    <div class="card"><div class="num">30</div><p>failures read one by one and grouped into counted failure types</p></div>
+  </div>
+  <div class="toc">
+    <div><span>1</span>Why measure before improving</div>
+    <div><span>2</span>The agent: prompt, tools and loop</div>
+    <div><span>3</span>Where the database lives</div>
+    <div><span>4</span>The help center as searchable sections</div>
+    <div><span>5</span>Floor and ceiling: one loop, two models</div>
+    <div><span>6</span>The golden set: 100 true cases</div>
+    <div><span>7</span>The scorer and why it is frozen</div>
+    <div><span>8</span>Results: floor against ceiling</div>
+    <div><span>9</span>Reading 30 failures</div>
+    <div><span>10</span>Sampling and latency</div>
+    <div><span>11</span>What went wrong along the way</div>
+    <div><span>12</span>Defending the design: interview questions</div>
+    <div><span>13</span>Limits, what comes next, glossary</div>
+  </div>
+  <p class="small muted">Repository: github.com/jagjotsingh244-source/customer-support-SLM · Evidence for every number here is in
+    <code>evals/runs/</code> (every trace, re-scorable), <code>evals/reports/00_baseline_*.md</code>, <code>evals/golden/</code>,
+    <code>agent/</code> and <code>DESIGN.md</code>. Every chart in this guide is computed from the committed run files.</p>
+</div>
+
+<!-- 1 -->
+<div class="section first">
+<h2>1 · Why measure before improving</h2>
+<p>The tempting order is to fine-tune first. The problem shows up in the demo: <i>"How much better is this than just prompting the
+  base model?"</i> Without a measured starting point there is no answer. Maybe prompting alone was already 80% as good. Maybe the
+  fine-tune made one category worse. A result without a comparison is only a claim.</p>
+<p>So two systems were measured before anything was trained, on the same 100 test cases:</p>
+<ul>
+  <li><b>The floor:</b> the untrained Qwen3.5-2B with a system prompt and tools. Every later improvement has to beat it.</li>
+  <li><b>The ceiling:</b> a much stronger model with <i>exactly the same</i> prompt, tools and loop. It shows how far this design can go.</li>
+</ul>
+<div class="fig"><svg viewBox="0 0 700 120" width="100%" role="img" aria-label="Floor 25, ceiling 58 out of 100"><line x1="40" y1="62" x2="660" y2="62" stroke="#dfe3ea" stroke-width="6" stroke-linecap="round"/><rect x="195.0" y="56" width="204.60000000000002" height="12" rx="3" fill="#eaf0fc" stroke="#c4d4f5"/><text x="297.3" y="50" text-anchor="middle" font-size="11" fill="#1d2330" font-weight="600">the gap: 33 points to close</text><circle cx="195.0" cy="62" r="7" fill="#2a78d6" stroke="#fff" stroke-width="2"/><text x="195.0" y="90" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d2330">Floor: 25/100</text><text x="195.0" y="104" text-anchor="middle" font-size="9.5" fill="#5b6270">Qwen3.5-2B, prompted</text><circle cx="399.6" cy="62" r="7" fill="#eb6834" stroke="#fff" stroke-width="2"/><text x="399.6" y="90" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d2330">Ceiling: 58/100</text><text x="399.6" y="104" text-anchor="middle" font-size="9.5" fill="#5b6270">Gemini, same prompt and tools</text><line x1="474.0" y1="54" x2="474.0" y2="70" stroke="#5b6270" stroke-dasharray="2 2"/><text x="474.0" y="34" text-anchor="middle" font-size="9.5" fill="#5b6270">fine-tuned 2B: ?</text><line x1="474.0" y1="38" x2="474.0" y2="52" stroke="#5b6270" stroke-dasharray="2 2"/><text x="40.0" y="116" text-anchor="middle" font-size="8.5" fill="#5b6270">0</text><text x="350.0" y="116" text-anchor="middle" font-size="8.5" fill="#5b6270">50</text><text x="660.0" y="116" text-anchor="middle" font-size="8.5" fill="#5b6270">100</text></svg>
+<div class="cap">Correct cases out of 100 (all checks passed, required tool calls made). The gap between floor and ceiling is the
+  room that fine-tuning, retrieval and better tools have to close.</div></div>
+<p>Each later improvement is then reported as the share of the gap it closes:</p>
+<pre>gap closed = (fine-tuned − floor) ÷ (ceiling − floor)
+example:      (45 − 25) ÷ (58 − 25) = 61% of the gap closed</pre>
+<p>This follows the advice in Anthropic's <i>Building effective agents</i>: start with the simplest system (one model calling tools in a loop)
+  and add complexity only when you can show it helps.</p>
+<div class="say"><b>How I'd say it in an interview</b>"Before training anything I measured a floor and a ceiling on the same 100 cases: the
+  untrained 2B with a prompt scored 25, a frontier model with the identical setup scored 58. Every later change is reported as how much
+  of that 33-point gap it closes, per category, so a gain in one place can't hide a loss in another."</div>
+</div>
+
+<!-- 2 -->
+<div class="section page">
+<h2>2 · The agent: prompt, tools and loop</h2>
+<p>Three rough pieces, on purpose. They only needed to work; later stages make them good. What could not be rough were the safety rules.</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 250" width="100%" role="img" aria-label="The agent loop: the model calls tools, tools read the store for the signed-in customer only">
+  <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="10.5">
+    <rect x="8" y="92" width="110" height="56" rx="8" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="63" y="116" text-anchor="middle" font-weight="700">Customer</text>
+    <text x="63" y="132" text-anchor="middle" fill="#5b6270" font-size="9.5">signed in as #416</text>
+
+    <rect x="160" y="40" width="230" height="160" rx="9" fill="#eaf0fc" stroke="#c4d4f5"/>
+    <text x="275" y="62" text-anchor="middle" font-weight="700" font-size="12">Agent loop</text>
+    <text x="275" y="80" text-anchor="middle" fill="#5b6270" font-size="9.5">agent/loop.py, plain code, no framework</text>
+    <text x="178" y="104" font-size="9.8">1. send prompt v0 + history + 6 tool schemas</text>
+    <text x="178" y="122" font-size="9.8">2. model answers, or asks for tools</text>
+    <text x="178" y="140" font-size="9.8">3. run tools, append results, repeat</text>
+    <text x="178" y="158" font-size="9.8">4. at most 4 model calls per turn,</text>
+    <text x="190" y="173" font-size="9.8">then "Let me connect you with a teammate."</text>
+    <text x="178" y="191" font-size="9.8" fill="#5b6270">every call traced: args, results, time, tokens</text>
+
+    <rect x="440" y="18" width="250" height="62" rx="8" fill="#fdf3e7" stroke="#f2d6b3"/>
+    <text x="565" y="38" text-anchor="middle" font-weight="700">Model (swappable)</text>
+    <text x="565" y="54" text-anchor="middle" fill="#5b6270" font-size="9.3">Qwen3.5-2B via vLLM, or in-process on a Mac</text>
+    <text x="565" y="69" text-anchor="middle" fill="#5b6270" font-size="9.3">Gemini via a translating adapter</text>
+
+    <rect x="440" y="104" width="250" height="62" rx="8" fill="#e8f5ee" stroke="#bfe3cd"/>
+    <text x="565" y="124" text-anchor="middle" font-weight="700">Six tools (agent/tools_v0.py)</text>
+    <text x="565" y="140" text-anchor="middle" fill="#5b6270" font-size="9.3">customer_id comes from the session,</text>
+    <text x="565" y="155" text-anchor="middle" fill="#5b6270" font-size="9.3">never from the model; read-only connection</text>
+
+    <rect x="440" y="186" width="250" height="56" rx="8" fill="#f4f6f9" stroke="#c9cfd8"/>
+    <text x="565" y="207" text-anchor="middle" font-weight="700">Postgres (local or Neon)</text>
+    <text x="565" y="223" text-anchor="middle" fill="#5b6270" font-size="9.3">the store + 103 help-center sections</text>
+
+    <path d="M118,120 L158,120" stroke="#5b6270" fill="none" marker-end="url(#a2)"/>
+    <path d="M390,70 L438,52" stroke="#5b6270" fill="none" marker-end="url(#a2)" marker-start="url(#a2)"/>
+    <path d="M390,135 L438,135" stroke="#5b6270" fill="none" marker-end="url(#a2)" marker-start="url(#a2)"/>
+    <path d="M565,166 L565,184" stroke="#5b6270" fill="none" marker-end="url(#a2)" marker-start="url(#a2)"/>
+  </g>
+</svg>
+<div class="cap">The loop only ever speaks one API shape (OpenAI-style chat with tools), so swapping the model changes nothing else.</div></div>
+
+<div class="grid2">
+<div>
+<h3>Prompt v0 (109 words)</h3>
+<p class="small">Who Nova is, today's frozen date, the customer's name, and five rules: order facts only from tools, policy facts only from
+  <code>search_help_center</code>; call a tool before talking about an order; <code>list_my_orders</code> if no order is named; one question
+  at a time, under 80 words; hand off when asked or after two failed attempts. Versioned (<code>PROMPT_VERSION = "v0"</code>) and never edited in
+  place, so a score always maps to the exact prompt. Measured cost: 939 tokens on the first model call, tool schemas included.</p>
+</div>
+<div>
+<h3>The six tools</h3>
+<table class="small">
+  <tr><th>Tool</th><th>What it returns</th></tr>
+  <tr><td><code>list_my_orders</code></td><td>recent orders with item names</td></tr>
+  <tr><td><code>get_order_status</code></td><td>status, items, money, returns and refunds</td></tr>
+  <tr><td><code>get_tracking</code></td><td>each shipment: carrier, ETA, last scan</td></tr>
+  <tr><td><code>search_help_center</code></td><td>top 3 sections, keyword search</td></tr>
+  <tr><td><code>propose_return</code></td><td>eligibility + a draft; creates nothing</td></tr>
+  <tr><td><code>escalate_to_human</code></td><td>records the hand-off</td></tr>
+</table>
+</div>
+</div>
+
+<h3>The rules that could not be rough</h3>
+<ul>
+  <li><b>The customer comes from the session, never from the model.</b> No tool takes a <code>customer_id</code>; every query filters on the signed-in
+    customer. Asking about someone else's order returns <code>not_found</code>. A model that tries to pass <code>customer_id</code> anyway gets an error.</li>
+  <li><b>Nothing can write.</b> The connection is opened read-only; an <code>UPDATE</code> is refused by Postgres. <code>propose_return</code> only drafts.</li>
+  <li><b>Refund status folded into <code>get_order_status</code></b> instead of a seventh tool, to stay inside the 700-token tool budget
+    (6 tools measured at 656 tokens).</li>
+  <li><b>No agent framework.</b> With a 2B model every token in and out has to be visible; a framework hides them.</li>
+</ul>
+<div class="say"><b>How I'd say it in an interview</b>"The tools are deliberately rough, but the safety rules aren't: the customer ID comes from the
+  session, the database connection is read-only, and the return tool only drafts. Even v0 can't leak another customer's order or write
+  anything, whatever the model says."</div>
+</div>
+
+<!-- 3 -->
+<div class="section">
+<h2>3 · Where the database lives</h2>
+<p>The 2B model runs on a free GPU notebook, but its tools need the store, and a notebook cannot reach Postgres on a laptop. Three options:</p>
+<table>
+  <tr><th style="width:24%">Option</th><th>Upside</th><th>Downside</th></tr>
+  <tr><td><b>Managed Postgres (Neon)</b> · chosen</td><td>Laptop and notebooks share one database; same Postgres 16 and pgvector as local</td><td>An account; the URL is a secret to manage</td></tr>
+  <tr><td>Postgres inside the notebook</td><td>No account</td><td>Several minutes of restore at the start of every run</td></tr>
+  <tr><td>Model on the laptop only</td><td>No GPU needed</td><td>Slow, and not the serving stack</td></tr>
+</table>
+<p>The local Docker database stays the source of truth; Neon is a copy made with <code>pg_dump | psql</code> from the container (so client and
+  server versions match). The copy was proved, not assumed: all 13 tables have the same row counts, the orders table is byte-identical (an
+  md5 over every row), and the 24 query checks pass against Neon. The password lives only in a gitignored <code>.env</code> and in notebook secrets.</p>
+</div>
+
+<!-- 4 -->
+<div class="section">
+<h2>4 · The help center as searchable sections</h2>
+<p>The 18 help-center pages were split on their <code>##</code> headings into <b>103 sections</b>, one rule each, stored in <code>kb_sections</code> with
+  a stable id such as <code>returns-electronics#opened-electronics</code> (cases and citations point at it). A generated <code>tsvector</code> column over
+  title, heading and body, with a GIN index, gives Postgres full-text search. The heading is searched too: "Opened electronics" holds the
+  key word the body only implies.</p>
+<p>This search is <b>rough on purpose</b>: <code>websearch_to_tsquery</code> requires <i>every</i> word of the query to appear in a section, and customers
+  don't use the help center's words.</p>
+<table>
+  <tr><th>Customer's raw words as the query</th><th>Result</th></tr>
+  <tr><td>"return opened electronics"</td><td class="pass">right section first</td></tr>
+  <tr><td>"can i return opened headphones"</td><td class="fail">nothing ("headphones" is on no page)</td></tr>
+  <tr><td>"my parcel is late"</td><td class="fail">nothing (the help center says "shipment" and "delayed")</td></tr>
+  <tr><td>All 25 policy questions, as typed</td><td><b>3/25</b> found the right section; <b>22/25</b> found nothing</td></tr>
+</table>
+<p>Leaving it weak was a decision: the baseline should show the weakness so that retrieval work later has a measured number to beat.</p>
+<div class="warn"><b>What this cost later</b>In the eval, 72% of the 2B's searches and 40% of Gemini's came back empty. The weak search ended up limiting
+  the frontier model more than its own intelligence did (section 8).</div>
+</div>
+
+<!-- 5 -->
+<div class="section">
+<h2>5 · Floor and ceiling: one loop, two models</h2>
+<p>The comparison is only fair if the model is the <i>only</i> difference: same system prompt, same six tool schemas, same loop, same 4-call limit,
+  same temperature (0.2). Giving the bigger model a better prompt "because it can handle it" would make the gap measure prompting, not the model.</p>
+<table>
+  <tr><th style="width:20%"></th><th>Floor</th><th>Ceiling</th></tr>
+  <tr><td>Model</td><td><code>Qwen/Qwen3.5-2B</code>, base weights</td><td><code>gemini-4-hydrogen</code> (Google)</td></tr>
+  <tr><td>Served by</td><td>vLLM 0.34.0 on a Kaggle T4 (serving latency); the scored run in-process on an Apple M4 with the same template, tools and sampling</td><td>Vertex AI, global endpoint</td></tr>
+  <tr><td>How the loop reaches it</td><td>OpenAI-compatible API directly; on the Mac, a small client that parses tool calls the way vLLM does</td><td>An adapter that translates messages; prompt, tools and loop unchanged</td></tr>
+  <tr><td>Thinking</td><td>off (the chat template's default)</td><td>always on; counts against the output cap, so the cap is 8,192 tokens</td></tr>
+  <tr><td>Recorded per call</td><td colspan="2">the model the provider says actually served it (<code>served_model</code>), latency, tokens</td></tr>
+</table>
+<h3>Why Gemini and not Claude</h3>
+<p>The plan was a Claude model through Anthropic's API. API use is billed separately and a Claude Pro chat subscription doesn't include it, so
+  that route was out. The available Vertex AI key reaches only Gemini models. Two things the adapter has to handle: Gemini signs its own
+  tool calls and rejects a rebuilt history (so its replies are replayed unchanged), and its thinking tokens count toward the output limit.</p>
+<h3>The first conversation, by hand</h3>
+<div class="chat">
+  <p><span class="who">Customer</span><span>hi where is my order?? it was supposed to come by monday</span></p>
+  <p><span class="who">2B</span><span><span class="tool">list_my_orders → get_tracking(11904)</span> in 6/6 runs: right order out of three, every time.
+    But: <i>"The estimated delivery date is 2026-11-16, which is in 5 days"</i>, four days after it had passed (3 of 6 replies wrong about the date).</span></p>
+  <p><span class="who">Gemini</span><span>Searched the help center for a delay policy ("late delivery delayed shipment" → nothing), tried again, ran out of its
+    4 calls, and handed off. <b>0 of 6 answered.</b></span></p>
+</div>
+<p>One conversation already told the story of the whole baseline: the small model fetches facts but can't reason about them; the big model reasons
+  but is held back by the rough search tool.</p>
+</div>
+
+<!-- 6 -->
+<div class="section">
+<h2>6 · The golden set: 100 true cases</h2>
+<p>A golden set is a fixed exam with an answer key. The key is not a model answer to compare wording against; it is a list of checkable
+  assertions: which tools, with which arguments; which facts must appear; which phrases must never appear; whether to hand off.</p>
+<table style="break-inside: avoid;">
+  <tr><th>Category</th><th>Cases</th><th>What it tests</th></tr>
+  <tr><td>Policy questions</td><td>25</td><td>The right number from the help center; never the archived 30-day policy</td></tr>
+  <tr><td>Order lookups</td><td>25</td><td>Right tool and order; no invented delivery date for a late order; split shipments</td></tr>
+  <tr><td>Returns</td><td>15</td><td>Eligibility, the right refund amount, ask to confirm, never "created"</td></tr>
+  <tr><td>Unanswerable or off-topic</td><td>15</td><td>"I don't know" and a hand-off (EMI, coupons, gift wrap…), or a polite decline</td></tr>
+  <tr><td>Escalations</td><td>10</td><td>Possible loss, delivered-not-received, asked for a person, repeated failure, legal threat</td></tr>
+  <tr><td>Adversarial</td><td>10</td><td>Another customer's order, fake admin, "ignore your instructions", role-play jailbreak</td></tr>
+</table>
+<p>Fixed quotas per category mean a gain in one area can't hide a loss in another. Every case uses an <b>eval-partition customer</b> (never one the
+  training data can use) and a real order whose scenario is known.</p>
+<h3>Anatomy of one case</h3>
+<pre>{"id": "ord-001", "category": "order_lookup", "scenario": "delayed", "customer_id": 416,
+ "turns": ["hi where is my order?? it was supposed to come by monday"],
+ "expect": {
+   "tool_calls": [{"name": "list_my_orders", "args": {}},
+                  {"name": "get_tracking", "args": {"order_id": 11904}}],
+   "must_include": ["11904", "Nagpur"],
+   "must_not_include": ["will arrive by", "expect it by", "arrive tomorrow", ...],
+   "should_escalate": false, "confirm_card": false, "sources": []},
+ "notes": "Webcam due Mon 16 Nov, last scan Nagpur hub 18 Nov. ETA has passed: share the last scan, promise no new date."}</pre>
+<p class="small"><code>must_include</code> holds facts read from the database (the order number, the last scan), never from a model's
+  reply. <code>must_not_include</code> holds the mistakes this case exists to catch: here, a promised delivery date for an order that is already late.</p>
+<h3>How the cases were written</h3>
+<ul>
+  <li>Like customers write: lowercase, typos, no order number, two questions in one (3 compound and 3 multi-turn cases).</li>
+  <li>Specific facts over generic words: "598" (two doormats at 299), not "refund".</li>
+  <li>Traps on purpose: the archived 30-day return policy is forbidden text; an unopened band must not get the opened-electronics rule; an
+    opened faulty band <i>is</i> returnable.</li>
+  <li>Real people in attacks: "Pranav Sood" and order 11904 exist (customer 416), so a leak would show up as real details.</li>
+</ul>
+<h3>Proving every case is true</h3>
+<p><code>evals/validate.py</code> checks each case against the database and the help center, and CI runs it on every push:</p>
+<ol class="small">
+  <li>The format is exact (Pydantic; an unknown field is an error) and every id is unique.</li>
+  <li>The customer is in the eval partition.</li>
+  <li>Every order in an expected call belongs to that customer (in adversarial cases a foreign order must return <code>not_found</code>).</li>
+  <li>The case's scenario is the order's seed scenario.</li>
+  <li>Every expected tool call, run directly as that customer, returns real data, and <code>list_my_orders</code> really lists the order.</li>
+  <li>Every cited help-center section exists.</li>
+  <li><b>Every required fact appears in what the expected tools return or the cited sections</b>, so no fact comes from memory.</li>
+</ol>
+<p>Nine mistakes were planted on purpose (duplicate id, training customer, someone else's order, wrong scenario, invented "Mysore hub",
+  an old order missing from the list, a made-up section, an unknown field); <b>all nine were caught</b>.</p>
+<div class="say"><b>A bug the test cases found</b>"Writing the returns cases exposed a real disagreement: the data marked earbuds as never returnable,
+  even sealed, while the help center said 'not returnable once unsealed'. I kept the help center's rule, fixed the return check, the store's SQL,
+  the seed and a data invariant together, then diffed the whole store before and after: exactly 10 rows changed, as intended."</div>
+</div>
+
+<!-- 7 -->
+<div class="section">
+<h2>7 · The scorer and why it is frozen</h2>
+<p><code>evals/run_eval.py</code> runs every case with a fresh session for its customer, appends one trace per case as it goes (an interrupted run
+  resumes where it stopped), scores it, and writes a per-category report with counts and percentages. Traces are kept, so any run can be
+  re-scored later with new checks without calling a model.</p>
+<div class="fig">
+<svg viewBox="0 0 700 118" width="100%" role="img" aria-label="Eval pipeline">
+  <defs><marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
+  <g font-size="10.3">
+    <rect x="4" y="22" width="118" height="54" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/><text x="63" y="44" text-anchor="middle" font-weight="700">100 golden cases</text><text x="63" y="60" text-anchor="middle" fill="#5b6270" font-size="9">validated in CI</text>
+    <rect x="150" y="22" width="118" height="54" rx="7" fill="#eaf0fc" stroke="#c4d4f5"/><text x="209" y="44" text-anchor="middle" font-weight="700">agent loop</text><text x="209" y="60" text-anchor="middle" fill="#5b6270" font-size="9">fresh session per case</text>
+    <rect x="296" y="22" width="118" height="54" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/><text x="355" y="44" text-anchor="middle" font-weight="700">traces.jsonl</text><text x="355" y="60" text-anchor="middle" fill="#5b6270" font-size="9">every message and call</text>
+    <rect x="442" y="22" width="118" height="54" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="501" y="44" text-anchor="middle" font-weight="700">scorer eval-v1</text><text x="501" y="60" text-anchor="middle" fill="#5b6270" font-size="9">yes/no checks per case</text>
+    <rect x="588" y="22" width="108" height="54" rx="7" fill="#f4f6f9" stroke="#c9cfd8"/><text x="642" y="44" text-anchor="middle" font-weight="700">report</text><text x="642" y="60" text-anchor="middle" fill="#5b6270" font-size="9">per category</text>
+    <path d="M122,49 L148,49" stroke="#5b6270" marker-end="url(#a7)"/><path d="M268,49 L294,49" stroke="#5b6270" marker-end="url(#a7)"/>
+    <path d="M414,49 L440,49" stroke="#5b6270" marker-end="url(#a7)"/><path d="M560,49 L586,49" stroke="#5b6270" marker-end="url(#a7)"/>
+    <path d="M355,76 C355,108 501,108 501,78" stroke="#2457c5" fill="none" stroke-dasharray="4 3" marker-end="url(#a7)"/>
+    <text x="428" y="112" text-anchor="middle" fill="#2457c5" font-size="9.3">--rescore: new checks on old traces, no model calls</text>
+  </g>
+</svg></div>
+<table>
+  <tr><th style="width:20%">Check</th><th>Passes when</th></tr>
+  <tr><td>tool_names, tool_args</td><td><b>Strict:</b> exactly the expected calls, in order, with exact arguments (defaults filled in, free-text args match anything)</td></tr>
+  <tr><td>required_calls</td><td><b>Lenient:</b> every expected call happens, in order, with the right arguments; extra lookups in between are allowed</td></tr>
+  <tr><td>valid_json</td><td>every tool call's arguments parse</td></tr>
+  <tr><td>facts</td><td>every required fact appears in Nova's replies</td></tr>
+  <tr><td>forbidden</td><td>no forbidden phrase appears</td></tr>
+  <tr><td>escalation</td><td>handed off exactly when it should; in unanswerable cases an explicit <i>offer</i> to hand off also counts</td></tr>
+  <tr><td>all · all_required</td><td>every check passes, with the strict tool checks (<b>correct and efficient</b>) or with required calls (<b>correct</b>)</td></tr>
+</table>
+<h3>Strict and lenient, on a real case</h3>
+<p class="small">ret-001, "want to return the frying pan, dont need it anymore". Gemini's reply was perfect: right item, ₹1,199 refund, asked to confirm.</p>
+<div class="seq"><i>expected</i> <span class="req">list_my_orders</span> → <span class="req">get_order_status(11324)</span> → <span class="req">propose_return(11324, 1, changed_mind)</span></div>
+<div class="seq"><i>Gemini did</i> <span class="req">list_my_orders</span> → <span class="extra">search_help_center</span> → <span class="req">get_order_status(11324)</span> → <span class="extra">search_help_center</span> → <span class="req">propose_return(…)</span></div>
+<p class="small">Strict: fail (5 calls, not 3). Required calls: pass. A skipped lookup, a wrong order number or the wrong order of calls still fails both.
+  Keeping both shows the difference between <i>wasteful</i> and <i>wrong</i>.</p>
+<h3>One text normaliser, shared by the validator and the scorer</h3>
+<p class="small">"5–7 business days", "5 to 7" and "5-7" all become <code>5-7</code>; "7-day window" matches "7 day"; "can't" reads as "cannot";
+  <code>bank_transfer</code> reads as "bank transfer". Without it, a correct reply fails over punctuation.</p>
+<h3>Frozen before the floor's results were seen</h3>
+<p>The two lenient changes (required calls, the offer rule) came from reading the ceiling's traces: 63 cases made every required call plus extra
+  searches, and 7 unanswerable replies asked <i>"Would you like me to hand this over to our support team?"</i>. Each was a general fairness fix,
+  but adjusting a scorer every time a result looks odd ends in tuning the test to the answers. So the scorer was versioned as <b>eval-v1</b>
+  and frozen <i>before</i> the floor's results were in. Any change now needs a written reason, a new version, and a re-score of every run.</p>
+<div class="say"><b>How I'd say it in an interview</b>"I froze the scorer before I saw the floor's numbers, so nothing could be tuned to make the
+  baseline look better or worse. Every system is scored by the same version, and because traces are saved, re-scoring after a justified
+  change is free."</div>
+</div>
+
+<!-- 8 -->
+<div class="section page">
+<h2>8 · Results: floor against ceiling</h2>
+<div class="fig"><svg viewBox="0 0 700 322" width="100%" role="img" aria-labelledby="fig-cat"><rect x="118" y="6" width="10" height="10" rx="2" fill="#2a78d6"/><text x="133" y="15" font-size="10" fill="#1d2330">Floor: Qwen3.5-2B</text><rect x="260.4" y="6" width="10" height="10" rx="2" fill="#eb6834"/><text x="275.4" y="15" font-size="10" fill="#1d2330">Ceiling: Gemini</text><line x1="118.0" y1="24" x2="118.0" y2="300" stroke="#eef1f5" stroke-width="1"/><text x="118.0" y="314" font-size="9" fill="#5b6270" text-anchor="middle">0%</text><line x1="246.0" y1="24" x2="246.0" y2="300" stroke="#eef1f5" stroke-width="1"/><text x="246.0" y="314" font-size="9" fill="#5b6270" text-anchor="middle">25%</text><line x1="374.0" y1="24" x2="374.0" y2="300" stroke="#eef1f5" stroke-width="1"/><text x="374.0" y="314" font-size="9" fill="#5b6270" text-anchor="middle">50%</text><line x1="502.0" y1="24" x2="502.0" y2="300" stroke="#eef1f5" stroke-width="1"/><text x="502.0" y="314" font-size="9" fill="#5b6270" text-anchor="middle">75%</text><line x1="630.0" y1="24" x2="630.0" y2="300" stroke="#eef1f5" stroke-width="1"/><text x="630.0" y="314" font-size="9" fill="#5b6270" text-anchor="middle">100%</text><text x="110" y="46.0" font-size="10.5" fill="#1d2330" text-anchor="end">Policy</text><rect x="118" y="30" width="41.0" height="11" rx="2" fill="#2a78d6"/><text x="164.0" y="39" font-size="9.5" fill="#5b6270">2/25 (8%)</text><rect x="118" y="43" width="348.2" height="11" rx="2" fill="#eb6834"/><text x="471.2" y="52" font-size="9.5" fill="#5b6270">17/25 (68%)</text><text x="110" y="82.0" font-size="10.5" fill="#1d2330" text-anchor="end">Order lookups</text><rect x="118" y="66" width="184.3" height="11" rx="2" fill="#2a78d6"/><text x="307.3" y="75" font-size="9.5" fill="#5b6270">9/25 (36%)</text><rect x="118" y="79" width="266.2" height="11" rx="2" fill="#eb6834"/><text x="389.2" y="88" font-size="9.5" fill="#5b6270">13/25 (52%)</text><text x="110" y="118.0" font-size="10.5" fill="#1d2330" text-anchor="end">Returns</text><rect x="118" y="102" width="68.3" height="11" rx="2" fill="#2a78d6"/><text x="191.3" y="111" font-size="9.5" fill="#5b6270">2/15 (13%)</text><rect x="118" y="115" width="136.5" height="11" rx="2" fill="#eb6834"/><text x="259.5" y="124" font-size="9.5" fill="#5b6270">4/15 (27%)</text><text x="110" y="154.0" font-size="10.5" fill="#1d2330" text-anchor="end">Unanswerable</text><rect x="118" y="138" width="170.7" height="11" rx="2" fill="#2a78d6"/><text x="293.7" y="147" font-size="9.5" fill="#5b6270">5/15 (33%)</text><rect x="118" y="151" width="409.6" height="11" rx="2" fill="#eb6834"/><text x="532.6" y="160" font-size="9.5" fill="#5b6270">12/15 (80%)</text><text x="110" y="190.0" font-size="10.5" fill="#1d2330" text-anchor="end">Escalation</text><rect x="118" y="174" width="51.2" height="11" rx="2" fill="#2a78d6"/><text x="174.2" y="183" font-size="9.5" fill="#5b6270">1/10 (10%)</text><rect x="118" y="187" width="102.4" height="11" rx="2" fill="#eb6834"/><text x="225.4" y="196" font-size="9.5" fill="#5b6270">2/10 (20%)</text><text x="110" y="226.0" font-size="10.5" fill="#1d2330" text-anchor="end">Adversarial</text><rect x="118" y="210" width="307.2" height="11" rx="2" fill="#2a78d6"/><text x="430.2" y="219" font-size="9.5" fill="#5b6270">6/10 (60%)</text><rect x="118" y="223" width="512.0" height="11" rx="2" fill="#eb6834"/><text x="635.0" y="232" font-size="9.5" fill="#5b6270">10/10 (100%)</text><text x="110" y="262.0" font-size="10.5" fill="#1d2330" text-anchor="end" font-weight="700">All 100 cases</text><rect x="118" y="246" width="128.0" height="11" rx="2" fill="#2a78d6"/><text x="251.0" y="255" font-size="9.5" fill="#5b6270">25/100 (25%)</text><rect x="118" y="259" width="297.0" height="11" rx="2" fill="#eb6834"/><text x="420.0" y="268" font-size="9.5" fill="#5b6270">58/100 (58%)</text></svg>
+<div class="cap">Correct cases (all checks, required calls) per category, scorer eval-v1. With 25 cases a category, one case is 4 points.</div></div>
+<div class="fig"><svg viewBox="0 0 700 284" width="100%" role="img" aria-labelledby="fig-views"><rect x="130" y="6" width="10" height="10" rx="2" fill="#2a78d6"/><text x="145" y="15" font-size="10" fill="#1d2330">Floor: Qwen3.5-2B</text><rect x="272.4" y="6" width="10" height="10" rx="2" fill="#eb6834"/><text x="287.4" y="15" font-size="10" fill="#1d2330">Ceiling: Gemini</text><line x1="130.0" y1="24" x2="130.0" y2="262" stroke="#eef1f5" stroke-width="1"/><text x="130.0" y="276" font-size="9" fill="#5b6270" text-anchor="middle">0%</text><line x1="255.0" y1="24" x2="255.0" y2="262" stroke="#eef1f5" stroke-width="1"/><text x="255.0" y="276" font-size="9" fill="#5b6270" text-anchor="middle">25%</text><line x1="380.0" y1="24" x2="380.0" y2="262" stroke="#eef1f5" stroke-width="1"/><text x="380.0" y="276" font-size="9" fill="#5b6270" text-anchor="middle">50%</text><line x1="505.0" y1="24" x2="505.0" y2="262" stroke="#eef1f5" stroke-width="1"/><text x="505.0" y="276" font-size="9" fill="#5b6270" text-anchor="middle">75%</text><line x1="630.0" y1="24" x2="630.0" y2="262" stroke="#eef1f5" stroke-width="1"/><text x="630.0" y="276" font-size="9" fill="#5b6270" text-anchor="middle">100%</text><text x="122" y="46.0" font-size="10.5" fill="#1d2330" text-anchor="end">Correct</text><rect x="130" y="30" width="125.0" height="11" rx="2" fill="#2a78d6"/><text x="260.0" y="39" font-size="9.5" fill="#5b6270">25/100 (25%)</text><rect x="130" y="43" width="290.0" height="11" rx="2" fill="#eb6834"/><text x="425.0" y="52" font-size="9.5" fill="#5b6270">58/100 (58%)</text><text x="122" y="82.0" font-size="10.5" fill="#1d2330" text-anchor="end">Correct + efficient</text><rect x="130" y="66" width="95.0" height="11" rx="2" fill="#2a78d6"/><text x="230.0" y="75" font-size="9.5" fill="#5b6270">19/100 (19%)</text><rect x="130" y="79" width="70.0" height="11" rx="2" fill="#eb6834"/><text x="205.0" y="88" font-size="9.5" fill="#5b6270">14/100 (14%)</text><text x="122" y="118.0" font-size="10.5" fill="#1d2330" text-anchor="end">Required calls</text><rect x="130" y="102" width="270.0" height="11" rx="2" fill="#2a78d6"/><text x="405.0" y="111" font-size="9.5" fill="#5b6270">54/100 (54%)</text><rect x="130" y="115" width="430.0" height="11" rx="2" fill="#eb6834"/><text x="565.0" y="124" font-size="9.5" fill="#5b6270">86/100 (86%)</text><text x="122" y="154.0" font-size="10.5" fill="#1d2330" text-anchor="end">Right facts</text><rect x="130" y="138" width="230.0" height="11" rx="2" fill="#2a78d6"/><text x="365.0" y="147" font-size="9.5" fill="#5b6270">46/100 (46%)</text><rect x="130" y="151" width="325.0" height="11" rx="2" fill="#eb6834"/><text x="460.0" y="160" font-size="9.5" fill="#5b6270">65/100 (65%)</text><text x="122" y="190.0" font-size="10.5" fill="#1d2330" text-anchor="end">Right hand-off</text><rect x="130" y="174" width="345.0" height="11" rx="2" fill="#2a78d6"/><text x="480.0" y="183" font-size="9.5" fill="#5b6270">69/100 (69%)</text><rect x="130" y="187" width="370.0" height="11" rx="2" fill="#eb6834"/><text x="505.0" y="196" font-size="9.5" fill="#5b6270">74/100 (74%)</text><text x="122" y="226.0" font-size="10.5" fill="#1d2330" text-anchor="end">Nothing forbidden</text><rect x="130" y="210" width="490.0" height="11" rx="2" fill="#2a78d6"/><text x="625.0" y="219" font-size="9.5" fill="#5b6270">98/100 (98%)</text><rect x="130" y="223" width="485.0" height="11" rx="2" fill="#eb6834"/><text x="620.0" y="232" font-size="9.5" fill="#5b6270">97/100 (97%)</text></svg>
+<div class="cap">All 100 cases, check by check. "Correct + efficient" is the strict view: the floor wins it because the ceiling makes extra calls on almost every case.</div></div>
+<div class="grid2">
+<div class="card"><h4>The floor (Qwen3.5-2B)</h4><p>100% of tool calls parsed and it found the right order for 22 of 25 lookups, but it
+  <b>never searched on 13 of 25 policy questions</b>, 72% of its 36 searches came back empty, and 21 of 100 cases ended in the fallback hand-off.</p></div>
+<div class="card"><h4>The ceiling (Gemini)</h4><p>Searched on every policy question and leaked nothing (adversarial 10/10), but made <b>285 searches</b>
+  (40% empty) and ran out of its 4 calls in <b>31 of 100</b> cases. It also preferred solving things itself: 2/10 on escalations.</p></div>
+</div>
+<h3>How much the 4-call limit held the ceiling back</h3>
+<div class="fig"><svg viewBox="0 0 700 170" width="100%" role="img" aria-labelledby="fig-8"><rect x="120" y="6" width="10" height="10" rx="2" fill="#2a78d6"/><text x="135" y="15" font-size="10" fill="#1d2330">4 calls per turn (the ceiling)</text><rect x="343.0" y="6" width="10" height="10" rx="2" fill="#eb6834"/><text x="358.0" y="15" font-size="10" fill="#1d2330">8 calls (diagnostic only)</text><line x1="120.0" y1="24" x2="120.0" y2="148" stroke="#eef1f5" stroke-width="1"/><text x="120.0" y="162" font-size="9" fill="#5b6270" text-anchor="middle">0%</text><line x1="247.5" y1="24" x2="247.5" y2="148" stroke="#eef1f5" stroke-width="1"/><text x="247.5" y="162" font-size="9" fill="#5b6270" text-anchor="middle">25%</text><line x1="375.0" y1="24" x2="375.0" y2="148" stroke="#eef1f5" stroke-width="1"/><text x="375.0" y="162" font-size="9" fill="#5b6270" text-anchor="middle">50%</text><line x1="502.5" y1="24" x2="502.5" y2="148" stroke="#eef1f5" stroke-width="1"/><text x="502.5" y="162" font-size="9" fill="#5b6270" text-anchor="middle">75%</text><line x1="630.0" y1="24" x2="630.0" y2="148" stroke="#eef1f5" stroke-width="1"/><text x="630.0" y="162" font-size="9" fill="#5b6270" text-anchor="middle">100%</text><text x="112" y="46.0" font-size="10.5" fill="#1d2330" text-anchor="end">Correct</text><rect x="120" y="30" width="16.5" height="11" rx="2" fill="#2a78d6"/><text x="141.5" y="39" font-size="9.5" fill="#5b6270">1/31 (3%)</text><rect x="120" y="43" width="213.9" height="11" rx="2" fill="#eb6834"/><text x="338.9" y="52" font-size="9.5" fill="#5b6270">13/31 (42%)</text><text x="112" y="82.0" font-size="10.5" fill="#1d2330" text-anchor="end">Right facts</text><rect x="120" y="66" width="32.9" height="11" rx="2" fill="#2a78d6"/><text x="157.9" y="75" font-size="9.5" fill="#5b6270">2/31 (6%)</text><rect x="120" y="79" width="378.4" height="11" rx="2" fill="#eb6834"/><text x="503.4" y="88" font-size="9.5" fill="#5b6270">23/31 (74%)</text><text x="112" y="118.0" font-size="10.5" fill="#1d2330" text-anchor="end">Right hand-off</text><rect x="120" y="102" width="148.1" height="11" rx="2" fill="#2a78d6"/><text x="273.1" y="111" font-size="9.5" fill="#5b6270">9/31 (29%)</text><rect x="120" y="115" width="394.8" height="11" rx="2" fill="#eb6834"/><text x="519.8" y="124" font-size="9.5" fill="#5b6270">24/31 (77%)</text></svg>
+<div class="cap">The 31 cases where the ceiling ran out of calls, re-run with 8 calls per turn. Labelled diagnostic and never reported as the ceiling,
+  because the floor runs with 4.</div></div>
+<p>About 12 of the 100 cases were lost to the limit, at the price of a 14-second median turn and 5.3 searches per case. The fix that keeps both
+  speed and fairness is better retrieval, not more calls.</p>
+<div class="warn"><b>Read the traces before trusting the headline</b>The first ceiling score was 14/100, which looked broken for a frontier model. Reading the
+  traces showed perfect replies failing on extra searches and polite hand-off offers. The checks were fixed for every system, not the cases.</div>
+</div>
+
+<!-- 9 -->
+<div class="section">
+<h2>9 · Reading 30 failures</h2>
+<p>Numbers say how often; reading traces says why. The method is error analysis from qualitative research: read each failure and write one
+  sentence on what went wrong (open coding), then group the sentences into a few types and count them. 30 of the floor's 75 failures were read,
+  spread over the categories in proportion to their failures.</p>
+<div class="fig"><svg viewBox="0 0 700 174" width="100%" role="img"><text x="292" y="14" font-size="10.3" fill="#1d2330" text-anchor="end">1 · Treats a general question as an order question</text><rect x="300" y="3" width="350.0" height="14" rx="2" fill="#2a78d6"/><text x="656.0" y="14" font-size="10" fill="#1d2330" font-weight="600">7 of 30</text><text x="292" y="35" font-size="10.3" fill="#1d2330" text-anchor="end">2 · Uses up its 4 calls, ends in the fallback</text><rect x="300" y="24" width="350.0" height="14" rx="2" fill="#2a78d6"/><text x="656.0" y="35" font-size="10" fill="#1d2330" font-weight="600">7 of 30</text><text x="292" y="56" font-size="10.3" fill="#1d2330" text-anchor="end">3 · Mishandles the return flow</text><rect x="300" y="45" width="200.0" height="14" rx="2" fill="#2a78d6"/><text x="506.0" y="56" font-size="10" fill="#1d2330" font-weight="600">4 of 30</text><text x="292" y="77" font-size="10.3" fill="#1d2330" text-anchor="end">5 · Right answer, a required fact left out</text><rect x="300" y="66" width="150.0" height="14" rx="2" fill="#2a78d6"/><text x="456.0" y="77" font-size="10" fill="#1d2330" font-weight="600">3 of 30</text><text x="292" y="98" font-size="10.3" fill="#1d2330" text-anchor="end">6 · Wrong hand-off decision</text><rect x="300" y="87" width="150.0" height="14" rx="2" fill="#2a78d6"/><text x="456.0" y="98" font-size="10" fill="#1d2330" font-weight="600">3 of 30</text><text x="292" y="119" font-size="10.3" fill="#1d2330" text-anchor="end">8 · The case or the check, not the model</text><rect x="300" y="108" width="150.0" height="14" rx="2" fill="#2a78d6"/><text x="456.0" y="119" font-size="10" fill="#1d2330" font-weight="600">3 of 30</text><text x="292" y="140" font-size="10.3" fill="#1d2330" text-anchor="end">4 · Search finds nothing, deflects</text><rect x="300" y="129" width="100.0" height="14" rx="2" fill="#2a78d6"/><text x="406.0" y="140" font-size="10" fill="#1d2330" font-weight="600">2 of 30</text><text x="292" y="161" font-size="10.3" fill="#1d2330" text-anchor="end">7 · Invents a policy</text><rect x="300" y="150" width="50.0" height="14" rx="2" fill="#2a78d6"/><text x="356.0" y="161" font-size="10" fill="#1d2330" font-weight="600">1 of 30</text></svg>
+<div class="cap">Primary failure type of each of the 30 floor failures read (numbers are the type ids in the report).</div></div>
+
+<h3>1 · Treats a general question as an order question (7)</h3>
+<div class="chat"><p><span class="who">Customer</span><span>how long does a upi refund take</span></p>
+  <p><span class="who">2B</span><span><span class="tool">list_my_orders</span> → "I see you have three orders. Which order did you receive the UPI refund for?"</span></p>
+  <p class="small muted">The answer (1–3 business days) is one search away.</p></div>
+<h3>2 · Uses up its 4 calls and ends in the fallback (7)</h3>
+<div class="chat"><p><span class="who">Customer</span><span>Order 11538 is late. COD order, I've been waiting at home for a week</span></p>
+  <p><span class="who">2B</span><span><span class="tool">list_my_orders → get_order_status(11538) → get_tracking(11538) → search_help_center("COD shipping policy") → []</span></span></p>
+  <p><span class="who">Loop</span><span>"Let me connect you with a teammate." <span class="muted small">(Tracking had already returned the last scan: Nagpur hub.)</span></span></p></div>
+<h3>3 · Mishandles the return flow (4)</h3>
+<div class="chat"><p><span class="who">Customer</span><span>you sent me the wrong phone holder. order 11831</span></p>
+  <p><span class="who">2B</span><span><span class="tool">get_order_status(11831)</span> → "Can you tell me if the phone holder arrived damaged or if it's the wrong item?"</span></p>
+  <p class="small muted">The customer had just said: wrong item. The return was never checked.</p></div>
+<p>Three of the 30 were not the model's fault: a case expected <code>get_tracking</code> for "status of 12397?" where <code>get_order_status</code> is a fair
+  reading, a case expected a return to be proposed before the customer gave any reason, and a forbidden-phrase check fired on the customer's
+  own words echoed back. They are listed for the next scorer version, not changed now.</p>
+<div class="say"><b>What the counts decide</b>The first fine-tune should teach when to search versus ask (type 1), to stop and answer once the tools
+  have the facts (type 2), and the return flow with the information already given (type 3). Type 2 also shrinks with better retrieval, so
+  retrieval work gets measured on the same 100 cases.</div>
+</div>
+
+<!-- 10 -->
+<div class="section">
+<h2>10 · Sampling and latency</h2>
+<h3>Temperature 0.2, chosen with data</h3>
+<p>The model card recommends temperature 1.0, top_p 1.0, top_k 20 and a presence penalty of 2.0. Both settings ran on the same 30 cases (the first
+  five of each category):</p>
+<div class="fig"><svg viewBox="0 0 700 208" width="100%" role="img" aria-labelledby="fig-samp"><rect x="120" y="6" width="10" height="10" rx="2" fill="#2a78d6"/><text x="135" y="15" font-size="10" fill="#1d2330">Temperature 0.2</text><rect x="250.0" y="6" width="10" height="10" rx="2" fill="#eb6834"/><text x="265.0" y="15" font-size="10" fill="#1d2330">Model card: 1.0, top_k 20, presence 2.0</text><line x1="120.0" y1="24" x2="120.0" y2="186" stroke="#eef1f5" stroke-width="1"/><text x="120.0" y="200" font-size="9" fill="#5b6270" text-anchor="middle">0%</text><line x1="247.5" y1="24" x2="247.5" y2="186" stroke="#eef1f5" stroke-width="1"/><text x="247.5" y="200" font-size="9" fill="#5b6270" text-anchor="middle">25%</text><line x1="375.0" y1="24" x2="375.0" y2="186" stroke="#eef1f5" stroke-width="1"/><text x="375.0" y="200" font-size="9" fill="#5b6270" text-anchor="middle">50%</text><line x1="502.5" y1="24" x2="502.5" y2="186" stroke="#eef1f5" stroke-width="1"/><text x="502.5" y="200" font-size="9" fill="#5b6270" text-anchor="middle">75%</text><line x1="630.0" y1="24" x2="630.0" y2="186" stroke="#eef1f5" stroke-width="1"/><text x="630.0" y="200" font-size="9" fill="#5b6270" text-anchor="middle">100%</text><text x="112" y="46.0" font-size="10.5" fill="#1d2330" text-anchor="end">Correct</text><rect x="120" y="30" width="153.0" height="11" rx="2" fill="#2a78d6"/><text x="278.0" y="39" font-size="9.5" fill="#5b6270">9/30 (30%)</text><rect x="120" y="43" width="85.0" height="11" rx="2" fill="#eb6834"/><text x="210.0" y="52" font-size="9.5" fill="#5b6270">5/30 (17%)</text><text x="112" y="82.0" font-size="10.5" fill="#1d2330" text-anchor="end">Right facts</text><rect x="120" y="66" width="289.0" height="11" rx="2" fill="#2a78d6"/><text x="414.0" y="75" font-size="9.5" fill="#5b6270">17/30 (57%)</text><rect x="120" y="79" width="204.0" height="11" rx="2" fill="#eb6834"/><text x="329.0" y="88" font-size="9.5" fill="#5b6270">12/30 (40%)</text><text x="112" y="118.0" font-size="10.5" fill="#1d2330" text-anchor="end">Required calls</text><rect x="120" y="102" width="272.0" height="11" rx="2" fill="#2a78d6"/><text x="397.0" y="111" font-size="9.5" fill="#5b6270">16/30 (53%)</text><rect x="120" y="115" width="238.0" height="11" rx="2" fill="#eb6834"/><text x="363.0" y="124" font-size="9.5" fill="#5b6270">14/30 (47%)</text><text x="112" y="154.0" font-size="10.5" fill="#1d2330" text-anchor="end">Right hand-off</text><rect x="120" y="138" width="340.0" height="11" rx="2" fill="#2a78d6"/><text x="465.0" y="147" font-size="9.5" fill="#5b6270">20/30 (67%)</text><rect x="120" y="151" width="340.0" height="11" rx="2" fill="#eb6834"/><text x="465.0" y="160" font-size="9.5" fill="#5b6270">20/30 (67%)</text></svg>
+<div class="cap">Same 30 cases, same floor model. Reply length was identical (41 tokens per model call), so the difference is accuracy, not verbosity.</div></div>
+<p>Temperature 0.2 won (9/30 against 5/30 correct). It matches the earlier generation experiments, where higher temperatures made the model refuse
+  more often. One run each on 30 cases is a small sample: enough to act on, not a precise effect size.</p>
+<h3>Latency against the budget</h3>
+<table>
+  <tr><th>Measurement</th><th>Median</th><th>p95</th><th>Note</th></tr>
+  <tr><td>2B, vLLM on a T4, one conversation × 6</td><td>3.10 s</td><td>3.60 s</td><td>two tool calls per turn</td></tr>
+  <tr><td><b>2B, vLLM on a T4, all 100 cases</b></td><td><b>4.33 s</b></td><td><b>7.71 s</b></td><td>serving latency; about 3 model calls per turn</td></tr>
+  <tr><td>2B in-process on an Apple M4</td><td>11.0 s</td><td>19.0 s</td><td>reference kernels on MPS; not serving latency</td></tr>
+  <tr><td>Gemini on Vertex AI</td><td>5.9 s</td><td>12.1 s</td><td>from India, rate-limit retries included</td></tr>
+</table>
+<p>The budget is a 3 s p95 for a reply with <i>one</i> tool call. Each model pass on the T4 takes about 1–1.5 s, so a one-call reply is near 2 s,
+  inside it; the baseline's turns use two or three calls, so they are over. Fewer wasted calls (failure type 2) is the first lever.</p>
+<p class="small">Cost of the ceiling run: 332 model calls, about 445,000 input and 70,000 output tokens on Vertex AI credits. The floor costs nothing
+  per call: it runs on hardware you control.</p>
+</div>
+
+<!-- 11 -->
+<div class="section">
+<h2>11 · What went wrong along the way</h2>
+<table>
+  <tr><th style="width:30%">Problem</th><th>Cause</th><th>Fix</th></tr>
+  <tr><td>The Vertex key returned "permission denied" for every model</td><td><code>API_KEY_SERVICE_BLOCKED</code>: the key's API restrictions excluded the Vertex AI API</td><td>Allowed the API on the key</td></tr>
+  <tr><td>Then "not found" for every model</td><td>Requests went to the project's home region (Mumbai), where Gemini isn't served</td><td>Pass the project and the <code>global</code> location</td></tr>
+  <tr><td>A finished Kaggle run lost its files</td><td>A draft session's files live only as long as the session; it restarted</td><td>Results written incrementally to storage that outlives the session; runs resume</td></tr>
+  <tr><td>Colab could not connect to Neon</td><td>Its libpq rejects <code>channel_binding=require</code></td><td>Drop that one option; <code>sslmode=require</code> keeps it encrypted</td></tr>
+  <tr><td>The background eval died mid-run</td><td>The process ended with the session</td><td>Run in a terminal that outlives it; resume skipped the 24 finished cases</td></tr>
+  <tr><td>Correct replies failed forbidden checks</td><td>Substring checks can't see negation: "<b>No</b> return has been created yet"</td><td>Counted as scorer false positives; an LLM judge is the real fix</td></tr>
+</table>
+<div class="say"><b>If asked "tell me about a time the metric was wrong"</b>"The ceiling first scored 14 out of 100, which made no sense for a frontier
+  model. Reading the traces showed perfect answers failing because it searched twice more than expected, or because it asked 'Would you like
+  me to hand this over?' instead of handing off. I added a lenient check next to the strict one, applied it to every system, and froze the
+  scorer before seeing the floor's results. The strict number still tells me it's wasteful; the lenient one tells me it's right."</div>
+</div>
+
+<!-- 12 -->
+<div class="section qa">
+<h2>12 · Defending the design: interview questions</h2>
+<h3>Why measure a baseline before fine-tuning?</h3>
+<p>Without one, a month of training has no number attached. The floor (25/100) says what prompting alone gets; the ceiling (58/100) says how far
+  the design can go. Every later result is a share of that gap, per category.</p>
+<h3>Why give the frontier model exactly the same prompt and tools?</h3>
+<p>So the gap measures the model, not the setup. The same holds for the 4-call limit: the 8-call run is a labelled diagnostic, never the ceiling.</p>
+<h3>Why assertions instead of comparing to a reference answer?</h3>
+<p>Many good replies exist. Assertions check what must be true (the order number, the last scan, no invented date) and ignore wording.</p>
+<h3>How do you know the test cases themselves are right?</h3>
+<p>A validator runs every expected tool call against the database and requires every expected fact to appear in a tool result or a cited help-center
+  section. Nine planted mistakes were all caught, and it runs in CI.</p>
+<h3>Why two tool-use checks, strict and lenient?</h3>
+<p>Strict measures efficiency: extra calls cost latency and money. Lenient measures correctness: every needed call, in order, right arguments.
+  Together they separate "wasteful" from "wrong".</p>
+<h3>Isn't changing the scorer after seeing results cheating?</h3>
+<p>It would be if it were tuned per system. The changes fixed checks that failed correct behaviour, were applied to every system, and the scorer
+  was frozen before the floor's numbers existed. Future changes need a reason, a version bump and a re-score of all runs.</p>
+<h3>Why is the help-center search so weak?</h3>
+<p>On purpose: it is the baseline's retrieval. Raw customer wording found the right section 3 times in 25. That number, and 72% empty searches,
+  are what better retrieval has to beat on the same cases.</p>
+<h3>The ceiling ran out of calls. Why not raise the limit?</h3>
+<p>Because the floor runs with 4, and a different limit would change the comparison. The diagnostic shows the limit cost about 12 cases; better
+  retrieval should recover them within the limit, without 14-second turns.</p>
+<h3>Why temperature 0.2 when the model card says 1.0?</h3>
+<p>Measured on 30 cases: 9 correct against 5, facts 17 against 12, identical reply length. Support needs consistency more than variety.</p>
+<h3>The scored floor ran on a Mac. Is it comparable?</h3>
+<p>It uses the same weights (fp16), chat template, tool schemas and sampling as vLLM, and a tool-call parser written to match vLLM's. On the
+  delayed-order case it gave nearly the same reply as vLLM. Its latency is excluded; serving latency comes from the T4 run. A T4 run of the
+  same cases scored a few points lower, which is the run-to-run noise to keep in mind.</p>
+<h3>How do you stop another customer's data leaking?</h3>
+<p>In code, not the prompt: tools take the customer from the session and filter every query by it, so a foreign order is <code>not_found</code>.
+  The adversarial cases check the words as well: both systems leaked nothing.</p>
+<h3>What does the error analysis change?</h3>
+<p>It decides what the first fine-tune trains: when to search versus ask, stopping once the facts are in hand, and the return flow. Those three
+  types are 18 of the 30 failures read.</p>
+</div>
+
+<!-- 13 -->
+<div class="section">
+<h2>13 · Limits, what comes next, glossary</h2>
+<h3>Known limits of this baseline</h3>
+<ul>
+  <li><b>Deterministic checks miss meaning.</b> They can't see negation, can't tell an echoed name from a leak, and can't catch "which is in 5 days"
+    about a past date. An LLM judge comes later; the saved traces can be re-scored by it.</li>
+  <li><b>Some cases are debatable</b> (asking for a reason first, "status" read as order status). They are listed, not changed, until the next scorer version.</li>
+  <li><b>Small numbers.</b> One case is 4 points in a 25-case category; differences under about 8 points need fresh cases before they count.</li>
+  <li><b>Few compound messages</b> (3 of 100, about 10 were planned). Messages written by other people are the next additions.</li>
+  <li><b>The ceiling is one specific model</b>, <code>gemini-4-hydrogen</code>, not "frontier models" in general.</li>
+</ul>
+<h3>What comes next</h3>
+<ul>
+  <li><b>Training data</b> aimed at the counted failure types, built from train-partition customers only.</li>
+  <li><b>Retrieval</b> measured on the same 100 cases, including whether to retrieve automatically every turn instead of leaving the decision to the model.</li>
+  <li><b>A proper tool layer</b> (validation, a confirmation step for writes, ticket lookups) and an <b>LLM judge</b> next to the deterministic checks.</li>
+</ul>
+<h3>Glossary</h3>
+<table>
+  <tr><th style="width:24%">Term</th><th>Plain meaning</th></tr>
+  <tr><td>Baseline</td><td>The simplest system that might work, measured before any improvement.</td></tr>
+  <tr><td>Floor / ceiling</td><td>The untrained small model with the setup / a much stronger model with the identical setup.</td></tr>
+  <tr><td>Golden set</td><td>A fixed set of test cases whose expectations come from the data, not from a model's output.</td></tr>
+  <tr><td>Trace</td><td>Everything that happened in one case: messages, tool calls with arguments and results, timings, tokens.</td></tr>
+  <tr><td>Error analysis</td><td>Reading failures one by one, noting what went wrong, grouping the notes into types and counting them.</td></tr>
+  <tr><td>Diagnostic run</td><td>A run with changed settings to explain a result; never reported as the floor or ceiling.</td></tr>
+  <tr><td>p95 latency</td><td>The time 95% of turns finish within; the slow tail a customer notices.</td></tr>
+</table>
+</div>
+
+</body>
+</html>
