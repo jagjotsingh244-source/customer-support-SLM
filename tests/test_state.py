@@ -65,6 +65,15 @@ def test_open_proposal_is_shown():
     assert text.count("900017") == 1
 
 
+def test_a_handoff_is_remembered():
+    s = State()
+    s.update("escalate_to_human", {"reason": "lost_parcel", "summary": "No scan since 12 Nov."},
+             {"handed_off": True, "ticket_id": 900049, "note": "..."})
+    s.update("escalate_to_human", {"reason": "other", "summary": "x"}, {"error": "invalid_arguments", "detail": "."})
+    assert "Already handed to the support team: ticket 900049 (lost parcel)." in s.render()
+    assert s.focus_order is None
+
+
 def test_only_the_last_four_facts_are_rendered():
     s = State()
     for oid in range(10001, 10007):
@@ -89,28 +98,48 @@ def turn(n, with_tool=True):
     return out + [{"role": "assistant", "content": f"answer {n}"}]
 
 
-def test_fit_cuts_only_at_customer_messages():
+def reply_only(n):
+    return [{"role": "user", "content": f"question {n}"}, {"role": "assistant", "content": f"answer {n}"}]
+
+
+def test_fit_keeps_two_earlier_turns_as_message_and_reply():
     msgs = [{"role": "system", "content": "s"}] + turn(1) + turn(2) + turn(3) + [{"role": "user", "content": "q4"}]
-    out = fit(msgs, budget=10_000, count_tokens=chars, keep_last=6)
+    out = fit(msgs, budget=10_000, count_tokens=chars, keep_turns=3)
     assert out[0]["role"] == "system" and out[1]["role"] == "user"
-    assert out[1:] == turn(3) + [{"role": "user", "content": "q4"}]      # 5 messages: turn 3 fits, turn 2 does not
+    # Turns 2 and 3 without their calls and results, then the current turn; turn 1 is past keep_turns.
+    assert out[1:] == reply_only(2) + reply_only(3) + [{"role": "user", "content": "q4"}]
+
+
+def test_the_last_reply_survives_a_turn_with_many_calls():
+    """The case that broke the message count: a lookup turn of six messages hid Nova's own answer."""
+    busy = turn(1)[:3] + turn(2)[1:3] + [{"role": "assistant", "content": "I'll check that.",
+                                          "tool_calls": turn(3)[1]["tool_calls"]}, turn(3)[2], turn(1)[3]]
+    msgs = [{"role": "system", "content": "s"}] + busy + [{"role": "user", "content": "and the other one?"}]
+    out = fit(msgs, budget=10_000, count_tokens=chars)
+    assert out[1:] == reply_only(1) + [{"role": "user", "content": "and the other one?"}]
+
+
+def test_the_current_turn_keeps_every_call_and_result():
+    msgs = [{"role": "system", "content": "s"}] + turn(1) + turn(2)
+    out = fit(msgs, budget=10_000, count_tokens=chars)
+    assert out[1:] == reply_only(1) + turn(2)
     calls = {c["id"] for m in out if m.get("tool_calls") for c in m["tool_calls"]}
     assert all(m["tool_call_id"] in calls for m in out if m["role"] == "tool")
 
 
 def test_fit_drops_oldest_turns_until_it_fits():
     msgs = [{"role": "system", "content": "s"}] + turn(1, False) + turn(2, False) + [{"role": "user", "content": "q3"}]
-    full = fit(msgs, budget=10_000, count_tokens=chars, keep_last=6)
+    full = fit(msgs, budget=10_000, count_tokens=chars, keep_turns=3)
     assert len(full) == 6
-    tight = fit(msgs, budget=chars(msgs[:1] + msgs[3:]), count_tokens=chars, keep_last=6)
+    tight = fit(msgs, budget=chars(msgs[:1] + msgs[3:]), count_tokens=chars, keep_turns=3)
     assert tight == msgs[:1] + msgs[3:]                                 # turn 1 dropped, turn 2 kept
 
 
 def test_current_turn_is_never_dropped():
     long_turn = [{"role": "user", "content": "q"}] + turn(9)[1:3] * 3     # three calls and results in one turn
     msgs = [{"role": "system", "content": "s"}] + turn(1) + long_turn
-    out = fit(msgs, budget=10_000, count_tokens=chars, keep_last=6)
-    assert out[1:] == long_turn                                          # 7 messages: more than keep_last, all kept
+    out = fit(msgs, budget=10_000, count_tokens=chars, keep_turns=3)
+    assert out[1:] == reply_only(1) + long_turn                          # the current turn whole, however long
     with pytest.raises(ContextOverflow):
         fit(msgs, budget=50, count_tokens=chars)
 

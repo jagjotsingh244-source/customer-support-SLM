@@ -1,0 +1,280 @@
+{
+ "script": "a",
+ "customer": 416,
+ "mode": "state",
+ "right_order": 14,
+ "of": 14,
+ "max_prompt_tokens": 1638,
+ "turns": [
+  {
+   "turn": 1,
+   "customer": "where is my order 11904?",
+   "want": 11904,
+   "reply": "Your order 11904 is in transit. It was last scanned at the Nagpur hub on November 18, 2026. The estimated delivery is November 16, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1094,
+    1380
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 2,
+   "customer": "which courier is it with?",
+   "want": 11904,
+   "reply": "Your order is with SwiftShip. The tracking number is SS70001836.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1247,
+    1444
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 3,
+   "customer": "and when was it supposed to arrive?",
+   "want": 11904,
+   "reply": "Your order was supposed to arrive on November 16, 2026. The last scan was on November 18, 2026, at the Nagpur hub.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1286,
+    1483
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 4,
+   "customer": "ok. what about order 10689, did that arrive?",
+   "want": 10689,
+   "reply": "Yes, order 10689 has been delivered. The last scan was on September 24, 2026, at Mysuru.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1283,
+    1555
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 5,
+   "customer": "what was in that one?",
+   "want": 10689,
+   "reply": "Order 10689 contained 2 screen protectors and 1 tote bag. The screen protectors were purchased for ₹249 each, and the tote bag for ₹449. The total was ₹947.00.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1342,
+    1616
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 6,
+   "customer": "how much did i pay for it?",
+   "want": 10689,
+   "reply": "You paid ₹947.00 in total. This included ₹249 for 2 screen protectors and ₹449 for 1 tote bag. Shipping was free.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1366,
+    1629
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 7,
+   "customer": "going back to the webcam order, where was it last scanned?",
+   "want": 11904,
+   "reply": "The webcam was last scanned at the Nagpur hub on 2026-11-18 at 13:51:00+05:30.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1369,
+    1566
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 8,
+   "customer": "whats the tracking number again?",
+   "want": 11904,
+   "reply": "The tracking number is SS70001836.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1356,
+    1553
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 9,
+   "customer": "how long do refunds take for card payments?",
+   "want": null,
+   "reply": "Refunds for card payments arrive in 5–7 business days after we send them.",
+   "right_order": null,
+   "tools": [
+    [
+     "search_help_center",
+     "{\"query\": \"refunds card payment\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1332,
+    1634
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 10,
+   "customer": "can i return the tote bag?",
+   "want": 10689,
+   "reply": "The tote bag is not eligible for return. It was delivered on 2026-09-24, which is outside the 15-day window.",
+   "right_order": true,
+   "tools": [
+    [
+     "propose_return",
+     "{\"order_id\": 10689, \"line_no\": 1, \"reason\": \"changed_mind\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1305,
+    1452
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 11,
+   "customer": "when was it delivered?",
+   "want": 10689,
+   "reply": "The tote bag was delivered on 2026-09-24.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1333,
+    1596
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 12,
+   "customer": "ok and the webcam one, is it delayed?",
+   "want": 11904,
+   "reply": "The webcam is in transit, with a last scan at the Nagpur hub on 2026-11-18. The estimated delivery is 2026-11-16.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1334,
+    1531
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 13,
+   "customer": "should i wait or will you do something?",
+   "want": 11904,
+   "reply": "The webcam has been scanned at the Nagpur hub on 2026-11-18. The estimated delivery is 2026-11-16. Since it's already in transit, you should wait for the delivery.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1345,
+    1560
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 14,
+   "customer": "what was the total of that order?",
+   "want": 11904,
+   "reply": "The total for order 11904 is ₹2799.00.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1383,
+    1616
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 15,
+   "customer": "thanks. and the tote bag order, how much was that one?",
+   "want": 10689,
+   "reply": "The tote bag order total is ₹947.00.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1375,
+    1638
+   ],
+   "escalated": false
+  }
+ ]
+}

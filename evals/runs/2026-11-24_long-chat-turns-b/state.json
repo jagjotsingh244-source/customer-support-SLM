@@ -1,0 +1,280 @@
+{
+ "script": "b",
+ "customer": 10,
+ "mode": "state",
+ "right_order": 14,
+ "of": 14,
+ "max_prompt_tokens": 1581,
+ "turns": [
+  {
+   "turn": 1,
+   "customer": "hi, my speaker hasnt come yet, order 11652",
+   "want": 11652,
+   "reply": "Your order 11652 is in transit, last scanned at Ahmedabad hub on Nov 18. The delivery estimate is Nov 15. Is the package still in transit, or did you receive it?",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1099,
+    1375
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 2,
+   "customer": "who is delivering it?",
+   "want": 11652,
+   "reply": "The carrier is SwiftShip. The last scan was at the Ahmedabad hub on Nov 18. The delivery estimate is Nov 15.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1242,
+    1436
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 3,
+   "customer": "when was it meant to get here?",
+   "want": 11652,
+   "reply": "The delivery estimate was Nov 15. The last scan was Nov 18 at the Ahmedabad hub. The package is still in transit.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1290,
+    1484
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 4,
+   "customer": "also i bought a steam iron in july, order 10208. did it reach me?",
+   "want": 10208,
+   "reply": "Yes, order 10208 for the steam iron is delivered. It was shipped from Mumbai and the item is in your possession.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1281,
+    1520
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 5,
+   "customer": "what did i pay for the iron?",
+   "want": 10208,
+   "reply": "You paid ₹1499.00 via UPI for the steam iron. The shipping fee was ₹0.00.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1306,
+    1522
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 6,
+   "customer": "was that by upi?",
+   "want": 10208,
+   "reply": "Yes, the payment was made via UPI. The total amount was ₹1499.00, and there was no shipping fee.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1302,
+    1518
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 7,
+   "customer": "back to the speaker - where is it right now?",
+   "want": 11652,
+   "reply": "The speaker is in transit. It was last scanned at the Ahmedabad hub on November 18, 2026. The estimated delivery date is November 15, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1291,
+    1486
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 8,
+   "customer": "can you give me its tracking id?",
+   "want": 11652,
+   "reply": "The tracking ID is SS70001588.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1307,
+    1501
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 9,
+   "customer": "do you deliver on sundays?",
+   "want": null,
+   "reply": "No, I do not deliver on Sundays. Delivery to metro cities like Ahmedabad takes 2–4 days after the order ships.",
+   "right_order": null,
+   "tools": [
+    [
+     "search_help_center",
+     "{\"query\": \"shipping delivery days\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1292,
+    1581
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 10,
+   "customer": "the iron, can i still send it back?",
+   "want": 10208,
+   "reply": "Yes, you can send it back. The order is delivered, and no return has been started. You can initiate a return for the Steam iron.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1275,
+    1490
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 11,
+   "customer": "which courier brought it?",
+   "want": 10208,
+   "reply": "The courier is BlueLine, and the tracking number is BL70000208.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1287,
+    1537
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 12,
+   "customer": "and the speaker, is it late?",
+   "want": 11652,
+   "reply": "The speaker is currently in transit. The last scan was on November 18, 2026, and the estimated delivery is November 15, 2026. This means it will be delivered before the estimated date.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1312,
+    1507
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 13,
+   "customer": "what should i do about it?",
+   "want": 11652,
+   "reply": "The speaker is not eligible for a return because it has not been delivered yet. You can wait for it to arrive.",
+   "right_order": true,
+   "tools": [
+    [
+     "propose_return",
+     "{\"order_id\": 11652, \"line_no\": 1, \"reason\": \"changed_mind\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1330,
+    1462
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 14,
+   "customer": "how much was it?",
+   "want": 11652,
+   "reply": "The Mini portable speaker costs ₹1299.00.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1343,
+    1572
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 15,
+   "customer": "ok last thing, what was the iron's tracking number?",
+   "want": 10208,
+   "reply": "The Steam iron's tracking number is BL70000208.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1323,
+    1542
+   ],
+   "escalated": false
+  }
+ ]
+}

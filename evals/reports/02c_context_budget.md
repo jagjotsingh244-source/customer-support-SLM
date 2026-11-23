@@ -94,3 +94,19 @@ with a state that never learns anything going wrong from turn 7, which is what t
 The training conversations must be built the way production prompts are: trimmed by `fit()` and with the state block
 in the system prompt, or the model trains on long, untrimmed histories it never sees in production. `fit()` takes
 only a counting function, so the data pipeline can import it as is.
+
+## Update, 24 November: earlier turns kept as message and reply
+
+The first conversations generated for the next fine-tune showed a gap in the trimming above. "At most 6 messages"
+counts tool calls and results too, and one lookup turn (question, two calls, two results, reply) is already 6. So
+in 44 of 69 model calls after the first turn, Nova saw none of its own earlier replies: it asked "which order?" about
+an order it had just described, answered "so I just wait?" with "How can I help?", and opened a second ticket for a
+parcel it had already handed off.
+
+`fit()` now sends the current turn whole and the two turns before it as the customer's message and Nova's reply, with
+their tool calls and results left out (the state block holds those facts); the state also records a hand-off. Same
+20 scenarios afterwards: 0 of 62 later calls without an earlier reply, no second tickets.
+
+Checked on the real 2B model with both scripted chats (`evals/runs/2026-11-24_long-chat-turns`, `-turns-b`):
+**14/14 turns on the right order in each**, as before; largest prompt 1,638 tokens. The 15-turn test now runs
+from 1,094 to 1,657 tokens.
