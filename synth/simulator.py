@@ -23,27 +23,33 @@ What you know:
 {knowledge}
 What you do NOT know: order numbers unless listed above, carrier names, tracking numbers, store policies, \
 delivery estimates.
-Style rules: {style}
-
+Style rules: {style} Keep this style in every message, not only the first.
+{opener}
 - Write only the customer's next message: plain chat text, no quotes, no labels, no stage directions.
-- Never describe your goal or say that you have one. Never invent facts that are not in what you know.
-- Reveal information only when asked for it, one piece at a time.
-- When your goal is met, reply with a short closing line, then {done}.
+- Never describe your goal or say that you have one. Never invent facts that are not in what you know: no
+  amounts, dates, faults or events. Never say anything that contradicts what you know.
+- Your first message says what you want in one or two sentences. Give details (payment method, dates, what
+  you did with the item) only when support asks for them, one piece at a time.
+- Use only words a shopper would use: never repeat codes from support's replies such as changed_mind.
+- When your goal is met, reply with a short closing line, then {done}. Do not keep thanking support.
 - If support fails to help you twice, reply with a frustrated line, then {gave_up}.
 - If support hands you to a person or opens a ticket for you, that counts as your goal being met."""
 
 DEFAULT_PERSONA = {"name": "plain", "description": "An ordinary shopper.",
                    "style": "Short, casual messages, like a chat on a phone. Lowercase is fine."}
+OPENER = ('Start from this real customer message, adapted to your goal. Keep its wording and style where you '
+          'can; replace anything in {{{{double braces}}}} with what you know, or leave it out: "{text}"\n')
 
 
 class CustomerSimulator:
     def __init__(self, client, model: str, scenario: Scenario, persona: dict | None = None,
-                 temperature: float = 1.0, sampling: dict | None = None):
+                 temperature: float = 1.0, sampling: dict | None = None, opener: str = ""):
         self.client, self.model, self.temperature = client, model, temperature
         self.sampling = sampling or {}
         p = persona or DEFAULT_PERSONA
         self.system = PROMPT.format(persona=p["description"], goal=scenario.goal, style=p["style"],
                                     knowledge="\n".join(f"- {k}" for k in scenario.knowledge),
+                                    opener=OPENER.format(text=opener) if opener else "",
                                     done=DONE, gave_up=GAVE_UP)
         # The simulator's own chat: Nova's replies are its "user" turns, its messages are its "assistant" turns.
         self.history: list[dict] = []

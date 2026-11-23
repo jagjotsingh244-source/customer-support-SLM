@@ -99,11 +99,32 @@ def summary(name: str, convs: list[dict]) -> list[str]:
             f"{sum(c['meta']['seconds'] for c in convs) / n:.0f} |"], habits
 
 
+def customers_only(convs: list[dict], out: Path) -> None:
+    """Each conversation's customer messages with the persona, the Bitext opener it adapted and its goal, and a
+    blank verdict to fill in: realistic or not, and why."""
+    lines = ["# Simulated customers, for judging realism", "",
+             "Mark each one `realistic: yes` or `realistic: no` with a reason. Nova's side is left out on purpose.", ""]
+    for n, c in enumerate(convs, 1):
+        m = c["meta"]
+        lines += [f"## {n}. {m['persona']} · {m['scenario']} · {m['outcome']}", "",
+                  f"*Bitext opener:* {m.get('opener') or '(none)'}  ", f"*Goal:* {m['goal']}", ""]
+        lines += [f"{k}. {msg['content']}" for k, msg in
+                  enumerate((x for x in c["messages"] if x["role"] == "user"), 1)]
+        lines += ["", "realistic: ", ""]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines))
+    print(f"wrote {out} ({len(convs)} conversations, customer side only)")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("runs", nargs="+", type=Path)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--customers", action="store_true",
+                    help="only the customer's side, numbered, for judging whether the simulated customers are realistic")
     a = ap.parse_args()
+    if a.customers:
+        return customers_only([c for p in a.runs for c in load(p)], a.out)
     runs = {p.stem: load(p) for p in a.runs}
     lines = ["# Synthetic conversations, for reading", "",
              "| Run | Convs | done / gave up / other | Customer turns | Tool calls | Format errors | "

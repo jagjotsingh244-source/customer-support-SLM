@@ -65,6 +65,13 @@ Estimates get replaced by measurements as the project goes on.
   biggest share and nothing enforced it; with a state block carrying what older turns said, a long chat no longer
   needs its whole history in the prompt.
 - **Max size of one user message: 1,500 tokens** — *target*, enforced in code before the model sees the message (about 1,100 words). Over the cap: no model call; reply with a fixed message asking for the main question or the order number. Keeps one message from taking most of the 1,800 history tokens. Built with the guardrails; tested in the baseline eval (a 3,000-token message must get the polite decline, not an error). When the prompt is too long, the oldest history goes first (whole turns); never the system prompt, the tool schemas, the state or the current turn.
+- **Synthetic training conversations: generation cost and time** — *measured* on the pilot (192 conversations,
+  teacher Qwen3.5-27B on one Modal A100-80GB at $2.50 an hour, simulator on the same server, 16 conversations in
+  parallel): **about 3.2 s of GPU time per conversation**, 17,000 teacher prompt tokens and 360 completion tokens
+  per conversation (6.3 model calls, 0.64 style rewrites), 3.2 customer turns, a 3-5 minute cold start per run.
+  So about **$0.0025 per conversation, $2.50 per 1,000** plus about $0.20 per cold start. Full run, to keep at least
+  2,000 after filtering: about 3,000 generated, **about 2.7 hours and $7-8** (the keep rate replaces this guess once
+  the filters run). The run stops itself at a dollar cap and when nothing finishes for 5 minutes (`synth/generate.py`).
 - **Cost per 1,000 conversations: ~$5** — *estimate*. Assumes a GPU at about $1/hour serving about 200 conversations/hour. Replace with the real GPU rate and measured throughput once serving is set up.
 
 ## Risk tests

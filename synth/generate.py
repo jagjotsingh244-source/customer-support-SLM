@@ -20,7 +20,7 @@ import sys
 import threading
 import time
 import uuid
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 
 from openai import OpenAI
@@ -35,15 +35,18 @@ from agent.state import ContextOverflow, token_counter  # noqa: E402
 from config import now  # noqa: E402
 from synth import teacher_rules  # noqa: E402
 from synth.record import RecordingContext, RunFile, clean, finish_steps  # noqa: E402
+from synth.personas import BY_NAME, PERSONAS, Grid, Openers, dress  # noqa: E402
 from synth.scenarios import SCENARIOS, World, pick  # noqa: E402
 from synth.simulator import CustomerSimulator  # noqa: E402
 from synth.style import REWRITE_NOTE, style_problems  # noqa: E402
 
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
 RAW = ROOT / "data" / "synthetic" / "raw"
+BITEXT_QUESTIONS = ROOT / "data" / "processed" / "bitext_questions.parquet"
 STUDENT_PROMPT = "v2"        # the serving prompt with the state rules; what the student is trained and served with
 MAX_TURNS = 8                # customer messages per conversation, at most
 MAX_STEPS = 4                # model calls per turn, as in serving and the eval
+STALL_S = 300                # stop a run when no conversation has finished for this long
 MAX_REWRITES = 2             # asks to the teacher to fix a reply that breaks a style rule (synth/style.py)
 # Qwen3.5 model card, non-thinking mode, without the presence penalty (it can bend numbers and IDs).
 TEACHER_SAMPLING = {"temperature": 0.7, "top_p": 0.8,
@@ -71,6 +74,7 @@ class Generator:
         self.busy: set[int] = set()                 # customers in a conversation right now
         self.lock = threading.Condition()
         self.owner = World(db_url)                  # shared only for the scenario catalog; rows read per thread
+        self.openers = Openers(BITEXT_QUESTIONS)
 
     def _thread(self):
         if not hasattr(self.local, "conns"):
@@ -86,26 +90,36 @@ class Generator:
 
     def _release(self, cid: int) -> None:
         """Remove this customer's agent-created returns and tickets, so the next conversation finds the world
-        as seeded, then let the next one start."""
-        conn = self.owner.conn
-        with conn.transaction():
-            conn.execute("DELETE FROM return_items WHERE return_id >= %s AND order_id IN "
-                         "(SELECT order_id FROM orders WHERE customer_id = %s)", (tools.AGENT_IDS_FROM, cid))
-            conn.execute("DELETE FROM returns WHERE return_id >= %s AND order_id IN "
-                         "(SELECT order_id FROM orders WHERE customer_id = %s)", (tools.AGENT_IDS_FROM, cid))
-            conn.execute("DELETE FROM tickets WHERE ticket_id >= %s AND customer_id = %s",
-                         (tools.AGENT_IDS_FROM, cid))
-        with self.lock:
-            self.busy.discard(cid)
-            self.lock.notify_all()
+        as seeded, then let the next one start.
 
-    def one(self, scenario: str, seed: int, persona: dict | None = None) -> dict:
+        On this thread's own connection: the first pilot shared one connection between 16 threads, transactions
+        interleaved ("commit at the wrong nesting level"), and a customer whose cleanup failed stayed claimed, so
+        the conversations waiting for it hung while the GPU kept running. The customer is released even if the
+        cleanup fails; a conversation that then sees a leftover row is caught by the filtering step."""
+        try:
+            conn = self.local.world.conn
+            with conn.transaction():
+                conn.execute("DELETE FROM return_items WHERE return_id >= %s AND order_id IN "
+                             "(SELECT order_id FROM orders WHERE customer_id = %s)", (tools.AGENT_IDS_FROM, cid))
+                conn.execute("DELETE FROM returns WHERE return_id >= %s AND order_id IN "
+                             "(SELECT order_id FROM orders WHERE customer_id = %s)", (tools.AGENT_IDS_FROM, cid))
+                conn.execute("DELETE FROM tickets WHERE ticket_id >= %s AND customer_id = %s",
+                             (tools.AGENT_IDS_FROM, cid))
+        finally:
+            with self.lock:
+                self.busy.discard(cid)
+                self.lock.notify_all()
+
+    def one(self, scenario: str, seed: int, persona: str = "direct") -> dict:
         conns, world = self._thread()
         rng = random.Random(seed)
-        sc = pick(scenario, world, rng)
+        p = BY_NAME[persona]
+        sc = pick(scenario, world, rng, p.knows_number)
+        sc, opener = dress(sc, p, world, self.openers, rng)
         self._claim(sc.customer_id)
         try:
-            return self._converse(sc, conns, seed, persona)
+            return self._converse(sc, conns, seed, {"name": p.name, "description": p.description, "style": p.style},
+                                  opener)
         finally:
             self._release(sc.customer_id)
 
@@ -142,13 +156,14 @@ class Generator:
         tr["style_problems"] = problems                # what is still wrong; the filtering step decides
         return reply
 
-    def _converse(self, sc, conns, seed, persona) -> dict:
+    def _converse(self, sc, conns, seed, persona, opener) -> dict:
         t0 = time.perf_counter()
         session = tools.Session.open(conns, sc.customer_id)
         student = system_prompt(now(), session.customer_name, STUDENT_PROMPT)
         ctx = RecordingContext(count_tokens=self.count, teacher_system=teacher_rules.teacher_prompt(student))
         sim = CustomerSimulator(self.sim, self.sim_model, sc, persona, temperature=SIM_SAMPLING["temperature"],
-                                sampling={k: v for k, v in SIM_SAMPLING.items() if k != "temperature"})
+                                sampling={k: v for k, v in SIM_SAMPLING.items() if k != "temperature"},
+                                opener=opener)
         messages = [{"role": "system", "content": student}]
         traces, text, error = [], sim.opening(), None
         sampling = {k: v for k, v in TEACHER_SAMPLING.items() if k != "temperature"}
@@ -178,7 +193,7 @@ class Generator:
             "messages": [clean(m) for m in messages],
             "steps": steps,
             "traces": traces,
-            "meta": {"scenario": sc.name, "persona": (persona or {}).get("name", "plain"),
+            "meta": {"scenario": sc.name, "persona": persona["name"], "opener": opener,
                      "customer_id": sc.customer_id, "order_id": sc.order_id, "goal": sc.goal,
                      "knowledge": sc.knowledge, "facts": sc.facts, "seed": seed,
                      "outcome": sim.ended or ("error" if error else "max_turns"), "error": error,
@@ -214,6 +229,7 @@ def main() -> None:
     ap.add_argument("--n", type=int, default=20)
     ap.add_argument("--label", required=True, help="part of the file name, e.g. 27b-first20")
     ap.add_argument("--scenarios", nargs="*", default=SCENARIOS)
+    ap.add_argument("--personas", nargs="*", default=[p.name for p in PERSONAS])
     ap.add_argument("--workers", type=int, default=8, help="conversations in parallel")
     ap.add_argument("--seed", type=int, default=3407)
     ap.add_argument("--sim-url", help="a different server for the simulator (default: the teacher's)")
@@ -240,21 +256,29 @@ def main() -> None:
 
     gen = Generator(teacher, sim, a.sim_model)
     out = RunFile(free_path(RAW, a.label))
-    jobs = [(a.scenarios[i % len(a.scenarios)], a.seed * 100_000 + i) for i in range(a.n)]
+    grid, rng = Grid(a.scenarios, [BY_NAME[p] for p in a.personas]), random.Random(a.seed)
+    jobs = [(*grid.next(rng), a.seed * 100_000 + i) for i in range(a.n)]
     stopped = False
     t0, done, totals = time.perf_counter(), 0, {"prompt": 0, "completion": 0, "sim_prompt": 0, "sim_completion": 0}
-    with ThreadPoolExecutor(a.workers) as pool:
-        futures = {pool.submit(gen.one, s, seed): (s, seed) for s, seed in jobs}
-        for f in as_completed(futures):
-            if f.cancelled():                       # not started because of the budget
+    pool = ThreadPoolExecutor(a.workers)
+    futures = {pool.submit(gen.one, s, seed, p): (s, seed) for s, p, seed in jobs}
+    pending, last_done = set(futures), time.perf_counter()
+    while pending:
+        finished, pending = wait(pending, timeout=30, return_when=FIRST_COMPLETED)
+        spent = (time.perf_counter() - launched) / 3600 * a.dollars_per_hour
+        stalled = time.perf_counter() - last_done > STALL_S
+        if not stopped and ((a.max_dollars and spent > a.max_dollars) or stalled):
+            stopped = True
+            cancelled = sum(x.cancel() for x in pending)
+            why = f"${spent:.2f} > ${a.max_dollars:.2f}" if not stalled else f"nothing finished for {STALL_S}s"
+            print(f"  stopping ({why}); {cancelled} conversations not started", flush=True)
+        if stopped and (stalled or spent > (a.max_dollars or 0) * 1.1):
+            break                                   # do not wait on stuck conversations while the GPU bills
+        for f in finished:
+            last_done = time.perf_counter()
+            if f.cancelled():                       # not started: the budget ran out
                 continue
             s, seed = futures[f]
-            spent = (time.perf_counter() - launched) / 3600 * a.dollars_per_hour
-            if a.max_dollars and spent > a.max_dollars and not stopped:
-                stopped = True
-                cancelled = sum(x.cancel() for x in futures)
-                print(f"  budget: ${spent:.2f} > ${a.max_dollars:.2f}; {cancelled} conversations not started",
-                      flush=True)
             try:
                 conv = f.result()
             except Exception as e:                  # one broken conversation must not stop the run
@@ -270,8 +294,9 @@ def main() -> None:
             totals["completion"] += m["teacher_tokens"]["completion"]
             totals["sim_prompt"] += m["sim_tokens"]["prompt_tokens"]
             totals["sim_completion"] += m["sim_tokens"]["completion_tokens"]
-            print(f"  [{done}/{a.n}] {s:<26} {m['outcome']:<9} {m['customer_turns']} turns "
+            print(f"  [{done}/{a.n}] {s:<26} {m['persona']:<12} {m['outcome']:<9} {m['customer_turns']} turns "
                   f"{m['teacher_tokens']['calls']} calls {m['seconds']}s", flush=True)
+    pool.shutdown(wait=False, cancel_futures=True)
     out.close()
     wall = time.perf_counter() - t0
     since_launch_h = (time.perf_counter() - launched) / 3600
@@ -279,7 +304,9 @@ def main() -> None:
                "gpu_dollars_since_launch": round(since_launch_h * a.dollars_per_hour, 2),
                "s_per_conversation": round(wall / max(done, 1), 1), "tokens": totals,
                "tokens_per_conversation": {k: round(v / max(done, 1)) for k, v in totals.items()}}
-    print(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2), flush=True)
+    if stopped:
+        os._exit(0)                                 # worker threads may still be blocked; the caller stops the GPU
 
 
 if __name__ == "__main__":
