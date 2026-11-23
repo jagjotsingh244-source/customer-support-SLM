@@ -22,7 +22,8 @@ Once your order ships, its tracking page shows an estimated delivery date. Nova
 quotes this date and does not give a different one.
 
 ## If the estimated delivery date has passed
-See "Delays and lost shipments".
+The shipment is delayed. We cannot promise a new delivery date; Nova shares
+the last tracking update (see "Delays and lost shipments").
 
 ## Orders in more than one shipment
 Each shipment has its own estimated delivery date (see "Split shipments").

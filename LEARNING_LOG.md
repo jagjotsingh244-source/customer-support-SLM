@@ -107,3 +107,12 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Did: judged SFT-1 four ways (loss, style metrics on 200 held-out prompts, a blind side-by-side against the base model, the 100 golden cases with tools) and checked that vLLM serves the adapter word for word like Transformers. Read all 18 golden cases it newly failed. Report: `evals/reports/02_sft_bitext.md`.
 - Surprised me: two things. SFT-1 made no tool call in any golden case, not fewer: 83% of training replies end by asking permission to check, and the model learned that as the answer. And it matched the data on every style rule, yet I preferred the base model's replies 23 to 2 in the blind read, because they were half as long and said what they would do. The style metrics measured the rules I wrote, not whether a customer would want the reply.
 - Next time: read a blind sample of the training replies themselves before training on them; a preference test on the data is cheaper than one on the model.
+
+
+## Retrieval
+
+### 2026-11-23 · Chunking the help center by section
+- Did: `rag/chunks.py` turns every indexed page into one chunk per `##` section, with the path (`Returning electronics › Opened electronics`) on the first line and a Qwen token count; `rag/index.py` loads them into `kb_chunks` and refuses to load if the chunk IDs differ from `rag/chunk_ids.txt`. 103 chunks, 19–120 tokens, median 40; none needed splitting.
+- Surprised me: the short end was not one problem but two. Twelve one-line chunks are a single sharp rule ("You can return unopened electronics within 7 days of delivery") and are the best possible unit; merging them would have blurred the rule and broken IDs the golden set cites. Two were pure pointers (`See "Split shipments".`) that would fill a top-3 slot with nothing, so I rewrote them to state the rule and keep the reference.
+- Next time: before merging short chunks, ask whether each one holds a rule; length alone does not say whether a chunk is useful.
+

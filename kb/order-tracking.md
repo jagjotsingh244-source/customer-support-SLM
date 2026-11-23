@@ -39,4 +39,5 @@ Each scan by the carrier adds an update with the time and place. If there has
 been no update for 7 days, see "Delays and lost shipments".
 
 ## Orders in more than one shipment
-See "Split shipments".
+Each shipment in an order has its own tracking number. The order shows
+"Shipped" until every shipment is delivered (see "Split shipments").
