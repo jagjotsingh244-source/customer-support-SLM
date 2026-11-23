@@ -195,6 +195,10 @@ Postgres 16 to match local Docker, pgvector enabled, AWS US East 2 near Kaggle's
   and as Kaggle secrets for v2 tool runs); the local defaults are for Docker only.
 - **Checked after the first copy (2026-11-22):** row counts match local in all 13 tables, the
   orders table is byte-identical (md5 over every row), and `db/verify_queries.py` passes 24/24 against Neon.
+- **Re-copied 2026-11-23** for the typed tools: the old copy had no `kb_chunks`, no roles and the old schema.
+  Order that works: empty the schema, create the three roles (the dump's policies name them), restore, then
+  `db.roles`. Row counts match local in all 14 tables, `orders` is byte-identical, `db/verify_queries.py` passes
+  24/24, `evals/validate.py` passes on all 107 cases, and `tests/test_tool_guards.py` passes 24/24 against Neon.
 
 ## Systems compared in the baseline
 
