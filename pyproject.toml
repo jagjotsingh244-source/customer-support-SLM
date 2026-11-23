@@ -36,3 +36,6 @@ rag = [
     "numpy>=2.5.5",
     "sentence-transformers>=6.3.0",
 ]
+teacher = [
+    "modal>=1.6.4",
+]

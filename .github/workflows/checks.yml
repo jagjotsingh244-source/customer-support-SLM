@@ -59,7 +59,7 @@ jobs:
       - name: Tool guards hold in the database (roles, row-level security, propose-only writes, confirm endpoint)
         run: uv run --frozen --group dev --group api pytest -q tests/test_tool_guards.py tests/test_tool_errors.py tests/test_eligibility.py tests/test_tool_markup.py
       - name: Conversation state and history trimming; a 15-turn chat stays in the token budget (Qwen3.5-2B tokenizer)
-        run: uv run --frozen --group dev --with "transformers==5.23.0" --with jinja2 pytest -q tests/test_state.py
+        run: uv run --frozen --group dev --with "transformers==5.23.0" --with jinja2 pytest -q tests/test_state.py tests/test_synth_record.py
 
   loss-mask:
     runs-on: ubuntu-latest
