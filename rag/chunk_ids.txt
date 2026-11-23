@@ -64,6 +64,7 @@ returns-electronics#electronics-in-a-split-order
 returns-electronics#how-we-check-a-fault
 returns-electronics#opened-electronics
 returns-electronics#return-window
+returns-general#exchanges
 returns-general#how-to-start-a-return
 returns-general#inspection
 returns-general#items-you-cannot-return

@@ -2,7 +2,7 @@
  "model": "BAAI/bge-small-en-v1.5",
  "query_prefix": true,
  "file": "model_queries.jsonl",
- "query_ms_median": 5.129958037286997,
+ "query_ms_median": 5.280290963128209,
  "summary": {
   "vector": {
    "recall@3": 0.918918918918919,
@@ -218,11 +218,11 @@
      },
      {
       "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
-      "score": 0.02804284323271665
+      "score": 0.027884615384615386
      },
      {
       "chunk_id": "returns-general#reasons-for-a-return",
-      "score": 0.027583600982429624
+      "score": 0.027425373134328357
      }
     ]
    }
@@ -1793,7 +1793,7 @@
      },
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.5962631106376648
+      "score": 0.596262979952938
      }
     ],
     "fulltext_all": [],
@@ -1938,7 +1938,7 @@
     "vector": [
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.8323559761047363
+      "score": 0.8323558768801895
      },
      {
       "chunk_id": "warranty#making-a-warranty-claim",
@@ -3392,10 +3392,6 @@
       "score": 0.02862400327131466
      },
      {
-      "chunk_id": "returns-general#why-a-return-can-be-rejected",
-      "score": 0.028484848484848484
-     },
-     {
       "chunk_id": "returns-general#returning-part-of-an-order",
       "score": 0.028381642512077296
      },
@@ -3404,8 +3400,12 @@
       "score": 0.028309409888357256
      },
      {
-      "chunk_id": "returns-general#how-to-start-a-return",
-      "score": 0.028125
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.028309409888357256
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.027364110201042444
      }
     ]
    }
@@ -5305,7 +5305,7 @@
      },
      {
       "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
-      "score": 0.7745062843259417
+      "score": 0.7745062381617794
      },
      {
       "chunk_id": "refunds-partial#example",
@@ -5510,7 +5510,7 @@
      },
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.6171129802330799
+      "score": 0.6171130854813849
      },
      {
       "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
@@ -6389,7 +6389,7 @@
     "vector": [
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.8323559761047363
+      "score": 0.8323558768801895
      },
      {
       "chunk_id": "warranty#making-a-warranty-claim",

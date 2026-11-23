@@ -50,7 +50,7 @@ Estimates get replaced by measurements as the project goes on.
   - tool schemas: 700 (*measured* in the generation experiments: 656 tokens for the 6 draft tools, about 180 fixed + about 80 per tool; 700 leaves room for one more tool)
   - history: 4,000 (refine with synthetic conversations and the eval harness)
   - retrieved chunks: 2,000, e.g. 4 × 500 (refine when retrieval is built). *Measured* for the chunks themselves:
-    103 chunks, 19–120 Qwen tokens each, median 40 (path line included), so the top 3 cost at most 360 tokens
+    104 chunks, 19–120 Qwen tokens each, median 40 (path line included), so the top 3 cost at most 360 tokens
     before the tool's JSON wrapping. Lower this line once the new `search_help_center` output is measured.
   - reply headroom: 992
 - **Max size of one user message: 1,500 tokens** — *target*, enforced in code before the model sees the message (about 1,100 words). Over the cap: no model call; reply with a fixed message asking for the main question or the order number. Keeps one message from taking more than 1,500 of the 4,000 history tokens. Built with the guardrails; tested in the baseline eval (a 3,000-token message must get the polite decline, not an error). When the full prompt is still too long, trim the oldest history first, then retrieved chunks; never the system prompt or tool schemas.

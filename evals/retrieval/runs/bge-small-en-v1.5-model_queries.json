@@ -2,7 +2,7 @@
  "model": "BAAI/bge-small-en-v1.5",
  "query_prefix": false,
  "file": "model_queries.jsonl",
- "query_ms_median": 4.751665983349085,
+ "query_ms_median": 5.908834049478173,
  "summary": {
   "vector": {
    "recall@3": 0.9459459459459459,
@@ -202,7 +202,7 @@
      },
      {
       "chunk_id": "returns-general#how-to-start-a-return",
-      "score": 0.02964254577157803
+      "score": 0.029462365591397848
      },
      {
       "chunk_id": "returns-non-returnable#change-of-mind",
@@ -214,7 +214,7 @@
      },
      {
       "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
-      "score": 0.028717948717948718
+      "score": 0.02854251012145749
      },
      {
       "chunk_id": "returns-general#when-the-return-window-starts",
@@ -222,7 +222,7 @@
      },
      {
       "chunk_id": "returns-general#reasons-for-a-return",
-      "score": 0.02804284323271665
+      "score": 0.027884615384615386
      }
     ]
    }
@@ -1793,7 +1793,7 @@
      },
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.6036837100982666
+      "score": 0.6036836381335733
      }
     ],
     "fulltext_all": [],
@@ -1938,7 +1938,7 @@
     "vector": [
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.8281282186508179
+      "score": 0.8281281199302589
      },
      {
       "chunk_id": "warranty#making-a-warranty-claim",
@@ -3393,7 +3393,7 @@
      },
      {
       "chunk_id": "returns-general#why-a-return-can-be-rejected",
-      "score": 0.028484848484848484
+      "score": 0.028309409888357256
      },
      {
       "chunk_id": "returns-electronics#after-the-7-day-return-window",
@@ -3405,7 +3405,7 @@
      },
      {
       "chunk_id": "warranty#warranty-or-return",
-      "score": 0.027912386121341344
+      "score": 0.02774588595484118
      }
     ]
    }
@@ -5309,7 +5309,7 @@
      },
      {
       "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
-      "score": 0.7781151333841457
+      "score": 0.7781150274002486
      },
      {
       "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
@@ -6389,7 +6389,7 @@
     "vector": [
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.8281282186508179
+      "score": 0.8281281199302589
      },
      {
       "chunk_id": "warranty#making-a-warranty-claim",

@@ -25,6 +25,10 @@ they cannot be returned for a change of mind (see "Items you cannot return").
 You can return an item because it is faulty, damaged in transit, the wrong item,
 or because you changed your mind.
 
+## Exchanges
+We do not offer exchanges. To get a different item, size or colour, return the
+one you have within its return window and place a new order.
+
 ## How to start a return
 Ask Nova or open the order page. Nova checks whether the item is inside its
 return window and proposes a return. The return starts only after you confirm

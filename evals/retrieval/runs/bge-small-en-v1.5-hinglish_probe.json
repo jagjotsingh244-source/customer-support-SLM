@@ -2,7 +2,7 @@
  "model": "BAAI/bge-small-en-v1.5",
  "query_prefix": false,
  "file": "hinglish_probe.jsonl",
- "query_ms_median": 5.649791448377073,
+ "query_ms_median": 7.138354470953345,
  "summary": {
   "vector": {
    "recall@3": 0.25,
@@ -265,7 +265,7 @@
      },
      {
       "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
-      "score": 0.6248711161353876
+      "score": 0.6248711980994534
      },
      {
       "chunk_id": "returns-non-returnable#change-of-mind",
@@ -556,7 +556,7 @@
      },
      {
       "chunk_id": "cancellations#before-the-order-ships",
-      "score": 0.03009207275993712
+      "score": 0.029906956136464335
      },
      {
       "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
@@ -576,11 +576,11 @@
      },
      {
       "chunk_id": "cash-on-delivery#paying-at-delivery",
-      "score": 0.02722222222222222
+      "score": 0.027046783625730993
      },
      {
       "chunk_id": "payment-failures#money-debited-but-no-order",
-      "score": 0.02548701298701299
+      "score": 0.02532051282051282
      },
      {
       "chunk_id": "refunds-partial#example",
@@ -734,15 +734,15 @@
      },
      {
       "chunk_id": "cancellations#before-the-order-ships",
-      "score": 0.02938045560996381
-     },
-     {
-      "chunk_id": "cancellations#split-orders",
-      "score": 0.0293236301369863
+      "score": 0.02921395544346364
      },
      {
       "chunk_id": "privacy#other-people-s-orders",
       "score": 0.029211087420042643
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.029138513513513514
      },
      {
       "chunk_id": "cash-on-delivery#paying-at-delivery",
@@ -750,15 +750,11 @@
      },
      {
       "chunk_id": "cancellations#after-the-order-ships",
-      "score": 0.02800626713670192
+      "score": 0.02782608695652174
      },
      {
       "chunk_id": "payment-failures#money-debited-but-no-order",
       "score": 0.027425373134328357
-     },
-     {
-      "chunk_id": "shipping-charges#orders-of-499-or-less",
-      "score": 0.025833333333333333
      },
      {
       "chunk_id": "payment-failures#payment-methods",
@@ -767,6 +763,10 @@
      {
       "chunk_id": "returns-non-returnable#change-of-mind",
       "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.015873015873015872
      }
     ]
    }

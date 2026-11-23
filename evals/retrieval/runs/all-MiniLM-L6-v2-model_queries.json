@@ -2,7 +2,7 @@
  "model": "sentence-transformers/all-MiniLM-L6-v2",
  "query_prefix": false,
  "file": "model_queries.jsonl",
- "query_ms_median": 3.060166025534272,
+ "query_ms_median": 3.189041977748275,
  "summary": {
   "vector": {
    "recall@3": 0.8918918918918919,
@@ -787,7 +787,7 @@
      },
      {
       "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
-      "score": 0.02800626713670192
+      "score": 0.02782608695652174
      }
     ]
    }
@@ -1938,7 +1938,7 @@
     "vector": [
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.6772989804031896
+      "score": 0.6772989419342397
      },
      {
       "chunk_id": "warranty#making-a-warranty-claim",
@@ -3032,7 +3032,7 @@
      },
      {
       "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
-      "score": 0.02800626713670192
+      "score": 0.02782608695652174
      }
     ]
    }
@@ -6389,7 +6389,7 @@
     "vector": [
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.6772989804031896
+      "score": 0.6772989419342397
      },
      {
       "chunk_id": "warranty#making-a-warranty-claim",

@@ -2,7 +2,7 @@
  "model": "sentence-transformers/all-MiniLM-L6-v2",
  "query_prefix": false,
  "file": "hinglish_probe.jsonl",
- "query_ms_median": 5.3193336352705956,
+ "query_ms_median": 5.1703546196222305,
  "summary": {
   "vector": {
    "recall@3": 0.5,
@@ -265,7 +265,7 @@
      },
      {
       "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
-      "score": 0.3603762637896073
+      "score": 0.3603762041849732
      },
      {
       "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",

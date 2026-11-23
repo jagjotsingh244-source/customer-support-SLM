@@ -2,7 +2,7 @@
  "model": "BAAI/bge-base-en-v1.5",
  "query_prefix": false,
  "file": "model_queries.jsonl",
- "query_ms_median": 15.272290911525488,
+ "query_ms_median": 16.10983395949006,
  "summary": {
   "vector": {
    "recall@3": 0.9459459459459459,
@@ -74,6 +74,10 @@
       "score": 0.6543560646135703
      },
      {
+      "chunk_id": "returns-general#exchanges",
+      "score": 0.6527327506105464
+     },
+     {
       "chunk_id": "returns-general#when-the-return-window-starts",
       "score": 0.6526364709192876
      },
@@ -92,10 +96,6 @@
      {
       "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
       "score": 0.6468734776603929
-     },
-     {
-      "chunk_id": "returns-general#items-you-cannot-return",
-      "score": 0.6450855943509594
      }
     ],
     "fulltext_all": [],
@@ -159,27 +159,27 @@
       "score": 0.015625
      },
      {
-      "chunk_id": "returns-general#when-the-return-window-starts",
+      "chunk_id": "returns-general#exchanges",
       "score": 0.015384615384615385
      },
      {
-      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "chunk_id": "returns-general#when-the-return-window-starts",
       "score": 0.015151515151515152
      },
      {
-      "chunk_id": "returns-non-returnable#change-of-mind",
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
       "score": 0.014925373134328358
      },
      {
-      "chunk_id": "returns-general#returning-part-of-an-order",
+      "chunk_id": "returns-non-returnable#change-of-mind",
       "score": 0.014705882352941176
      },
      {
-      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "chunk_id": "returns-general#returning-part-of-an-order",
       "score": 0.014492753623188406
      },
      {
-      "chunk_id": "returns-general#items-you-cannot-return",
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
       "score": 0.014285714285714285
      }
     ],
@@ -194,11 +194,11 @@
      },
      {
       "chunk_id": "returns-general#how-to-start-a-return",
-      "score": 0.03021353930031804
+      "score": 0.030017921146953404
      },
      {
       "chunk_id": "returns-general#items-you-cannot-return",
-      "score": 0.03015873015873016
+      "score": 0.029957522915269395
      },
      {
       "chunk_id": "refunds-partial#shipping-charge-on-returns",
@@ -206,23 +206,23 @@
      },
      {
       "chunk_id": "returns-general#when-the-return-window-starts",
-      "score": 0.02987736900780379
+      "score": 0.029644268774703556
      },
      {
       "chunk_id": "returns-general#returning-part-of-an-order",
-      "score": 0.029411764705882353
+      "score": 0.029198635976129584
      },
      {
       "chunk_id": "returns-non-returnable#change-of-mind",
-      "score": 0.029211087420042643
+      "score": 0.028991596638655463
      },
      {
       "chunk_id": "refunds-partial#returning-some-items-from-an-order",
-      "score": 0.028814262023217248
+      "score": 0.02862400327131466
      },
      {
-      "chunk_id": "returns-non-returnable#how-to-tell",
-      "score": 0.028629032258064516
+      "chunk_id": "returns-general#exchanges",
+      "score": 0.02804284323271665
      }
     ]
    }
@@ -787,7 +787,7 @@
      },
      {
       "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
-      "score": 0.026846846846846847
+      "score": 0.02666666666666667
      }
     ]
    }
@@ -1777,7 +1777,7 @@
      },
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.5967467907969052
+      "score": 0.5967467311922675
      },
      {
       "chunk_id": "returns-electronics#after-the-7-day-return-window",
@@ -1938,7 +1938,7 @@
     "vector": [
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.8233131170272827
+      "score": 0.8233129382133484
      },
      {
       "chunk_id": "warranty#warranty-length",
@@ -2290,8 +2290,8 @@
       "score": 0.028083267871170464
      },
      {
-      "chunk_id": "cancellations#after-the-order-ships",
-      "score": 0.02786377708978328
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.027783137179239824
      }
     ]
    }
@@ -2655,7 +2655,7 @@
      },
      {
       "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
-      "score": 0.027598020555767034
+      "score": 0.027417840375586856
      }
     ]
    }
@@ -3032,7 +3032,7 @@
      },
      {
       "chunk_id": "delays-and-lost-shipments#no-new-delivery-date-for-delayed-shipments",
-      "score": 0.026742734890354787
+      "score": 0.02658450704225352
      }
     ]
    }
@@ -3388,12 +3388,12 @@
       "score": 0.029198635976129584
      },
      {
-      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
-      "score": 0.028594771241830064
-     },
-     {
       "chunk_id": "returns-electronics#return-window",
       "score": 0.02844551282051282
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.028404512489927477
      },
      {
       "chunk_id": "returns-electronics#opened-electronics",
@@ -3405,7 +3405,7 @@
      },
      {
       "chunk_id": "returns-general#why-a-return-can-be-rejected",
-      "score": 0.02813852813852814
+      "score": 0.027972027972027972
      }
     ]
    }
@@ -3579,7 +3579,7 @@
      },
      {
       "chunk_id": "returns-electronics#electronics-in-a-split-order",
-      "score": 0.027692895339954164
+      "score": 0.027526395173453996
      },
      {
       "chunk_id": "returns-general#why-a-return-can-be-rejected",
@@ -6232,7 +6232,7 @@
      },
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.5932841300964355
+      "score": 0.5932841897010803
      },
      {
       "chunk_id": "warranty#warranty-length",
@@ -6389,7 +6389,7 @@
     "vector": [
      {
       "chunk_id": "warranty#when-the-warranty-starts",
-      "score": 0.8233131170272827
+      "score": 0.8233129382133484
      },
      {
       "chunk_id": "warranty#warranty-length",
