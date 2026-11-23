@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nova: fine-tuning</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 18mm 17mm;
+          @bottom-center { content: "Nova · fine-tuning · " counter(page); font: 8pt -apple-system, Helvetica, sans-serif; color: #8a8f98; } }
+  @page :first { @bottom-center { content: none; } }
+  :root { --ink: #1d2330; --muted: #5b6270; --line: #dfe3ea; --soft: #f4f6f9; --accent: #2457c5; --accent-soft: #eaf0fc; --warn: #a1520d; --warn-soft: #fdf3e7; --ok: #1d7a46; --ok-soft: #e8f5ee; }
+  * { box-sizing: border-box; }
+  body { font: 10.2pt/1.5 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); margin: 0; background: #fff; }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 8pt; letter-spacing: -0.4pt; }
+  h2 { font-size: 15pt; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 2px solid var(--ink); letter-spacing: -0.2pt; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  code { font: 8.8pt/1.4 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); padding: 0.5pt 3pt; border-radius: 3px; }
+  pre { font: 8.4pt/1.45 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 7pt 9pt; margin: 4pt 0 9pt; white-space: pre-wrap; break-inside: avoid; }
+  pre code { background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 10pt; font-size: 8.9pt; line-height: 1.38; break-inside: auto; }
+  th { text-align: left; background: var(--soft); font-weight: 600; }
+  th, td { border: 1px solid var(--line); padding: 4pt 6pt; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .section { margin-top: 22pt; }
+  .section.first, .section.page { break-before: page; margin-top: 0; }
+  h2, h3 { break-after: avoid; }
+  svg { break-inside: avoid; }
+  .fig { break-inside: avoid; margin: 6pt 0 10pt; }
+  .fig .cap { font-size: 8.6pt; color: var(--muted); margin-top: 3pt; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.8pt; }
+  .say { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .say b:first-child { color: var(--accent); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .warn { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .warn b:first-child { color: var(--warn); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 6pt 0 10pt; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9pt; margin: 6pt 0 10pt; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 8pt 10pt; break-inside: avoid; }
+  .card h4 { margin: 0 0 3pt; font-size: 10pt; }
+  .card p { margin: 0; font-size: 9pt; }
+  .num { font-size: 18pt; font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .pass { color: var(--ok); font-weight: 700; }
+  .fail { color: #b42318; font-weight: 700; }
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover .kicker { font-size: 9pt; font-weight: 600; letter-spacing: 1.2pt; text-transform: uppercase; color: var(--accent); margin-bottom: 10pt; }
+  .cover .lede { font-size: 12pt; color: var(--muted); max-width: 140mm; }
+  .toc { border-top: 1px solid var(--line); padding-top: 10pt; columns: 2; column-gap: 14pt; font-size: 9.6pt; }
+  .toc div { break-inside: avoid; margin-bottom: 4pt; }
+  .toc span { color: var(--accent); font-weight: 700; display: inline-block; width: 16pt; }
+  .qa h3 { margin-top: 11pt; }
+  .qa p { margin-bottom: 4pt; }
+  svg text { font-family: -apple-system, Helvetica, Arial, sans-serif; }
+  svg .mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+  .seq { display: flex; flex-wrap: wrap; gap: 4pt; align-items: center; margin: 3pt 0 6pt; }
+  .seq span { font: 8.4pt "SF Mono", Menlo, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 2pt 5pt; background: #fff; }
+  .seq span.req { background: var(--ok-soft); border-color: #bfe3cd; }
+  .seq span.extra { background: var(--soft); color: var(--muted); }
+  .seq i { color: var(--muted); font-style: normal; }
+  .chat { border: 1px solid var(--line); border-radius: 6px; padding: 7pt 10pt; margin: 4pt 0 10pt; font-size: 9.2pt; break-inside: avoid; }
+  .chat p { margin: 0 0 4pt; display: grid; grid-template-columns: 58pt 1fr; }
+  .chat p.small { display: block; padding-left: 58pt; }
+  .chat .who { font-weight: 700; color: var(--muted); font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.4pt; }
+  .chat .tool { font: 8.4pt "SF Mono", Menlo, monospace; color: var(--muted); }
+  .mask { font: 8.2pt/1.55 "SF Mono", Menlo, Consolas, monospace; border: 1px solid var(--line); border-radius: 6px; padding: 8pt 10pt; margin: 6pt 0 0; break-inside: avoid; word-break: break-word; }
+  .mask .mk { color: #8a8f98; background: #f4f6f9; }
+  .mask .tr { color: #0f4d2b; background: #d6f0e0; font-weight: 600; }
+  .mask .sp { color: #a1520d; }
+  .mask .nl { color: #b8bec8; font-size: 7pt; }
+
+  .lora td { text-align: right; } .lora td:first-child, .lora td:nth-child(2) { text-align: left; }
+  .tight td, .tight th { padding: 3pt 5pt; }
+  .kpi { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8pt; }
+  .kpi .num { font-size: 15pt; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div>
+    <div class="kicker">Project guide · Part 5</div>
+    <h1>Fine-tuning: what a LoRA<br>taught Nova, and what it took away</h1>
+    <p class="lede">The first fine-tune (SFT-1) trains a small LoRA adapter on the 4,447 rewritten support replies from Part 4, on a
+      free T4 GPU. This part explains how the adapter was sized by hand and its memory predicted before any GPU was used, how the run
+      was tracked, how a rank ablation was read without fooling myself, and how four separate checks found what the loss curve
+      could not: the model learned the training data's voice, a reader preferred the untrained model's replies, and tool use
+      disappeared.</p>
+  </div>
+  <div class="kpi">
+    <div class="card"><div class="num">10.9M</div><p>trainable parameters (0.49% of the model), counted by hand, matched exactly</p></div>
+    <div class="card"><div class="num">4.94 GB</div><p>peak training memory on a 15 GB T4; estimate was 4.9–5.6 GB</p></div>
+    <div class="card"><div class="num">40 min</div><p>for one epoch, 278 steps, with 12 evaluations and probes</p></div>
+    <div class="card"><div class="num">25 → 11</div><p>golden cases correct: no tool call in any of the 100</p></div>
+    <div class="card"><div class="num">23 : 2</div><p>blind preference for the base model's replies over SFT-1's</p></div>
+  </div>
+  <div class="toc">
+    <div><span>1</span>What SFT-1 was for, and the result</div>
+    <div><span>2</span>The memory wall: why LoRA</div>
+    <div><span>3</span>LoRA in one picture</div>
+    <div><span>4</span>Reading the model before choosing targets</div>
+    <div><span>5</span>Memory: estimate, then measure</div>
+    <div><span>6</span>The training setup and what is tracked</div>
+    <div><span>7</span>The first run</div>
+    <div><span>8</span>The rank ablation, and how not to misread it</div>
+    <div><span>9</span>Evaluating a fine-tune: four checks</div>
+    <div><span>10</span>Loss, style and the blind read</div>
+    <div><span>11</span>The golden set: tool use collapsed</div>
+    <div><span>12</span>Why it happened: the data's habits</div>
+    <div><span>13</span>The export check</div>
+    <div><span>14</span>What changes for SFT-2</div>
+    <div><span>15</span>What went wrong, and what it taught</div>
+    <div><span>16</span>Defending the design: interview questions</div>
+    <div><span>17</span>Limits, what comes next, glossary</div>
+  </div>
+  <p class="small muted">Repository: github.com/jagjotsingh244-source/customer-support-SLM · Evidence: <code>DESIGN.md</code> (adapter size and
+    memory), <code>training/lora_budget.py</code>, <code>training/sft.py</code>, <code>training/configs/sft1.yaml</code>, <code>training/runs/</code>,
+    <code>training/ABLATIONS.md</code>, <code>evals/style_metrics.py</code>, <code>evals/generate_replies.py</code>, <code>evals/blind_compare.py</code>,
+    <code>evals/runs/2026-11-23_sft1-mac/</code>, <code>evals/reports/02_sft_bitext.md</code>, <code>training/notebooks/</code>. The adapter is private
+    on the Hugging Face Hub (<code>sft1-r16-lr2e-4-bitext_v1</code>). Every chart is computed from these files.</p>
+</div>
+
+<!-- 1 -->
+<div class="section first">
+<h2>1 · What SFT-1 was for, and the result</h2>
+<p>The baseline (Part 3) showed the prompted Qwen3.5-2B gets 25 of 100 golden cases right, against 58 for Gemini on the same loop. Part 4 built
+  a dataset to teach <b>how Nova sounds</b>: 4,447 training rows of real customer phrasing with replies rewritten into Nova's voice and every
+  invented fact removed. SFT-1 is the first fine-tune on it. It was always meant to teach tone, not tools; the question was what else it would
+  change.</p>
+<div class="fig"><svg viewBox="0 0 700 96" width="100%" role="img" aria-label="The plan: count, estimate, train, ablate, evaluate"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><rect x="4" y="20" width="120" height="64" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="64.0" y="42.0" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Count</text><text x="64.0" y="55.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">adapter size</text><text x="64.0" y="68.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">by hand</text><path d="M126,52 L140,52" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="142" y="20" width="120" height="64" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="202.0" y="42.0" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Estimate</text><text x="202.0" y="55.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">training memory</text><text x="202.0" y="68.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">before a GPU</text><path d="M264,52 L278,52" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="280" y="20" width="120" height="64" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="340.0" y="42.0" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Train once</text><text x="340.0" y="55.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">loss + probes</text><text x="340.0" y="68.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">tracked</text><path d="M402,52 L416,52" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="418" y="20" width="120" height="64" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="478.0" y="42.0" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Ablate rank</text><text x="478.0" y="55.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">8 / 16 / 64</text><text x="478.0" y="68.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">one change</text><path d="M540,52 L554,52" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="556" y="20" width="140" height="64" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/><text x="626.0" y="42.0" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Evaluate</text><text x="626.0" y="55.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">four checks</text><text x="626.0" y="68.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">+ export check</text></svg><div class="cap">The order of work. Every number that could be computed before renting a GPU was computed first, and every estimate was then measured.</div></div>
+<table>
+  <tr><th style="width:22%">Question</th><th style="width:40%">Answer</th><th>Evidence</th></tr>
+  <tr><td>Did it learn the data?</td><td class="pass">Yes</td><td>Validation loss 2.08 → 0.62; on two intents never trained on, 2.05 → 0.83</td></tr>
+  <tr><td>Does it write like the data?</td><td class="pass">Yes</td><td>36 words, 100% end with a next step, no placeholders, lists or invented digits</td></tr>
+  <tr><td>Would a reader prefer it?</td><td class="fail">No</td><td>Base model preferred 23 to 2 in a blind read of 30 prompts</td></tr>
+  <tr><td>Did the real job get better?</td><td class="fail">No, worse</td><td>25 → 11 correct; zero tool calls in 100 cases (the base made the required calls in 54)</td></tr>
+  <tr><td>Is the served model the trained model?</td><td class="pass">Yes</td><td>vLLM and Transformers gave identical text on all 10 export prompts</td></tr>
+</table>
+<div class="say"><b>How I'd say it in an interview</b>"SFT-1 did exactly what its data asked. Every reply in the data offered to check something and asked
+  permission, and none called a tool, so the model learned to offer instead of act. The loss curve looked perfect; only evaluating outside the
+  training distribution, with tools, showed the cost. That measurement is why the next fine-tune mixes in tool-calling conversations."</div>
+</div>
+
+<!-- 2 -->
+<div class="section page">
+<h2>2 · The memory wall: why LoRA</h2>
+<p>Training needs far more memory than running. A full fine-tune with the Adam optimizer in mixed precision keeps, for every parameter:</p>
+<div class="fig"><svg viewBox="0 0 700 62" width="100%" role="img" aria-label="Sixteen bytes per parameter for a full fine-tune"><rect x="10.0" y="8" width="83.0" height="30" rx="3" fill="#2a78d6"/><text x="52.5" y="27.0" font-size="9.5" text-anchor="middle" fill="#fff" font-weight="700">2 B</text><text x="52.5" y="54.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">16-bit weights</text><rect x="95.0" y="8" width="83.0" height="30" rx="3" fill="#6aa1e6"/><text x="137.5" y="27.0" font-size="9.5" text-anchor="middle" fill="#fff" font-weight="700">2 B</text><text x="137.5" y="54.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">16-bit gradients</text><rect x="180.0" y="8" width="168.0" height="30" rx="3" fill="#eb6834"/><text x="265.0" y="27.0" font-size="9.5" text-anchor="middle" fill="#fff" font-weight="700">4 B</text><text x="265.0" y="54.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">32-bit master copy</text><rect x="350.0" y="8" width="338.0" height="30" rx="3" fill="#1baf7a"/><text x="520.0" y="27.0" font-size="9.5" text-anchor="middle" fill="#fff" font-weight="700">8 B</text><text x="520.0" y="54.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">Adam&#x27;s two 32-bit moments</text></svg><div class="cap">About 16 bytes per trained parameter. The optimizer state (12 of the 16) is the part that grows with what you train.</div></div>
+<p>For Qwen3.5-2B's 1.88 billion text parameters that is <b>30.1 GB before a single activation</b> (35.4 GB counting the vision tower that
+  loads with it). A free Kaggle T4 has 15 GB. Full fine-tuning is out by a factor of two.</p>
+<p><b>LoRA</b> (low-rank adaptation) freezes all of those weights and trains a small add-on instead: 0.49% of the parameters at rank 16. The
+  frozen weights still cost 2 bytes each in 16-bit, but they have no gradients and no optimizer state, so what remains is mostly the model
+  itself.</p>
+<div class="fig"><svg viewBox="0 0 700 116" width="100%" role="img" aria-label="Training memory: full fine-tune against LoRA"><text x="192.0" y="19.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">Full fine-tune, text model only</text><rect x="200" y="8" width="342.8" height="16" rx="3" fill="#b42318"/><text x="548.8" y="19.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">30.1 GB, before activations</text><text x="192.0" y="44.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">Full fine-tune, with vision tower</text><rect x="200" y="33" width="403.2" height="16" rx="3" fill="#b42318"/><text x="609.2" y="44.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">35.4 GB</text><text x="192.0" y="69.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">LoRA r = 16, estimate</text><rect x="200" y="58" width="63.8" height="16" rx="3" fill="#2a78d6"/><text x="269.8" y="69.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">4.9–5.6 GB</text><text x="192.0" y="94.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">LoRA r = 16, measured peak</text><rect x="200" y="83" width="56.3" height="16" rx="3" fill="#1d7a46"/><text x="262.3" y="94.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">4.94 GB</text><line x1="370.8" y1="4" x2="370.8" y2="112" stroke="#a1520d" stroke-width="1.5" stroke-dasharray="4 3"/><text x="374.8" y="110.0" font-size="8.2" text-anchor="start" fill="#a1520d" font-weight="600">one T4: 15 GB</text></svg><div class="cap">Training memory. The full fine-tune bars are weights, gradients and optimizer only; the LoRA bars are a whole training step, measured with <code>max_memory_allocated</code>.</div></div>
+<h3>Why 16-bit LoRA and not 4-bit QLoRA</h3>
+<p>QLoRA stores the frozen weights in 4 bits to fit bigger models on small GPUs. It was not needed and not advised: Unsloth recommends against
+  quantized training for Qwen3.5, and a 16-bit LoRA on a 2B model already fits a T4 with 10 GB to spare. Quantizing would add error to every
+  forward pass to save memory that was not short.</p>
+<div class="say"><b>How I'd say it in an interview</b>"Full fine-tuning costs about 16 bytes per parameter with Adam: 30 GB for this model, twice a T4. LoRA trains half a
+  percent of the parameters, so the optimizer state nearly disappears and the bill is basically the frozen weights: 4.9 GB measured. I didn't use
+  QLoRA because it wasn't needed and Unsloth advises against it for Qwen3.5."</div>
+</div>
+
+<!-- 3 -->
+<div class="section page">
+<h2>3 · LoRA in one picture</h2>
+<p>For each adapted weight matrix W (shape d_out × d_in), LoRA learns two thin matrices: B (d_out × r) and A (r × d_in). Their product B·A has the
+  same shape as W but rank at most r, so it can only change the layer in r directions. The layer computes W·x + (α/r)·B·A·x.</p>
+<div class="fig"><svg viewBox="0 0 700 192" width="100%" role="img" aria-label="LoRA: a frozen weight plus a small trained update"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><text x="70.0" y="16.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">input x  (d_in = 6,144)</text><rect x="10" y="26" width="120" height="120" rx="7" fill="#f4f6f9" stroke="#c9ced8"/><text x="70.0" y="69.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">W, frozen</text><text x="70.0" y="82.5" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">2,048 × 6,144</text><text x="70.0" y="95.5" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">12.6M weights</text><text x="70.0" y="108.5" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">never updated</text><text x="160.0" y="92.0" font-size="22" text-anchor="middle" fill="#1d2330" font-weight="700">+</text><rect x="190" y="26" width="22" height="120" rx="4" fill="#eaf0fc" stroke="#9fb8de"/><text x="201.0" y="160.0" font-size="10" text-anchor="middle" fill="#2a78d6" font-weight="700">B</text><text x="201.0" y="172.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">2,048 × 16</text><text x="201.0" y="184.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">starts at 0</text><text x="226.0" y="92.0" font-size="14" text-anchor="middle" fill="#1d2330" font-weight="700">×</text><rect x="240" y="76" width="120" height="22" rx="4" fill="#fdf3e7" stroke="#f2d6b3"/><text x="300.0" y="112.0" font-size="10" text-anchor="middle" fill="#eb6834" font-weight="700">A</text><text x="300.0" y="124.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">16 × 6,144, random start</text><text x="390.0" y="92.0" font-size="18" text-anchor="middle" fill="#1d2330" font-weight="700">=</text><rect x="420" y="26" width="120" height="120" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="480.0" y="76.0" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">W + (α/r)·B·A</text><text x="480.0" y="89.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">what the layer</text><text x="480.0" y="102.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">computes now</text><text x="560.0" y="44.0" font-size="9" text-anchor="start" fill="#1d2330" font-weight="700">trained: r × (d_in + d_out)</text><text x="560.0" y="58.0" font-size="8.6" text-anchor="start" fill="#5b6270" font-weight="normal">= 16 × (6,144 + 2,048)</text><text x="560.0" y="72.0" font-size="8.6" text-anchor="start" fill="#5b6270" font-weight="normal">= 131,072  (1.0% of W)</text><text x="560.0" y="98.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">step 0: B = 0, so B·A = 0:</text><text x="560.0" y="111.0" font-size="8.6" text-anchor="start" fill="#5b6270" font-weight="normal">the model starts exactly</text><text x="560.0" y="124.0" font-size="8.6" text-anchor="start" fill="#5b6270" font-weight="normal">as the base model</text><text x="560.0" y="150.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">after training, B·A can be</text><text x="560.0" y="163.0" font-size="8.6" text-anchor="start" fill="#5b6270" font-weight="normal">merged into W, or served</text><text x="560.0" y="176.0" font-size="8.6" text-anchor="start" fill="#5b6270" font-weight="normal">beside it as an add-on</text></svg><div class="cap">One MLP projection (down_proj) at r = 16. The trained part is 1% of the frozen matrix it sits beside.</div></div>
+<ul>
+  <li><b>B starts at zero,</b> so at step 0 the fine-tuned model is identical to the base. That makes step 0's evaluation the base model's score,
+    a free baseline on every curve in this guide.</li>
+  <li><b>α / r scales the update.</b> SFT-1 uses α = r = 16 (scale 1), Unsloth's recipe for Qwen3.5. The ablation (section 8) keeps α = r for the
+    same reason: so rank changes capacity without also changing the step size, at least nominally.</li>
+  <li><b>It can be merged or served beside the base.</b> Merging folds B·A into W (no extra cost at inference); serving it as an add-on lets one
+    base model in vLLM serve several adapters. Nova serves it as an add-on, and section 13 checks both forms give the same answers.</li>
+</ul>
+</div>
+
+<!-- 4 -->
+<div class="section">
+<h2>4 · Reading the model before choosing targets</h2>
+<p>Which matrices get an adapter is the first real decision. The usual recipe lists seven names (<code>q/k/v/o_proj</code>, <code>gate/up/down_proj</code>).
+  Before using it, <code>training/lora_budget.py</code> built the model from its config with no weights (on the "meta" device, so a laptop CPU can
+  inspect a 2B model in seconds), printed every linear layer, and counted the adapter by hand.</p>
+<div class="fig"><svg viewBox="0 0 700 190" width="100%" role="img" aria-label="Qwen3.5-2B&#x27;s layer layout and where the adapter goes"><rect x="8.0" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="20.5" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="20.5" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">0</text><rect x="8.0" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="36.6" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="49.1" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="49.1" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">1</text><rect x="36.6" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="65.2" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="77.7" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="77.7" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">2</text><rect x="65.2" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="93.8" y="30" width="25" height="40" rx="4" fill="#fdf3e7" stroke="#f2d6b3"/><text x="106.3" y="54.0" font-size="9.5" text-anchor="middle" fill="#a1520d" font-weight="700">F</text><text x="106.3" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">3</text><rect x="93.8" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="122.4" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="134.9" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="134.9" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">4</text><rect x="122.4" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="151.0" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="163.5" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="163.5" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">5</text><rect x="151.0" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="179.6" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="192.1" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="192.1" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">6</text><rect x="179.6" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="208.2" y="30" width="25" height="40" rx="4" fill="#fdf3e7" stroke="#f2d6b3"/><text x="220.7" y="54.0" font-size="9.5" text-anchor="middle" fill="#a1520d" font-weight="700">F</text><text x="220.7" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">7</text><rect x="208.2" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="236.8" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="249.3" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="249.3" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">8</text><rect x="236.8" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="265.4" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="277.9" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="277.9" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">9</text><rect x="265.4" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="294.0" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="306.5" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="306.5" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">10</text><rect x="294.0" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="322.6" y="30" width="25" height="40" rx="4" fill="#fdf3e7" stroke="#f2d6b3"/><text x="335.1" y="54.0" font-size="9.5" text-anchor="middle" fill="#a1520d" font-weight="700">F</text><text x="335.1" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">11</text><rect x="322.6" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="351.2" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="363.7" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="363.7" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">12</text><rect x="351.2" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="379.8" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="392.3" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="392.3" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">13</text><rect x="379.8" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="408.4" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="420.9" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="420.9" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">14</text><rect x="408.4" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="437.0" y="30" width="25" height="40" rx="4" fill="#fdf3e7" stroke="#f2d6b3"/><text x="449.5" y="54.0" font-size="9.5" text-anchor="middle" fill="#a1520d" font-weight="700">F</text><text x="449.5" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">15</text><rect x="437.0" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="465.6" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="478.1" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="478.1" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">16</text><rect x="465.6" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="494.2" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="506.7" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="506.7" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">17</text><rect x="494.2" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="522.8" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="535.3" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="535.3" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">18</text><rect x="522.8" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="551.4" y="30" width="25" height="40" rx="4" fill="#fdf3e7" stroke="#f2d6b3"/><text x="563.9" y="54.0" font-size="9.5" text-anchor="middle" fill="#a1520d" font-weight="700">F</text><text x="563.9" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">19</text><rect x="551.4" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="580.0" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="592.5" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="592.5" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">20</text><rect x="580.0" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="608.6" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="621.1" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="621.1" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">21</text><rect x="608.6" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="637.2" y="30" width="25" height="40" rx="4" fill="#eaf0fc" stroke="#c7d6f3"/><text x="649.7" y="54.0" font-size="9.5" text-anchor="middle" fill="#2a78d6" font-weight="700">L</text><text x="649.7" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">22</text><rect x="637.2" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><rect x="665.8" y="30" width="25" height="40" rx="4" fill="#fdf3e7" stroke="#f2d6b3"/><text x="678.3" y="54.0" font-size="9.5" text-anchor="middle" fill="#a1520d" font-weight="700">F</text><text x="678.3" y="82.0" font-size="7.4" text-anchor="middle" fill="#5b6270" font-weight="normal">23</text><rect x="665.8" y="88" width="25" height="12" rx="3" fill="#e8f5ee" stroke="#bfe3cd"/><text x="8.0" y="20.0" font-size="9" text-anchor="start" fill="#1d2330" font-weight="700">24 text layers: L = linear attention (Gated DeltaNet), F = full attention</text><text x="8.0" y="114.0" font-size="8.6" text-anchor="start" fill="#1d7a46" font-weight="normal">Green: the MLP (gate / up / down_proj) in every layer, adapted in all 24</text><text x="8.0" y="130.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">Orange F layers: q / k / v / o_proj, adapted (6 layers)   ·   Blue L layers: in_proj_qkv, in_proj_z, in_proj_a, in_proj_b, out_proj, not adapted (18 layers)</text><rect x="8" y="142" width="220" height="40" rx="7" fill="#f4f6f9" stroke="#dfe3ea"/><text x="118.0" y="158.7" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">Embeddings 508.6M</text><text x="118.0" y="171.3" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">shared with the output head</text><rect x="238" y="142" width="220" height="40" rx="7" fill="#fbeaea" stroke="#f0c9c9"/><text x="348.0" y="158.7" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">Vision tower 331.4M</text><text x="348.0" y="171.3" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">loaded, never used by Nova</text><rect x="468" y="142" width="224" height="40" rx="7" fill="#f4f6f9" stroke="#dfe3ea"/><text x="580.0" y="158.7" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">Vocabulary 248,320</text><text x="580.0" y="171.3" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">logits ≈ 1 GB for one batch</text></svg><div class="cap">Qwen3.5-2B is a hybrid: three linear-attention layers, then one full-attention layer, six times over. The usual target names only exist in the six full-attention layers.</div></div>
+<p>Three findings changed what the numbers meant:</p>
+<ol>
+  <li><b>18 of the 24 layers have no <code>q_proj</code>.</b> They use linear attention (Gated DeltaNet) with different projection names, so the standard
+    recipe adapts attention in only 6 layers. The MLP, which every layer has, carries 86% of the adapter.</li>
+  <li><b><code>q_proj</code> is 4,096 wide, not 2,048,</b> because it also produces the attention output gate (8 heads × 256 × 2). A hand count that assumed
+    a square projection would be short by 196,608 parameters at r = 16.</li>
+  <li><b>A 331M-parameter vision tower loads with the model.</b> <code>target_modules="all-linear"</code>, a popular shortcut, would quietly wrap 98 of its
+    layers and train them on text.</li>
+</ol>
+<div class="fig"><svg viewBox="0 0 700 149" width="100%" role="img" aria-label="Trainable parameters per target module at r = 16"><text x="152.0" y="17.5" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">gate_proj (24 layers)</text><rect x="160" y="8" width="404.5" height="13" rx="3" fill="#2a78d6"/><text x="570.5" y="17.5" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">3.15M</text><text x="152.0" y="36.5" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">up_proj (24)</text><rect x="160" y="27" width="404.5" height="13" rx="3" fill="#2a78d6"/><text x="570.5" y="36.5" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">3.15M</text><text x="152.0" y="55.5" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">down_proj (24)</text><rect x="160" y="46" width="404.5" height="13" rx="3" fill="#2a78d6"/><text x="570.5" y="55.5" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">3.15M</text><text x="152.0" y="74.5" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">q_proj (6)</text><rect x="160" y="65" width="75.8" height="13" rx="3" fill="#eb6834"/><text x="241.8" y="74.5" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">0.59M</text><text x="152.0" y="93.5" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">o_proj (6)</text><rect x="160" y="84" width="50.6" height="13" rx="3" fill="#eb6834"/><text x="216.6" y="93.5" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">0.39M</text><text x="152.0" y="112.5" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">k_proj (6)</text><rect x="160" y="103" width="31.6" height="13" rx="3" fill="#eb6834"/><text x="197.6" y="112.5" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">0.25M</text><text x="152.0" y="131.5" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">v_proj (6)</text><rect x="160" y="122" width="31.6" height="13" rx="3" fill="#eb6834"/><text x="197.6" y="131.5" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">0.25M</text></svg><div class="cap">Trainable parameters per target at r = 16: 10,911,744 in total, 681,984 per unit of rank. Blue: MLP projections in all 24 layers; orange: attention projections in the 6 full-attention layers.</div></div>
+<table class="small">
+  <tr><th style="width:30%">Option</th><th style="width:16%">Trainable at r = 16</th><th>Decision</th></tr>
+  <tr><td>Unsloth's seven targets</td><td>10.9M</td><td class="pass">Chosen: the tested recipe; tone can live in the MLPs of all 24 layers</td></tr>
+  <tr><td>+ the linear-attention projections</td><td>16.8M (+54%)</td><td>Kept as a known gap; revisit if a fine-tune fails to move behaviour the evals care about</td></tr>
+  <tr><td><code>all-linear</code></td><td>includes 98 vision layers</td><td class="fail">Ruled out: trains a part of the model Nova never uses</td></tr>
+</table>
+<p>The hand count matched PEFT's count exactly at r = 8, 16 and 64 (5,455,872 / 10,911,744 / 43,646,976), and later matched the real training
+  run: 96 layers wrapped, none in the vision tower.</p>
+<div class="warn"><b>Takeaway</b>A recipe's module names only mean something for the architecture they were written for. Print the model before choosing
+  targets.</div>
+</div>
+
+<!-- 5 -->
+<div class="section">
+<h2>5 · Memory: estimate, then measure</h2>
+<p>The estimate was written into <code>DESIGN.md</code> before the first GPU session, so the measurement could prove it wrong.</p>
+<table class="small">
+  <tr><th style="width:34%">Part of one training step (r = 16, batch 2, 256 tokens)</th><th style="width:18%">Estimate</th><th>How</th></tr>
+  <tr><td>Frozen base weights, 16-bit</td><td>3.76 GB (4.43 with vision)</td><td>2 bytes × parameters</td></tr>
+  <tr><td>LoRA weights + gradients, fp32</td><td>0.09 GB</td><td>8 bytes × 10.9M</td></tr>
+  <tr><td>Adam moments, 8-bit optimizer</td><td>0.02 GB</td><td>2 bytes × 10.9M</td></tr>
+  <tr><td>Saved layer inputs (gradient checkpointing)</td><td>0.05 GB</td><td>batch × tokens × 2,048 × 2 bytes × 24 layers</td></tr>
+  <tr><td>Logits and their gradient, fp32</td><td>up to 1.02 GB</td><td>batch × tokens × 248,320 vocabulary × 4 bytes × 2</td></tr>
+  <tr><td><b>Total</b></td><td><b>4.9–5.6 GB</b></td><td>Unsloth lists about 5 GB for this model</td></tr>
+</table>
+<table class="small">
+  <tr><th style="width:34%">Measured on the first run</th><th style="width:18%">Estimate</th><th>Measured</th></tr>
+  <tr><td>After loading the base</td><td>3.76 / 4.43 GB</td><td><b>4.44 GB</b>: the vision tower loads even for text training</td></tr>
+  <tr><td>Peak during training</td><td>4.9–5.6 GB</td><td><b>4.94 GB</b> (5.12 GB reserved)</td></tr>
+  <tr><td>Trainable parameters</td><td>10,911,744</td><td><b>10,911,744</b></td></tr>
+  <tr><td>Saved adapter</td><td>about 44 MB (fp32)</td><td><b>43.7 MB</b></td></tr>
+</table>
+<p><b>The surprise was the vocabulary.</b> At 248,320 entries, the logits for one batch of 512 tokens weigh more than every activation the 24
+  layers save. Training added only 0.50 GB above the loaded weights, so Unsloth's chunked loss kept most of that 1 GB from ever existing at once.</p>
+<div class="say"><b>How I'd say it in an interview</b>"I estimated memory term by term before touching a GPU: weights, adapter, optimizer, activations, logits.
+  The biggest activation cost was the logits, because the vocabulary is 248k. The estimate was 4.9 to 5.6 GB and the run peaked at 4.94."</div>
+</div>
+
+<!-- 6 -->
+<div class="section page">
+<h2>6 · The training setup and what is tracked</h2>
+<p>One script (<code>training/sft.py</code>) and one config file (<code>training/configs/sft1.yaml</code>). Every setting that can change a result lives
+  in the config; the run name is built from the settings that vary (<code>sft1-r16-lr2e-4-bitext_v1</code>), so a name says what was trained.</p>
+<table class="small">
+  <tr><th style="width:24%">Setting</th><th style="width:20%">Value</th><th>Why</th></tr>
+  <tr><td>Base model</td><td>Qwen3.5-2B (Unsloth build)</td><td>The model chosen in Part 1; Unsloth's kernels make 16-bit LoRA fit and run fast on a T4</td></tr>
+  <tr><td>Rank / alpha / dropout</td><td>16 / 16 / 0</td><td>Unsloth's Qwen3.5 recipe; rank confirmed by the ablation (section 8)</td></tr>
+  <tr><td>Data</td><td><code>nimbus-bitext-v1</code>, revision pinned</td><td>The same rows on every rerun, even if the dataset is updated</td></tr>
+  <tr><td>Sequence length</td><td>256 tokens</td><td>Measured p99 245, max 255: nothing is cut. Rows over the limit raise an error instead of being truncated</td></tr>
+  <tr><td>Loss</td><td>Nova's reply tokens only</td><td>The mask from Part 4: system prompt and customer tokens are read, not trained</td></tr>
+  <tr><td>Learning rate, schedule</td><td>2e-4, cosine, 5% warm-up</td><td>Standard for LoRA at this size; one epoch avoids memorising a repetitive dataset</td></tr>
+  <tr><td>Batch</td><td>2 × 8 accumulation = 16</td><td>Small per-step memory, stable effective batch; 278 steps for 4,447 rows</td></tr>
+  <tr><td>Optimizer, precision</td><td>8-bit AdamW, fp16</td><td>8-bit moments are almost free; a T4 has no bf16</td></tr>
+  <tr><td>Seed</td><td>3407</td><td>Same subset, order and initialisation on every rerun</td></tr>
+</table>
+<h3>Checks before any GPU time is spent</h3>
+<p>A <code>--dry-run</code> builds the batches and checks them without training: on 200 rows per split, the trained tokens are exactly the reply plus
+  its end-of-turn token; the training template matches the serving template; and the trainable count from the real model equals the hand count.</p>
+<h3>What every run records</h3>
+<div class="grid2">
+  <div class="card"><h4>Two evaluation sets, every 25 steps</h4><p>Validation loss (intents seen in training) and held-out-intent loss (two intents never
+    trained on). Step 0 is evaluated too, which gives the base model's loss for free.</p></div>
+  <div class="card"><h4>Eight greedy probes, every 25 steps</h4><p>"hello", "where is my order?", "your service is terrible"… decoded greedily so a
+    change comes from the model, not the dice. Written to <code>probes.jsonl</code>.</p></div>
+  <div class="card"><h4><code>run_info.json</code></h4><p>Config, git commit and whether the tree was dirty, library versions, GPU, memory after load and at
+    peak, trainable parameters, time, every evaluation loss.</p></div>
+  <div class="card"><h4>The adapter on the Hub</h4><p>Pushed with its run name and checkpoints, so any reported result can be reloaded exactly.</p></div>
+</div>
+</div>
+
+<!-- 7 -->
+<div class="section">
+<h2>7 · The first run</h2>
+<p>278 steps on one T4 in 40 minutes (41 for the whole run, including 12 evaluations with probes).</p>
+<div class="fig"><svg viewBox="0 0 700 250" width="100%" role="img" aria-label="Loss during the first full run"><line x1="46" y1="216.0" x2="550" y2="216.0" stroke="#eceff4"/><text x="40.0" y="219.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">0.5</text><line x1="46" y1="160.1" x2="550" y2="160.1" stroke="#eceff4"/><text x="40.0" y="163.1" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">1.0</text><line x1="46" y1="104.2" x2="550" y2="104.2" stroke="#eceff4"/><text x="40.0" y="107.2" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">1.5</text><line x1="46" y1="48.4" x2="550" y2="48.4" stroke="#eceff4"/><text x="40.0" y="51.4" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">2.0</text><text x="46.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">0</text><text x="136.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">50</text><text x="226.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">100</text><text x="316.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">150</text><text x="406.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">200</text><text x="496.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">250</text><line x1="46" y1="216" x2="550" y2="216" stroke="#5b6270"/><text x="298.0" y="246.0" font-size="8.4" text-anchor="middle" fill="#5b6270" font-weight="normal">training step</text><text x="10.0" y="16.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">loss</text><path d="M47.8,55.7 L55.0,40.3 L64.0,45.6 L73.0,69.3 L82.0,112.6 L91.0,141.0 L100.0,159.9 L109.0,155.4 L118.0,169.1 L127.0,178.2 L136.0,175.6 L145.0,180.9 L154.0,180.3 L163.0,184.3 L172.0,185.0 L181.0,190.1 L190.0,183.9 L199.0,191.7 L208.0,196.5 L217.0,189.5 L226.0,191.8 L235.0,193.1 L244.0,194.8 L253.0,191.6 L262.0,191.3 L271.0,194.5 L280.0,192.9 L289.0,196.6 L298.0,192.1 L307.0,196.6 L316.0,198.4 L325.0,200.0 L334.0,197.3 L343.0,198.1 L352.0,203.2 L361.0,195.4 L370.0,201.0 L379.0,201.8 L388.0,205.6 L397.0,199.5 L406.0,206.0 L415.0,199.5 L424.0,203.8 L433.0,202.8 L442.0,200.3 L451.0,205.3 L460.0,198.6 L469.0,204.6 L478.0,202.0 L487.0,198.0 L496.0,202.9 L505.0,198.7 L514.0,203.9 L523.0,199.1 L532.0,204.1 L541.0,201.1" fill="none" stroke="#9fb8de" stroke-width="1.3" stroke-linejoin="round"/><path d="M46.0,40.0 L91.0,156.5 L136.0,179.6 L181.0,187.2 L226.0,191.4 L271.0,195.7 L316.0,196.9 L361.0,199.6 L406.0,200.7 L451.0,201.6 L496.0,202.2 L541.0,202.5 L546.4,202.5" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/><circle cx="546.4" cy="202.5" r="3.2" fill="#2a78d6" stroke="#fff" stroke-width="1.5"/><path d="M46.0,43.1 L91.0,139.7 L136.0,157.4 L181.0,166.2 L226.0,172.2 L271.0,174.3 L316.0,176.1 L361.0,177.8 L406.0,176.4 L451.0,178.7 L496.0,179.3 L541.0,179.3 L546.4,179.3" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"/><circle cx="546.4" cy="179.3" r="3.2" fill="#eb6834" stroke="#fff" stroke-width="1.5"/><path d="M550.4,179.3 L560.4,179.3" stroke="#eb6834" stroke-width="1"/><text x="563.4" y="182.3" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">held-out intents 0.828</text><path d="M550.4,202.5 L560.4,202.5" stroke="#2a78d6" stroke-width="1"/><text x="563.4" y="205.5" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">validation 0.621</text><text x="53.2" y="34.9" font-size="8.2" text-anchor="start" fill="#5b6270" font-weight="normal">step 0 = the base model (B starts at zero)</text></svg><div class="cap">Training loss (light), validation loss and held-out-intent loss. Neither evaluation loss turns up, so there is no overfitting in one epoch; held-out loss is flat from step 225.</div></div>
+<p>The gap between validation (0.621) and held-out intents (0.828) is the part that is specific to the trained intents; the rest transferred.
+  Because nothing overfit, the final step was kept rather than an earlier checkpoint.</p>
+<h3>What the probes showed that the loss did not</h3>
+<table class="small">
+  <tr><th style="width:9%">Step</th><th>Reply to "where is my order?" (greedy, no tools in the probe prompt)</th></tr>
+  <tr><td>0 (base)</td><td>I will check your order status. Please wait while I look it up.</td></tr>
+  <tr><td>25</td><td>Checking where your order is is a good question to get to. I can look up your order for you right now. Would you like me to check it?</td></tr>
+  <tr><td>100</td><td>Let's get you an update on your order. I can check your order details right now to see where things stand. Would you like me to take a look at it for you?</td></tr>
+  <tr><td>278</td><td>You're wondering where your order is right now. I can check your order details for you so you know where things stand. Would you like me to take a look?</td></tr>
+</table>
+<ul>
+  <li><b>Most of the change happened in the first 25 steps.</b> Mean probe length jumped from 17 to 30 words by step 25 and barely moved after; the loss
+    kept falling for another 250 steps.</li>
+  <li><b>The model amplified a habit.</b> By the end, 5 of 8 probe replies opened by restating the customer ("You're wondering…"), a pattern in about 20%
+    of the training replies.</li>
+  <li><b>The permission question arrived at step 25 and never left.</b> In hindsight this was the first sign of section 11's result.</li>
+</ul>
+</div>
+
+<!-- 8 -->
+<div class="section page">
+<h2>8 · The rank ablation, and how not to misread it</h2>
+<p>How much adapter capacity does the voice need? Three short runs changed only the rank: r = 8, 16, 64 on the same seeded 1,000 rows, one epoch
+  (63 steps), evaluation every 10 steps. <b>Alpha moved with r</b> (8/8, 16/16, 64/64): holding alpha at 16 would scale an r = 64 update by 0.25 and an
+  r = 8 update by 2, adding a second difference.</p>
+<div class="fig"><svg viewBox="0 0 700 18" width="100%" role="img" aria-label="legend"><line x1="46" y1="10" x2="60" y2="10" stroke="#2a78d6" stroke-width="2"/><text x="64.0" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">r = 8</text><line x1="103.0" y1="10" x2="117.0" y2="10" stroke="#eb6834" stroke-width="2"/><text x="121.0" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">r = 16</text><line x1="164.6" y1="10" x2="178.6" y2="10" stroke="#1baf7a" stroke-width="2"/><text x="182.6" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">r = 64</text><line x1="226.2" y1="10" x2="240.2" y2="10" stroke="#5b6270" stroke-width="2" stroke-dasharray="4 3"/><text x="244.2" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">r = 16 on all 4,447 rows (first 63 steps)</text></svg><svg viewBox="0 0 700 250" width="100%" role="img" aria-label="Validation loss by rank on 1,000 rows"><line x1="46" y1="216.0" x2="550" y2="216.0" stroke="#eceff4"/><text x="40.0" y="219.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">0.6</text><line x1="46" y1="168.5" x2="550" y2="168.5" stroke="#eceff4"/><text x="40.0" y="171.5" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">1.0</text><line x1="46" y1="121.0" x2="550" y2="121.0" stroke="#eceff4"/><text x="40.0" y="124.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">1.4</text><line x1="46" y1="73.5" x2="550" y2="73.5" stroke="#eceff4"/><text x="40.0" y="76.5" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">1.8</text><line x1="46" y1="26.0" x2="550" y2="26.0" stroke="#eceff4"/><text x="40.0" y="29.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">2.2</text><text x="46.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">0</text><text x="126.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">10</text><text x="206.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">20</text><text x="286.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">30</text><text x="366.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">40</text><text x="446.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">50</text><text x="526.0" y="229.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">60</text><line x1="46" y1="216" x2="550" y2="216" stroke="#5b6270"/><text x="298.0" y="246.0" font-size="8.4" text-anchor="middle" fill="#5b6270" font-weight="normal">training step</text><text x="10.0" y="16.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">loss</text><path d="M46.0,40.9 L126.0,74.3 L206.0,155.7 L286.0,173.0 L366.0,180.2 L446.0,184.4 L526.0,186.3 L550.0,186.4" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/><circle cx="550.0" cy="186.4" r="3.2" fill="#2a78d6" stroke="#fff" stroke-width="1.5"/><path d="M46.0,40.9 L126.0,94.1 L206.0,165.7 L286.0,179.9 L366.0,185.8 L446.0,190.2 L526.0,191.9 L550.0,192.0" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"/><circle cx="550.0" cy="192.0" r="3.2" fill="#eb6834" stroke="#fff" stroke-width="1.5"/><path d="M46.0,40.9 L126.0,128.7 L206.0,178.9 L286.0,188.5 L366.0,193.1 L446.0,198.0 L526.0,199.9 L550.0,200.1" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round"/><circle cx="550.0" cy="200.1" r="3.2" fill="#1baf7a" stroke="#fff" stroke-width="1.5"/><path d="M46.0,40.9 L246.0,164.7 L446.0,189.2" fill="none" stroke="#5b6270" stroke-width="1.4" stroke-dasharray="4 3" stroke-linejoin="round"/><path d="M554.0,186.4 L564.0,186.4" stroke="#2a78d6" stroke-width="1"/><text x="567.0" y="189.4" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">r = 8: 0.849</text><path d="M554.0,192.0 L564.0,198.4" stroke="#eb6834" stroke-width="1"/><text x="567.0" y="201.4" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">r = 16: 0.802</text><path d="M554.0,200.1 L564.0,210.4" stroke="#1baf7a" stroke-width="1"/><text x="567.0" y="213.4" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">r = 64: 0.734</text><text x="142.0" y="55.7" font-size="8.2" text-anchor="start" fill="#5b6270" font-weight="normal">step 10: r = 64 leads r = 8 by 0.46</text><text x="366.0" y="138.8" font-size="8.2" text-anchor="start" fill="#5b6270" font-weight="normal">step 63: the lead is 0.12</text></svg><div class="cap">Validation loss by rank. The grey dashed line is the full-data r = 16 run over its first 63 steps, for scale.</div></div>
+<table class="small">
+  <tr><th>r / alpha</th><th>Trainable</th><th>Val loss, end</th><th>Held-out, end</th><th>Held-out − val</th><th>Peak GB</th></tr>
+  <tr><td>8 / 8</td><td>5.5M</td><td>0.849</td><td>1.021</td><td>0.172</td><td>4.90</td></tr>
+  <tr><td>16 / 16</td><td>10.9M</td><td>0.802</td><td>0.981</td><td>0.179</td><td>4.94</td></tr>
+  <tr><td>64 / 64</td><td>43.6M</td><td><b>0.734</b></td><td><b>0.928</b></td><td>0.194</td><td>5.13</td></tr>
+  <tr><td>16 / 16, all 4,447 rows</td><td>10.9M</td><td>0.621</td><td>0.828</td><td>0.207</td><td>4.94</td></tr>
+</table>
+<h3>The obvious reading, and why it is wrong</h3>
+<p>r = 64 has the lowest loss everywhere, held-out intents included. But its lead <b>shrinks</b>: 0.46 over r = 8 at step 10, 0.12 at the end. A
+  larger rank with α = r also takes bigger steps (a rank-64 update is a sum of 64 rank-one pieces, each moved by Adam at the same rate), so it learns
+  <i>faster</i>. A real capacity limit would look the other way round: the small adapter stalling late and the gap opening up. No curve stalls.</p>
+<ul>
+  <li><b>More data beat more rank:</b> r = 16 on all rows ends 0.11 below r = 64 on 1,000 rows.</li>
+  <li><b>The probes were the same in kind</b> at all three ranks, with the same faults. r = 64's "hello" reply was the one clearly worse answer.</li>
+  <li><b>r = 64 costs more:</b> a 4× larger adapter (175 MB against 44 MB in fp32), a higher <code>--max-lora-rank</code> in vLLM, a slightly wider
+    seen/unseen gap.</li>
+</ul>
+<p><b>Choice: r = 16, unchanged</b>, which also meant the full run already trained was the final model. The open question is written down:
+  holding the step size fixed across ranks (rsLoRA's α/√r scaling) on the full data would separate capacity from speed.</p>
+<div class="say"><b>How I'd say it in an interview</b>"The rank-64 run had the best loss, but its lead shrank from 0.46 to 0.12 over the run. With alpha tied
+  to rank, a bigger rank also means a bigger effective step, so a 63-step run rewards speed, not capacity. Compare the curves, not the last point."</div>
+</div>
+
+<!-- 9 -->
+<div class="section">
+<h2>9 · Evaluating a fine-tune: four checks</h2>
+<p>Fine-tuning moves a model toward its data in every direction the data points, including directions nobody intended. The unwanted part is
+  called forgetting, and it only shows outside the training distribution. So SFT-1 gets four checks, each answering a different question, plus a
+  check that the served model is the trained one.</p>
+<div class="fig"><svg viewBox="0 0 700 222" width="100%" role="img" aria-label="Four checks and the export check"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><rect x="250" y="6" width="200" height="40" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="350.0" y="22.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">SFT-1 adapter</text><text x="350.0" y="35.5" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">on the Hub, r = 16</text><path d="M300,48 L90,74" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><path d="M330,48 L265,74" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><path d="M370,48 L440,74" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><path d="M400,48 L615,74" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="6" y="76" width="168" height="74" rx="7" fill="#f4f6f9" stroke="#dfe3ea"/><text x="90.0" y="103.4" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">1 · Loss</text><text x="90.0" y="116.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">validation + 2 unseen intents</text><text x="90.0" y="128.6" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">did it learn, does it transfer?</text><rect x="180" y="76" width="168" height="74" rx="7" fill="#f4f6f9" stroke="#dfe3ea"/><text x="264.0" y="103.4" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">2 · Style metrics</text><text x="264.0" y="116.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">200 held-out prompts</text><text x="264.0" y="128.6" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">length, endings, lists, digits</text><rect x="354" y="76" width="168" height="74" rx="7" fill="#f4f6f9" stroke="#dfe3ea"/><text x="438.0" y="103.4" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">3 · Blind side-by-side</text><text x="438.0" y="116.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">30 prompts, order shuffled</text><text x="438.0" y="128.6" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">would a reader prefer it?</text><rect x="528" y="76" width="166" height="74" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/><text x="611.0" y="103.4" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">4 · Golden set, tools</text><text x="611.0" y="116.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">100 cases, full agent loop</text><text x="611.0" y="128.6" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">did the real job get better?</text><rect x="180" y="162" width="342" height="34" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="351.0" y="182.0" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">+ Export check: same answers in vLLM as in the notebook?</text><text x="90.0" y="216.0" font-size="8.4" text-anchor="middle" fill="#5b6270" font-weight="normal">inside the training data</text><text x="438.0" y="216.0" font-size="8.4" text-anchor="middle" fill="#a1520d" font-weight="700">outside it: where forgetting shows</text><line x1="6" y1="206" x2="174" y2="206" stroke="#5b6270"/><line x1="180" y1="206" x2="694" y2="206" stroke="#a1520d"/></svg><div class="cap">Checks 1 and 2 look inside the training distribution; checks 3 and 4 look outside it, where the cost of fine-tuning shows.</div></div>
+<p>All four compare like with like: the same prompts, greedy decoding or the baseline's exact settings, and the base model run through the same
+  path. The golden run used the same machine and database copy as the baseline floor run, so the only difference is the adapter.</p>
+</div>
+
+<!-- 10 -->
+<div class="section">
+<h2>10 · Loss, style and the blind read</h2>
+<h3>Check 1 · Loss</h3>
+<p>Validation 2.075 → 0.621 and held-out intents 2.047 → 0.828 (section 7). It learned the data, and the voice carries to intents it never saw.</p>
+<h3>Check 2 · Style metrics</h3>
+<p><code>evals/style_metrics.py</code> on 200 held-out prompts (100 validation, 100 from the unseen intents), the same prompt for both models,
+  greedy, compared with the dataset's own replies to those prompts.</p>
+<div class="fig"><svg viewBox="0 0 700 220" width="100%" role="img" aria-label="Style metrics on 200 held-out prompts"><rect x="40" y="4" width="10" height="10" rx="2" fill="#2a78d6"/><text x="58.0" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">training replies (reference)</text><rect x="202.79999999999998" y="4" width="10" height="10" rx="2" fill="#eb6834"/><text x="220.8" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">base model</text><rect x="282.79999999999995" y="4" width="10" height="10" rx="2" fill="#1baf7a"/><text x="300.8" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">SFT-1</text><line x1="40" y1="180.0" x2="690" y2="180.0" stroke="#eceff4"/><text x="34.0" y="183.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">0%</text><line x1="40" y1="142.5" x2="690" y2="142.5" stroke="#eceff4"/><text x="34.0" y="145.5" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">25%</text><line x1="40" y1="105.0" x2="690" y2="105.0" stroke="#eceff4"/><text x="34.0" y="108.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">50%</text><line x1="40" y1="67.5" x2="690" y2="67.5" stroke="#eceff4"/><text x="34.0" y="70.5" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">75%</text><line x1="40" y1="30.0" x2="690" y2="30.0" stroke="#eceff4"/><text x="34.0" y="33.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">100%</text><rect x="70.0" y="49.5" width="22.0" height="130.5" rx="2" fill="#2a78d6"/><rect x="94.0" y="115.5" width="22.0" height="64.5" rx="2" fill="#eb6834"/><rect x="118.0" y="46.1" width="22.0" height="133.9" rx="2" fill="#1baf7a"/><text x="105.0" y="193.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">mean words</text><text x="105.0" y="203.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">(÷ 40, as %)</text><rect x="200.0" y="30.0" width="22.0" height="150.0" rx="2" fill="#2a78d6"/><rect x="224.0" y="144.0" width="22.0" height="36.0" rx="2" fill="#eb6834"/><rect x="248.0" y="30.0" width="22.0" height="150.0" rx="2" fill="#1baf7a"/><text x="235.0" y="193.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">ends with a</text><text x="235.0" y="203.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">question or offer</text><rect x="330.0" y="51.0" width="22.0" height="129.0" rx="2" fill="#2a78d6"/><rect x="354.0" y="147.0" width="22.0" height="33.0" rx="2" fill="#eb6834"/><rect x="378.0" y="93.0" width="22.0" height="87.0" rx="2" fill="#1baf7a"/><text x="365.0" y="193.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">distinct</text><text x="365.0" y="203.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">openings</text><rect x="460.0" y="178.5" width="22.0" height="1.5" rx="2" fill="#2a78d6"/><rect x="484.0" y="169.5" width="22.0" height="10.5" rx="2" fill="#eb6834"/><rect x="508.0" y="178.5" width="22.0" height="1.5" rx="2" fill="#1baf7a"/><text x="495.0" y="193.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">with &quot;!&quot;</text><rect x="590.0" y="178.5" width="22.0" height="1.5" rx="2" fill="#2a78d6"/><rect x="614.0" y="168.0" width="22.0" height="12.0" rx="2" fill="#eb6834"/><rect x="638.0" y="178.5" width="22.0" height="1.5" rx="2" fill="#1baf7a"/><text x="625.0" y="193.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">with a digit</text><line x1="40" y1="180" x2="690" y2="180" stroke="#5b6270"/></svg><div class="cap">Style on 200 held-out prompts. Mean words is shown as a share of 40 for scale: reference 34.8, base 17.2, SFT-1 35.7.</div></div>
+<p>SFT-1 matches the reference on every rule the data was built for. It narrows the data's variety (58% distinct openings against 86%), the same
+  amplification the probes showed.</p>
+<h3>Check 3 · The blind side-by-side</h3>
+<p>30 prompts, base and SFT-1 replies in shuffled order, scored by one reader as the customer: 1 or 2 for the better reply, = for equally good,
+  x when neither is acceptable to send. The key stays closed until every line is filled in.</p>
+<div class="fig"><svg viewBox="0 0 700 62" width="100%" role="img" aria-label="Blind side-by-side, 30 prompts"><rect x="10.0" y="8" width="519.3" height="30" rx="3" fill="#eb6834"/><text x="270.7" y="26.5" font-size="9" text-anchor="middle" fill="#fff" font-weight="700">base preferred: 23</text><rect x="531.3" y="8" width="43.3" height="30" rx="3" fill="#1baf7a"/><text x="554.0" y="52.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="600">SFT-1 preferred: 2</text><rect x="576.7" y="8" width="111.3" height="30" rx="3" fill="#9aa3b0"/><text x="633.3" y="26.5" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">neither acceptable: 5</text></svg><div class="cap">The blind read. SFT-1 won only the two “place an order” prompts, where it honestly said it cannot take orders.</div></div>
+<div class="chat">
+  <p><span class="who">Customer</span><span>I need to see how long refunds usually take, how to do it?</span></p>
+  <p><span class="who">Base</span><span>I will check the help center for refund timelines and instructions.</span></p>
+  <p><span class="who">SFT-1</span><span>You're asking about how long refunds take and how to submit one. I can look up our refund policy for you so you have the exact details. Would you like me to check that now?</span></p>
+</div>
+<p><b>The metrics and the reader disagreed.</b> On this sheet SFT-1's replies average 36 words to the base's 17, most of the extra restating the
+  problem; 12 of 30 say it cannot do the thing here ("I can't look into payment problems from here, though") when Nova can route or look it up;
+  and where it helps, it asks first. The base model said what it would do next in 27 of 30.</p>
+<div class="warn"><b>Takeaway</b>Style metrics measure the rules you wrote, not whether anyone wants the reply. Both checks were needed; only the blind
+  read caught that the rules themselves were wrong. Caveats: one reader, 30 prompts, no tools, which flatters the base model's "I will check". A
+  23-to-2 split is far beyond what those caveats can explain.</div>
+</div>
+
+<!-- 11 -->
+<div class="section page">
+<h2>11 · The golden set: tool use collapsed</h2>
+<p>The 100 golden cases through the full agent loop with the baseline's exact settings: prompt v0, six tools, temperature 0.2, at most four model
+  calls per turn, the frozen scorer <code>eval-v1</code>.</p>
+<div class="fig"><svg viewBox="0 0 700 180" width="100%" role="img" aria-label="Golden set, all required checks, by category"><rect x="40" y="4" width="10" height="10" rx="2" fill="#2a78d6"/><text x="58.0" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">floor (base)</text><rect x="129.2" y="4" width="10" height="10" rx="2" fill="#eb6834"/><text x="147.2" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">SFT-1</text><rect x="186.2" y="4" width="10" height="10" rx="2" fill="#1baf7a"/><text x="204.2" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">ceiling (Gemini)</text><line x1="40" y1="140.0" x2="690" y2="140.0" stroke="#eceff4"/><text x="34.0" y="143.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">0%</text><line x1="40" y1="112.5" x2="690" y2="112.5" stroke="#eceff4"/><text x="34.0" y="115.5" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">25%</text><line x1="40" y1="85.0" x2="690" y2="85.0" stroke="#eceff4"/><text x="34.0" y="88.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">50%</text><line x1="40" y1="57.5" x2="690" y2="57.5" stroke="#eceff4"/><text x="34.0" y="60.5" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">75%</text><line x1="40" y1="30.0" x2="690" y2="30.0" stroke="#eceff4"/><text x="34.0" y="33.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">100%</text><rect x="59.2" y="131.2" width="22.0" height="8.8" rx="2" fill="#2a78d6"/><text x="70.2" y="128.2" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">8</text><rect x="83.2" y="138.5" width="22.0" height="1.5" rx="2" fill="#eb6834"/><text x="94.2" y="135.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">0</text><rect x="107.2" y="65.2" width="22.0" height="74.8" rx="2" fill="#1baf7a"/><text x="118.2" y="62.2" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">68</text><text x="94.2" y="153.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">policy</text><rect x="167.5" y="100.4" width="22.0" height="39.6" rx="2" fill="#2a78d6"/><text x="178.5" y="97.4" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">36</text><rect x="191.5" y="138.5" width="22.0" height="1.5" rx="2" fill="#eb6834"/><text x="202.5" y="135.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">0</text><rect x="215.5" y="82.8" width="22.0" height="57.2" rx="2" fill="#1baf7a"/><text x="226.5" y="79.8" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">52</text><text x="202.5" y="153.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">order lookup</text><rect x="275.8" y="125.3" width="22.0" height="14.7" rx="2" fill="#2a78d6"/><text x="286.8" y="122.3" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">13</text><rect x="299.8" y="138.5" width="22.0" height="1.5" rx="2" fill="#eb6834"/><text x="310.8" y="135.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">0</text><rect x="323.8" y="110.7" width="22.0" height="29.3" rx="2" fill="#1baf7a"/><text x="334.8" y="107.7" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">27</text><text x="310.8" y="153.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">returns</text><rect x="384.2" y="103.3" width="22.0" height="36.7" rx="2" fill="#2a78d6"/><text x="395.2" y="100.3" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">33</text><rect x="408.2" y="103.3" width="22.0" height="36.7" rx="2" fill="#eb6834"/><text x="419.2" y="100.3" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">33</text><rect x="432.2" y="52.0" width="22.0" height="88.0" rx="2" fill="#1baf7a"/><text x="443.2" y="49.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">80</text><text x="419.2" y="153.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">unanswerable</text><rect x="492.5" y="129.0" width="22.0" height="11.0" rx="2" fill="#2a78d6"/><text x="503.5" y="126.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">10</text><rect x="516.5" y="138.5" width="22.0" height="1.5" rx="2" fill="#eb6834"/><text x="527.5" y="135.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">0</text><rect x="540.5" y="118.0" width="22.0" height="22.0" rx="2" fill="#1baf7a"/><text x="551.5" y="115.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">20</text><text x="527.5" y="153.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">escalation</text><rect x="600.8" y="74.0" width="22.0" height="66.0" rx="2" fill="#2a78d6"/><text x="611.8" y="71.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">60</text><rect x="624.8" y="74.0" width="22.0" height="66.0" rx="2" fill="#eb6834"/><text x="635.8" y="71.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">60</text><rect x="648.8" y="30.0" width="22.0" height="110.0" rx="2" fill="#1baf7a"/><text x="659.8" y="27.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">100</text><text x="635.8" y="153.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">adversarial</text><line x1="40" y1="140" x2="690" y2="140" stroke="#5b6270"/><text x="40.0" y="26.0" font-size="8" text-anchor="start" fill="#5b6270" font-weight="normal">% of cases correct</text></svg><div class="cap">Cases correct (every required call, right facts, nothing forbidden, right hand-off) by category. SFT-1 keeps only the categories where the right answer needs no tool.</div></div>
+<div class="fig"><svg viewBox="0 0 700 165" width="100%" role="img" aria-label="Golden set metrics, 100 cases"><rect x="40" y="4" width="10" height="10" rx="2" fill="#2a78d6"/><text x="58.0" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">floor (base)</text><rect x="129.2" y="4" width="10" height="10" rx="2" fill="#eb6834"/><text x="147.2" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">SFT-1</text><rect x="186.2" y="4" width="10" height="10" rx="2" fill="#1baf7a"/><text x="204.2" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">ceiling (Gemini)</text><line x1="40" y1="125.0" x2="690" y2="125.0" stroke="#eceff4"/><text x="34.0" y="128.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">0%</text><line x1="40" y1="101.2" x2="690" y2="101.2" stroke="#eceff4"/><text x="34.0" y="104.2" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">25%</text><line x1="40" y1="77.5" x2="690" y2="77.5" stroke="#eceff4"/><text x="34.0" y="80.5" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">50%</text><line x1="40" y1="53.8" x2="690" y2="53.8" stroke="#eceff4"/><text x="34.0" y="56.8" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">75%</text><line x1="40" y1="30.0" x2="690" y2="30.0" stroke="#eceff4"/><text x="34.0" y="33.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">100%</text><rect x="86.2" y="73.7" width="22.0" height="51.3" rx="2" fill="#2a78d6"/><text x="97.2" y="70.7" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">54</text><rect x="110.2" y="114.5" width="22.0" height="10.4" rx="2" fill="#eb6834"/><text x="121.2" y="111.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">11</text><rect x="134.2" y="43.3" width="22.0" height="81.7" rx="2" fill="#1baf7a"/><text x="145.2" y="40.3" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">86</text><text x="121.2" y="138.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">required calls</text><rect x="248.8" y="81.3" width="22.0" height="43.7" rx="2" fill="#2a78d6"/><text x="259.8" y="78.3" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">46</text><rect x="272.8" y="96.5" width="22.0" height="28.5" rx="2" fill="#eb6834"/><text x="283.8" y="93.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">30</text><rect x="296.8" y="63.2" width="22.0" height="61.8" rx="2" fill="#1baf7a"/><text x="307.8" y="60.2" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">65</text><text x="283.8" y="138.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">facts</text><rect x="411.2" y="59.5" width="22.0" height="65.5" rx="2" fill="#2a78d6"/><text x="422.2" y="56.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">69</text><rect x="435.2" y="48.0" width="22.0" height="77.0" rx="2" fill="#eb6834"/><text x="446.2" y="45.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">81</text><rect x="459.2" y="54.7" width="22.0" height="70.3" rx="2" fill="#1baf7a"/><text x="470.2" y="51.7" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">74</text><text x="446.2" y="138.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">escalation</text><text x="446.2" y="148.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">decision</text><rect x="573.8" y="101.2" width="22.0" height="23.8" rx="2" fill="#2a78d6"/><text x="584.8" y="98.2" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">25</text><rect x="597.8" y="114.5" width="22.0" height="10.4" rx="2" fill="#eb6834"/><text x="608.8" y="111.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">11</text><rect x="621.8" y="69.9" width="22.0" height="55.1" rx="2" fill="#1baf7a"/><text x="632.8" y="66.9" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">58</text><text x="608.8" y="138.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">all required</text><line x1="40" y1="125" x2="690" y2="125" stroke="#5b6270"/><text x="40.0" y="26.0" font-size="8" text-anchor="start" fill="#5b6270" font-weight="normal">cases of 100</text></svg><div class="cap">Totals over 100 cases. The escalation score rose only because SFT-1 never hands off and most cases expect no hand-off; on the 10 escalation cases it scored 0 (floor 5).</div></div>
+<div class="grid2">
+<div class="chat">
+  <p><span class="who">Customer</span><span>hi where is my order?? it was supposed to come by monday</span></p>
+  <p class="small"><span class="tool">list_my_orders() → get_tracking(11904)</span></p>
+  <p><span class="who">Floor</span><span>Your order 11904 is in transit. It was last scanned at the Nagpur hub on November 18th…</span></p>
+</div>
+<div class="chat">
+  <p><span class="who">Customer</span><span>hi where is my order?? it was supposed to come by monday</span></p>
+  <p class="small"><span class="tool">no tool call</span></p>
+  <p><span class="who">SFT-1</span><span>…I can check your order to see where things stand. Would you like me to take a look at it for you?</span></p>
+</div>
+</div>
+<ul>
+  <li><b>No tool call in any of the 100 cases,</b> and no hand-off. Its 11 passes are cases that expect no tool: privacy refusals and out-of-scope requests.</li>
+  <li><b>It invented nothing.</b> Two replies contain a digit, both the customer's own date echoed. Without tools it promises to check instead: safe, and useless.</li>
+  <li><b>18 cases newly failed, and all 18 were read.</b> 16 offer to look something up and ask permission instead of calling the tool; 2 offer a hand-off
+    instead of calling <code>escalate_to_human</code>. One failure type, not a spread: the floor's old failure types (searching wrongly, running out of
+    calls) cannot happen when no tool is called.</li>
+  <li><b>The 4 new passes are the same habit landing right:</b> no tool, a refusal, and in three of four a false reason ("I don't have access to your account").</li>
+</ul>
+</div>
+
+<!-- 12 -->
+<div class="section page">
+<h2>12 · Why it happened: the data's habits</h2>
+<p>Counting the same phrases in the 4,447 training replies and in SFT-1's 100 golden replies:</p>
+<div class="fig"><svg viewBox="0 0 700 210" width="100%" role="img" aria-label="Reply habits in the training data and in SFT-1&#x27;s golden replies"><rect x="40" y="4" width="10" height="10" rx="2" fill="#2a78d6"/><text x="58.0" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">training replies (4,447)</text><rect x="184.39999999999998" y="4" width="10" height="10" rx="2" fill="#eb6834"/><text x="202.4" y="12.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">SFT-1 on the golden set (100)</text><line x1="40" y1="170.0" x2="690" y2="170.0" stroke="#eceff4"/><text x="34.0" y="173.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">0%</text><line x1="40" y1="135.0" x2="690" y2="135.0" stroke="#eceff4"/><text x="34.0" y="138.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">25%</text><line x1="40" y1="100.0" x2="690" y2="100.0" stroke="#eceff4"/><text x="34.0" y="103.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">50%</text><line x1="40" y1="65.0" x2="690" y2="65.0" stroke="#eceff4"/><text x="34.0" y="68.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">75%</text><line x1="40" y1="30.0" x2="690" y2="30.0" stroke="#eceff4"/><text x="34.0" y="33.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">100%</text><rect x="98.2" y="53.8" width="22.0" height="116.2" rx="2" fill="#2a78d6"/><text x="109.2" y="50.8" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">83</text><rect x="122.2" y="37.0" width="22.0" height="133.0" rx="2" fill="#eb6834"/><text x="133.2" y="34.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">95</text><text x="121.2" y="183.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">asks permission</text><text x="121.2" y="193.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">(&quot;Would you like me to…&quot;)</text><rect x="260.8" y="150.4" width="22.0" height="19.6" rx="2" fill="#2a78d6"/><text x="271.8" y="147.4" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">14</text><rect x="284.8" y="144.8" width="22.0" height="25.2" rx="2" fill="#eb6834"/><text x="295.8" y="141.8" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">18</text><text x="283.8" y="183.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">claims no access</text><text x="283.8" y="193.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">to the account</text><rect x="423.2" y="140.6" width="22.0" height="29.4" rx="2" fill="#2a78d6"/><text x="434.2" y="137.6" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">21</text><rect x="447.2" y="150.4" width="22.0" height="19.6" rx="2" fill="#eb6834"/><text x="458.2" y="147.4" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">14</text><text x="446.2" y="183.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">offers a teammate</text><rect x="585.8" y="168.5" width="22.0" height="1.5" rx="2" fill="#2a78d6"/><text x="596.8" y="165.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">0</text><rect x="609.8" y="168.5" width="22.0" height="1.5" rx="2" fill="#eb6834"/><text x="620.8" y="165.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="normal">0</text><text x="608.8" y="183.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">contains a</text><text x="608.8" y="193.0" font-size="8.4" text-anchor="middle" fill="#1d2330" font-weight="normal">tool call</text><line x1="40" y1="170" x2="690" y2="170" stroke="#5b6270"/></svg><div class="cap">Share of replies with each habit. The model reproduced the data's habits almost exactly, and turned the most common one up.</div></div>
+<p>The training rows used the serving system prompt word for word, including its fallback rule: <i>"If you have neither [tool results], say you will
+  check or hand off."</i> But the rows had no tool schemas and no tool calls. So 4,447 times, the model learned that the reply to a customer under this
+  prompt is a promise to check, followed by a question. At serving time the tool schemas are there, and it still writes the reply it was trained on.
+  It learned to obey one rule of its prompt (say you will check) at the expense of the others (call a tool before saying anything about an order).</p>
+<div class="warn"><b>A decision reversed by the evidence</b>Part 4 argued for leaving the tool schemas <i>out</i> of the training prompt: tools listed in every
+  example and never used would teach the model to ignore them. The result shows the model learned to ignore them anyway. With tool-free data alone
+  there is no right answer; the fix is the data mix. In SFT-2 every row carries the schemas, and the rows that need a tool call one, so the model
+  learns <i>when</i> to call, not whether tools exist.</div>
+<div class="say"><b>How I'd say it in an interview</b>"I read all 18 cases it newly failed. Every one was the same habit: offer, ask permission, don't act. Then I
+  counted the habit in the training data: 83% of replies. The model didn't break; it learned the data. The fix is in the data, not the training settings."</div>
+</div>
+
+<!-- 13 -->
+<div class="section page">
+<h2>13 · The export check</h2>
+<p>Nova is trained and evaluated in Transformers but served by vLLM, with the adapter loaded as a LoRA module. If the two disagree in kind (one
+  reply runs to the token cap while the other stops), the cause is almost always the chat template or the end-of-turn token, and every serving
+  result after it would be wrong.</p>
+<div class="fig"><svg viewBox="0 0 700 142" width="100%" role="img" aria-label="The export check"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><rect x="6" y="40" width="140" height="60" rx="7" fill="#f4f6f9" stroke="#dfe3ea"/><text x="76.0" y="60.4" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">10 fixed prompts</text><text x="76.0" y="73.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">first 5 of each split</text><text x="76.0" y="85.6" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">greedy, 512 cap</text><path d="M148,60 L200,30" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><path d="M148,80 L200,110" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="202" y="6" width="230" height="50" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="317.0" y="27.7" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">vLLM 0.34 · GPU 1</text><text x="317.0" y="40.3" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">base + adapter as a LoRA module</text><rect x="202" y="86" width="230" height="50" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/><text x="317.0" y="107.7" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">Transformers · GPU 0</text><text x="317.0" y="120.3" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">adapter merged into the base</text><path d="M434,31 L480,60" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><path d="M434,111 L480,80" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="482" y="40" width="212" height="60" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="588.0" y="60.4" font-size="9.0" text-anchor="middle" fill="#1d2330" font-weight="700">Compare per prompt</text><text x="588.0" y="73.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">same / wording / differs in kind</text><text x="588.0" y="85.6" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">base model run too, as a control</text></svg><div class="cap">The export check runs on a Kaggle T4 x2: vLLM on one GPU, Transformers on the other.</div></div>
+<table class="small">
+  <tr><th>Comparison, 10 prompts</th><th>Same reply text</th><th>Differs in kind</th></tr>
+  <tr><td>SFT-1: vLLM vs Transformers (T4)</td><td class="pass">10 / 10</td><td>0</td></tr>
+  <tr><td>Base: vLLM vs Transformers (T4), the control</td><td class="pass">10 / 10</td><td>0</td></tr>
+  <tr><td>Both: T4 vs a Mac (MPS)</td><td class="pass">10 / 10</td><td>0</td></tr>
+</table>
+<p>Identical text on two stacks is unusual enough to check before believing. The files differ in one field: the completion token count is one
+  higher in vLLM on every reply, because vLLM counts the end-of-turn token and the local client does not. So both stop on the same token, which is
+  exactly what the check is for. The vLLM log shows the adapter loaded, and its replies are SFT-1's, not the base model's.</p>
+<p class="small muted">Scope: this tested the adapter served as an add-on (how Nova is served) against the adapter merged in Transformers. A merged
+  16-bit copy served by vLLM was not tested; it matters only if deployment switches to a merged model.</p>
+</div>
+
+<!-- 14 -->
+<div class="section page">
+<h2>14 · What changes for SFT-2</h2>
+<p>SFT-1 is not a failed run: it shows a voice can be taught in 40 minutes on a free GPU, and it measures exactly what tool-free data costs. SFT-2
+  keeps the method and changes the data.</p>
+<table>
+  <tr><th style="width:4%">#</th><th style="width:40%">Change</th><th>Evidence it answers</th></tr>
+  <tr><td>1</td><td><b>Mix in conversations that use the tools:</b> multi-turn traces in the serving format with tool schemas, tool calls and tool
+    results; loss on Nova's calls and replies, not on tool results. Cover search vs ask, stopping once the facts are in, the return flow, and real
+    <code>escalate_to_human</code> calls.</td><td>Zero tool calls in 100 golden cases; 16 of 18 new failures offer to look up instead of looking up.</td></tr>
+  <tr><td>2</td><td><b>Rewrite the replies' habits before reusing them.</b> No "Would you like me to check…" on order and policy questions; real hand-offs
+    where the customer asks for a person; no "I don't have access" (false for Nova); shorter, about 20 words, leading with the answer or action.</td>
+    <td>83% of training replies ask permission; 601 claim no access; the blind reader preferred short and direct 23 to 2.</td></tr>
+  <tr><td>3</td><td><b>Train every row with the full serving prompt, tool schemas included, and watch tool use during training:</b> a few golden-style
+    probes with tools at every evaluation step.</td><td>The collapse was visible in the probes at step 25 but nothing measured tool use until after the run.</td></tr>
+</table>
+<p><b>Targets for SFT-2:</b> required calls back to at least the floor's 54/100, all required above 25/100, the style metrics held, and a blind read
+  that prefers it to the base model.</p>
+</div>
+
+<!-- 15 -->
+<div class="section page">
+<h2>15 · What went wrong, and what it taught</h2>
+<table class="small">
+  <tr><th style="width:36%">What happened</th><th>What it taught</th></tr>
+  <tr><td>The style metrics all passed and a blind reader still preferred the base model 23 to 2.</td><td>Metrics measure the rules you wrote. Put a human
+    preference check next to every automatic one, and run it on the training data before training on it.</td></tr>
+  <tr><td>The 63-step ablation made r = 64 look best.</td><td>A short run rewards learning speed. Read the shape of the curves, not the last point, and
+    change one thing (or hold the step size fixed too).</td></tr>
+  <tr><td>Part 4's "no tools in the training prompt" rule did not stop the model ignoring tools.</td><td>With single-behaviour data, no prompt choice saves
+    you; the data mix decides.</td></tr>
+  <tr><td>The permission habit was visible in the probes at step 25, and nothing flagged it.</td><td>Probes that cannot show the failure you fear are not
+    enough. Add tool-use probes to training.</td></tr>
+  <tr><td>A full-precision smoke test on a 16 GB Mac swapped to disk and stalled.</td><td>Run local checks in fp16, the precision the model is served in.</td></tr>
+  <tr><td>Kaggle files: an interactive session deletes its files when it stops, and a saved run queues behind it (one GPU session at a time).</td><td>Zip
+    results and download before stopping; run long jobs as saved versions; do what does not need CUDA on the laptop (the golden set and style ran on a Mac).</td></tr>
+  <tr><td>The local client crashed when called without tools; the training cache made git report a dirty tree.</td><td>Small fixes, found because
+    every run records its git state and every path was run once end to end before relying on it.</td></tr>
+</table>
+</div>
+
+<!-- 16 -->
+<div class="section qa page">
+<h2>16 · Defending the design: interview questions</h2>
+<h3>Why LoRA instead of full fine-tuning?</h3>
+<p>Full fine-tuning needs about 16 bytes per parameter with Adam: 30 GB for this model, twice a T4. LoRA trains 0.49% of the parameters, so the
+  optimizer state almost disappears: 4.94 GB measured. For teaching tone on 4,447 rows, a low-rank update is also enough; the ablation found no
+  capacity limit even at r = 8.</p>
+<h3>Why not QLoRA?</h3>
+<p>It saves memory I did not need and adds quantization error to every forward pass. Unsloth advises against quantized training for Qwen3.5.</p>
+<h3>How did you choose which layers to adapt?</h3>
+<p>I printed the model first. It is a hybrid: 18 of 24 layers use linear attention with different names, so the usual seven targets adapt attention in
+  only 6 layers, and <code>all-linear</code> would train the vision tower. I kept the seven (MLPs in every layer carry 86% of the adapter) and wrote the
+  linear-attention gap down as a known choice to revisit.</p>
+<h3>How do you know your parameter count is right?</h3>
+<p>I counted r × (d_in + d_out) for every wrapped layer by hand from the real shapes, compared with PEFT at three ranks, and with the training run.
+  All matched exactly: 10,911,744 at r = 16.</p>
+<h3>Why rank 16 when rank 64 had lower loss?</h3>
+<p>Its lead shrank from 0.46 to 0.12 over the run, the signature of a bigger effective step, not of missing capacity. More data mattered more
+  (full-data r = 16 beat it), the replies were the same in kind, and r = 64 is 4× larger.</p>
+<h3>Why keep alpha equal to r in the ablation?</h3>
+<p>The update is scaled by α/r. Fixed α = 16 would scale r = 64 by 0.25 and r = 8 by 2, so the runs would differ in two ways. Even with α = r the step
+  size still differs in effect, which is why the result is read from the curves.</p>
+<h3>Why evaluate a tone fine-tune with tools?</h3>
+<p>Because Nova always runs with tools, and forgetting only shows outside the training distribution. Without check 4, SFT-1 would have looked like
+  a clean win.</p>
+<h3>Isn't losing tool use a failed experiment?</h3>
+<p>No. It is the measurement that justifies the next dataset's mix, with a number on it: 54 → 11 cases with every required call. It also showed
+  what did work: the voice can be taught in 40 minutes, and nothing was invented.</p>
+<h3>Why a blind read when you have style metrics?</h3>
+<p>The metrics check rules I wrote. The blind read checks whether the rules were right, and they were not: the reader preferred the shorter,
+  more direct base replies 23 to 2.</p>
+<h3>How do you know vLLM serves the same model you evaluated?</h3>
+<p>Ten fixed prompts, greedy, through vLLM with the adapter as a LoRA module and through Transformers with it merged: identical text on all ten,
+  with the base model as a control. The only difference was a token count off by one, explained by how each counts the end-of-turn token.</p>
+<h3>Why did the golden run happen on a laptop?</h3>
+<p>The baseline floor ran there with the same database copy, so SFT-1 on the same machine differs only by the adapter. The export check showed the
+  served model gives the same text, so serving would not change the result.</p>
+<h3>How would you fix the tool-use loss?</h3>
+<p>In the data: tool-using multi-turn conversations mixed in, the permission habit and the false "no access" line rewritten out, tool schemas in
+  every row, and tool-use probes during training so a collapse shows at step 25.</p>
+<h3>Why not just train fewer steps to forget less?</h3>
+<p>Tool calls went to zero, not down, and the habit was already set by step 25. Fewer steps would keep less of the voice without bringing tools
+  back. It is still a cheap experiment worth one run, to see how fast the habit sets in.</p>
+<h3>What would you do differently?</h3>
+<p>Run the blind read on the training replies before training, and add tool-calling probes to the training loop from the first run.</p>
+</div>
+
+<!-- 17 -->
+<div class="section">
+<h2>17 · Limits, what comes next, glossary</h2>
+<h3>Known limits</h3>
+<ul>
+  <li><b>One reader, 30 prompts</b> in the blind check, and no tools in it; the direction is clear, the exact share is not.</li>
+  <li><b>100 golden cases:</b> one case is 4 points in a 25-case category; differences under about 8 points are noise.</li>
+  <li><b>The ablation ran 63 steps on 1,000 rows;</b> capacity and step size are not separated.</li>
+  <li><b>The linear-attention layers carry no adapter;</b> whether that limits behaviour change is untested.</li>
+</ul>
+<h3>What comes next</h3>
+<ul>
+  <li><b>Retrieval over the help center,</b> so policy facts come from documents instead of memory.</li>
+  <li><b>SFT-2:</b> the three changes in section 14, judged by the same four checks and the export check.</li>
+</ul>
+<h3>Glossary</h3>
+<table class="small">
+  <tr><th style="width:22%">Term</th><th>Plain meaning</th></tr>
+  <tr><td>LoRA</td><td>Low-rank adaptation: freeze the model, train a small add-on B·A beside chosen weight matrices.</td></tr>
+  <tr><td>Rank (r)</td><td>The inner size of B·A: how many directions the add-on can change a layer in.</td></tr>
+  <tr><td>Alpha (α)</td><td>A scale on the add-on, applied as α / r.</td></tr>
+  <tr><td>Merging</td><td>Adding B·A into W after training, so the add-on costs nothing at inference.</td></tr>
+  <tr><td>Forgetting</td><td>A fine-tune losing an ability its training data never showed.</td></tr>
+  <tr><td>Golden set</td><td>100 hand-written cases with expected tool calls and facts, scored the same way every run.</td></tr>
+  <tr><td>Export check</td><td>Confirming the serving stack produces the same answers as the training stack.</td></tr>
+</table>
+</div>
+
+</body>
+</html>
