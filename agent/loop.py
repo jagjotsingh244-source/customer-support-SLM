@@ -12,6 +12,13 @@ import time
 from agent.grounding import grounding_issues, tool_contents_before
 
 FALLBACK_REPLY = "Let me connect you with a teammate."
+# Tool-call markup the server's parser should have turned into tool_calls (Qwen3.5's qwen3_coder format).
+# Seen in the reply text, it means the model tried to call a tool and the parser could not read the call.
+TOOL_MARKUP = ("<tool_call>", "<function=")
+
+
+def has_tool_markup(content: str | None) -> bool:
+    return bool(content) and any(m in content for m in TOOL_MARKUP)
 
 
 def run_turn(client, model, messages, tools, registry, session, max_steps=4, temperature=0.2, sampling=None):
@@ -22,8 +29,13 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
     model call with its latency and token counts; and the reply's grounding
     issues (agent/grounding.py), logged, never fixed. `sampling` adds extra
     request settings (e.g. top_p, presence_penalty) on top of temperature.
+
+    A reply that contains tool-call markup is a format error, not a text reply:
+    the model meant to call a tool and the parser could not read it. It is
+    counted in trace["format_errors"], never shown to the customer, and the
+    turn ends with the hand-off reply.
     """
-    trace = {"tool_calls": [], "model_calls": [], "escalated": False}
+    trace = {"tool_calls": [], "model_calls": [], "escalated": False, "format_errors": 0}
     for _ in range(max_steps):
         t0 = time.perf_counter()
         r = client.chat.completions.create(model=model, messages=messages, tools=tools,
@@ -36,6 +48,12 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             "served_model": r.model,                # recorded per call: what actually answered
         })
         msg = r.choices[0].message
+        if has_tool_markup(msg.content):
+            trace["format_errors"] += 1
+            trace["model_calls"][-1]["format_error"] = True
+            if not msg.tool_calls:                  # nothing parsed: the raw call must not reach the customer
+                trace["raw_reply"] = msg.content
+                return _hand_off(messages, trace)
         messages.append(msg.model_dump(exclude_none=True))
         if not msg.tool_calls:
             trace["grounding"] = grounding_issues(msg.content, tool_contents_before(messages, len(messages)))
@@ -60,7 +78,11 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             # ensure_ascii=False: the model reads "1–3 days" and "₹49", not "1\u20133" and "\u20b949".
             messages.append({"role": "tool", "tool_call_id": call.id,
                              "content": json.dumps(result, default=str, ensure_ascii=False)})
-    trace["escalated"] = True                       # ran out of steps: hand off
+    return _hand_off(messages, trace)               # ran out of steps
+
+
+def _hand_off(messages, trace):
+    trace["escalated"] = True
     trace["grounding"] = []                         # the fixed fallback states no facts
     messages.append({"role": "assistant", "content": FALLBACK_REPLY})
     return FALLBACK_REPLY, trace
