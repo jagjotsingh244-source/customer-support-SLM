@@ -126,3 +126,11 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Surprised me: when the 2B model searched, the new tool found the right section 8 times in 11 (the old one: once), and it then stated the facts correctly 7 times in 8. But it searched in only 11 of 30 cases, called `list_my_orders` first every time, and never cited. All three invented numbers came from not searching. The grounding check also found that the loop had been sending escaped JSON to the 2B model ("1\u20133 days") since the first baseline, while Gemini got clean structured results. And it missed an invented date, because it checks numbers one at a time.
 - Next time: before improving a component, count how often the system actually calls it; a perfect tool the model skips fixes nothing.
 
+
+## Tools
+
+### 2026-11-23 · What a tool call is, token by token
+- Did: rendered one full tool round trip (Nova's prompt, six tools, a `get_tracking` call and its real result) through the chat template with every part marked and counted (`notes/tool-call-anatomy/`), and sent the same request to vLLM on a T4 with and without the tool-call parser. The loop now treats a call left as text, or an empty reply, as a format error that never reaches the customer.
+- Surprised me: with the parser on and `tool_choice="none"`, vLLM threw away the model's call and returned a completely empty reply with HTTP 200, a failure no status check would see. Without the parser the call came back as ordinary text in `content`. The render also showed that the tool definitions (780 tokens) come before Nova's own rules, and that a tool result reaches the model as a customer turn with a `<tool_response>` wrapper.
+- Next time: check what a component returns when it fails, not only when it works; an empty success is harder to spot than an error.
+

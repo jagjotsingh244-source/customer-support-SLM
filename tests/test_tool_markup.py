@@ -1,4 +1,4 @@
-"""A tool call the parser could not read is counted as a format error and never reaches the customer.
+"""A tool call the parser could not read, or an empty reply, is a format error that never reaches the customer.
 
     uv run --group dev pytest tests/test_tool_markup.py
 """
@@ -67,6 +67,14 @@ def test_call_left_as_text_is_a_format_error_not_a_reply():
     assert trace["raw_reply"] == RAW_CALL                                  # kept for the trace
     assert not any(has_tool_markup(m.get("content")) for m in messages)    # not in the history the customer sees
     assert trace["tool_calls"] == []
+
+
+def test_empty_reply_with_no_call_is_a_format_error():
+    """What vLLM returns when the parser drops a call (parser on, tool_choice="none")."""
+    for empty in (None, "", "  \n"):
+        reply, trace, messages = turn(Scripted(completion(empty)))
+        assert reply == FALLBACK_REPLY and trace["format_errors"] == 1 and trace["escalated"]
+        assert messages[-1] == {"role": "assistant", "content": FALLBACK_REPLY}
 
 
 def test_markup_next_to_a_parsed_call_is_counted_and_the_call_still_runs():

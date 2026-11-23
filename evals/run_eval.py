@@ -330,7 +330,7 @@ def report(out: Path) -> str:
     def q(xs, p):
         return xs[min(len(xs) - 1, int(p * len(xs)))] if xs else 0
     errors = [t for t in traces if "error" in t]
-    # Model passes whose text held a tool call the parser could not read (agent/loop.py); older traces have none.
+    # Model passes the loop could not use: a call left as text, or no text and no call (agent/loop.py). Older traces have none.
     format_errors = {t["id"]: n for t in ok if (n := sum(tr.get("format_errors", 0) for tr in t["turns"]))}
     checked = {t["id"]: check_conversation(t.get("messages", [])) for t in ok}
     replies = [r for rs in checked.values() for r in rs]
@@ -356,7 +356,7 @@ def report(out: Path) -> str:
         f"Unanswerable cases that passed escalation by offering a hand-off: {len(offers)}"
         + (": " + ", ".join(offers) if offers else "."),
         f"Cases that errored (scored as failures): {len(errors)}" + (": " + ", ".join(t["id"] for t in errors) if errors else "."),
-        f"Tool-call format errors (call left as text, not parsed): {sum(format_errors.values())}"
+        f"Tool-call format errors (a call left as text, or an empty reply): {sum(format_errors.values())}"
         + (" in " + ", ".join(f"{i} ({n})" for i, n in sorted(format_errors.items())) if format_errors else "."),
         f"Grounding: {len(flagged)} of {len(replies)} replies have an issue "
         f"({100 * len(flagged) / len(replies):.0f} per 100 replies), {sum(len(r['issues']) for r in flagged)} issues."

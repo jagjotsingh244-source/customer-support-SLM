@@ -1,0 +1,126 @@
+{
+ "label": "with-parser",
+ "model": "Qwen/Qwen3.5-2B",
+ "question": "Where is my order 11904?",
+ "requests": {
+  "auto": {
+   "summary": {
+    "http_status": 200,
+    "finish_reason": "tool_calls",
+    "content": null,
+    "tool_calls": [
+     {
+      "id": "chatcmpl-tool-be28298411f0c9dd",
+      "type": "function",
+      "function": {
+       "name": "get_tracking",
+       "arguments": "{\"order_id\": 11904}"
+      }
+     }
+    ],
+    "call_left_in_content": false,
+    "prompt_tokens": 1020,
+    "completion_tokens": 31
+   },
+   "raw_response": {
+    "id": "chatcmpl-91a89f5ec17a4149",
+    "object": "chat.completion",
+    "created": 1795445687,
+    "model": "Qwen/Qwen3.5-2B",
+    "choices": [
+     {
+      "index": 0,
+      "message": {
+       "role": "assistant",
+       "content": null,
+       "refusal": null,
+       "audio": null,
+       "function_call": null,
+       "tool_calls": [
+        {
+         "id": "chatcmpl-tool-be28298411f0c9dd",
+         "type": "function",
+         "function": {
+          "name": "get_tracking",
+          "arguments": "{\"order_id\": 11904}"
+         }
+        }
+       ],
+       "reasoning": null
+      },
+      "logprobs": null,
+      "finish_reason": "tool_calls",
+      "stop_reason": null,
+      "token_ids": null,
+      "routed_experts": null,
+      "weight_versions": null
+     }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.34.0-32261429",
+    "usage": {
+     "prompt_tokens": 1020,
+     "total_tokens": 1051,
+     "completion_tokens": 31,
+     "completion_tokens_details": null
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+   }
+  },
+  "none": {
+   "summary": {
+    "http_status": 200,
+    "finish_reason": "stop",
+    "content": null,
+    "tool_calls": null,
+    "call_left_in_content": false,
+    "prompt_tokens": 1020,
+    "completion_tokens": 31
+   },
+   "raw_response": {
+    "id": "chatcmpl-a14729e08d1263f6",
+    "object": "chat.completion",
+    "created": 1795445690,
+    "model": "Qwen/Qwen3.5-2B",
+    "choices": [
+     {
+      "index": 0,
+      "message": {
+       "role": "assistant",
+       "content": null,
+       "refusal": null,
+       "audio": null,
+       "function_call": null,
+       "reasoning": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop",
+      "stop_reason": null,
+      "token_ids": null,
+      "routed_experts": null,
+      "weight_versions": null
+     }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.34.0-32261429",
+    "usage": {
+     "prompt_tokens": 1020,
+     "total_tokens": 1051,
+     "completion_tokens": 31,
+     "completion_tokens_details": null
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+   }
+  }
+ }
+}

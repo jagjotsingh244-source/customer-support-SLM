@@ -21,6 +21,16 @@ def has_tool_markup(content: str | None) -> bool:
     return bool(content) and any(m in content for m in TOOL_MARKUP)
 
 
+def unusable(msg) -> bool:
+    """A model pass that produced nothing the loop can use: a call left as text, or no text and no call.
+
+    The second happens when the parser swallows a call it was told not to return: vLLM with the
+    parser on and tool_choice="none" drops the model's 31-token call and returns an empty message
+    (notes/tool-call-anatomy/vllm_with_parser.json).
+    """
+    return has_tool_markup(msg.content) or (not msg.tool_calls and not (msg.content or "").strip())
+
+
 def run_turn(client, model, messages, tools, registry, session, max_steps=4, temperature=0.2, sampling=None):
     """Answer the last user message in `messages` (appended to in place).
 
@@ -31,9 +41,9 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
     request settings (e.g. top_p, presence_penalty) on top of temperature.
 
     A reply that contains tool-call markup is a format error, not a text reply:
-    the model meant to call a tool and the parser could not read it. It is
-    counted in trace["format_errors"], never shown to the customer, and the
-    turn ends with the hand-off reply.
+    the model meant to call a tool and the parser could not read it. So is an
+    empty reply with no call. Both are counted in trace["format_errors"], never
+    shown to the customer, and the turn ends with the hand-off reply.
     """
     trace = {"tool_calls": [], "model_calls": [], "escalated": False, "format_errors": 0}
     for _ in range(max_steps):
@@ -48,10 +58,10 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             "served_model": r.model,                # recorded per call: what actually answered
         })
         msg = r.choices[0].message
-        if has_tool_markup(msg.content):
+        if unusable(msg):
             trace["format_errors"] += 1
             trace["model_calls"][-1]["format_error"] = True
-            if not msg.tool_calls:                  # nothing parsed: the raw call must not reach the customer
+            if not msg.tool_calls:                  # nothing parsed: a raw call or a blank must not reach the customer
                 trace["raw_reply"] = msg.content
                 return _hand_off(messages, trace)
         messages.append(msg.model_dump(exclude_none=True))

@@ -1,0 +1,76 @@
+{
+ "label": "without-parser",
+ "model": "Qwen/Qwen3.5-2B",
+ "question": "Where is my order 11904?",
+ "requests": {
+  "auto": {
+   "summary": {
+    "http_status": 400,
+    "error": {
+     "message": "\"auto\" tool choice requires --enable-auto-tool-choice and --tool-call-parser to be set",
+     "type": "BadRequestError",
+     "param": null,
+     "code": 400
+    }
+   },
+   "raw_response": {
+    "error": {
+     "message": "\"auto\" tool choice requires --enable-auto-tool-choice and --tool-call-parser to be set",
+     "type": "BadRequestError",
+     "param": null,
+     "code": 400
+    }
+   }
+  },
+  "none": {
+   "summary": {
+    "http_status": 200,
+    "finish_reason": "stop",
+    "content": "<tool_call>\n<function=get_tracking>\n<parameter=order_id>\n11904\n</parameter>\n</function>\n</tool_call>",
+    "tool_calls": null,
+    "call_left_in_content": true,
+    "prompt_tokens": 1020,
+    "completion_tokens": 31
+   },
+   "raw_response": {
+    "id": "chatcmpl-a8dfa5c0ce38dc52",
+    "object": "chat.completion",
+    "created": 1795445788,
+    "model": "Qwen/Qwen3.5-2B",
+    "choices": [
+     {
+      "index": 0,
+      "message": {
+       "role": "assistant",
+       "content": "<tool_call>\n<function=get_tracking>\n<parameter=order_id>\n11904\n</parameter>\n</function>\n</tool_call>",
+       "refusal": null,
+       "audio": null,
+       "function_call": null,
+       "reasoning": null
+      },
+      "logprobs": null,
+      "finish_reason": "stop",
+      "stop_reason": null,
+      "token_ids": null,
+      "routed_experts": null,
+      "weight_versions": null
+     }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.34.0-32261429",
+    "usage": {
+     "prompt_tokens": 1020,
+     "total_tokens": 1051,
+     "completion_tokens": 31,
+     "completion_tokens_details": null
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+   }
+  }
+ }
+}
