@@ -1,0 +1,22 @@
+{
+  "run": "2026-11-23_sft1-mac",
+  "system": "candidate",
+  "provider": "local",
+  "model": "Qwen/Qwen3.5-2B",
+  "adapter": "123jagjot/sft1-r16-lr2e-4-bitext_v1",
+  "base_url": null,
+  "prompt_version": "v0",
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 100,
+  "commit": "9aab5a7",
+  "db_host": "localhost:5433",
+  "notes": "Apple M4 (MPS), Transformers 5.23.0, fp16, in-process; adapter merged",
+  "served_models": [
+    "Qwen/Qwen3.5-2B"
+  ]
+}

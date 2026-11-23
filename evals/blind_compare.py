@@ -2,10 +2,12 @@
 
 `make` picks prompts both files answered (half from each split), shuffles which reply is shown first for each
 prompt, and writes a sheet to fill in plus a key that maps it back. Do not open key.json until you have chosen.
-`score` reads your choices and unblinds them.
+`score` reads your choices and unblinds them. "=" means both replies are equally good; "x" means neither is
+acceptable to send, which matters when both models answer without tools and neither can give the facts.
 
     uv run python evals/blind_compare.py make evals/style/base.jsonl evals/style/sft1.jsonl --out evals/blind/sft1-vs-base
-    # fill in every "Choice" line in evals/blind/sft1-vs-base/sheet.md with 1, 2 or = (no preference)
+    # fill in every "Choice" line in evals/blind/sft1-vs-base/sheet.md with 1, 2, = (equally good) or x (neither
+    # is acceptable)
     uv run python evals/blind_compare.py score evals/blind/sft1-vs-base
 """
 
@@ -37,8 +39,10 @@ def make(a):
     rng.shuffle(picked)
     key, lines = [], [f"# Blind side-by-side ({len(picked)} prompts)", "",
                       "For each prompt, which reply would you rather a NimbusCart customer got? Judge as the "
-                      "customer: helpful, honest, short, a sensible next step. Write 1, 2 or = after each "
-                      f'"{CHOICE}". Do not open key.json until every line is filled in.', ""]
+                      "customer: helpful, honest, short, a sensible next step. Write 1, 2 or = (equally good) "
+                      "after each "
+                      f'"{CHOICE}", or x if neither is acceptable to send. Do not open key.json until every '
+                      "line is filled in.", ""]
     for i, k in enumerate(picked, 1):
         first = rng.randrange(2)
         shown = [(x, y)[first], (x, y)[1 - first]]
@@ -55,17 +59,18 @@ def make(a):
 
 def score(a):
     out = Path(a.dir)
-    choices = [m.group(1).strip() for m in re.finditer(rf"^{re.escape(CHOICE)}(.*)$", (out / "sheet.md").read_text(), re.M)]
+    choices = [m.group(1).strip().lower() for m in re.finditer(rf"^{re.escape(CHOICE)}(.*)$", (out / "sheet.md").read_text(), re.M)]
     key = json.loads((out / "key.json").read_text())
-    if len(choices) != len(key["pairs"]) or any(c not in {"1", "2", "="} for c in choices):
-        missing = [i + 1 for i, c in enumerate(choices) if c not in {"1", "2", "="}]
-        raise SystemExit(f"fill in every choice with 1, 2 or = first (missing or unreadable: {missing})")
+    valid = {"1", "2", "=", "x"}
+    if len(choices) != len(key["pairs"]) or any(c not in valid for c in choices):
+        missing = [i + 1 for i, c in enumerate(choices) if c not in valid]
+        raise SystemExit(f"fill in every choice with 1, 2, = or x first (missing or unreadable: {missing})")
     total, by_split = Counter(), {}
     for pair, c in zip(key["pairs"], choices):
-        winner = "no preference" if c == "=" else pair[f"reply_{c}"]
+        winner = {"=": "equally good", "x": "neither acceptable"}.get(c) or pair[f"reply_{c}"]
         total[winner] += 1
         by_split.setdefault(pair["split"], Counter())[winner] += 1
-    cols = key["systems"] + ["no preference"]
+    cols = key["systems"] + ["equally good", "neither acceptable"]
     print("| | " + " | ".join(cols) + " |\n|---|" + "---|" * len(cols))
     for name, counts in [("all", total)] + sorted(by_split.items()):
         n = sum(counts.values())

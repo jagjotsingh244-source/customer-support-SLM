@@ -1,0 +1,42 @@
+
+[validation-20590] 'I forgot my damn user PIN, help resetting it': same
+  A (12w, stop): I will check your account status and help you reset your PIN.
+  B (12w, stop): I will check your account status and help you reset your PIN.
+
+[validation-9669] 'how could I speak to an agent?': same
+  A (15w, stop): I can help you find the right contact. Let me check your account details first.
+  B (15w, stop): I can help you find the right contact. Let me check your account details first.
+
+[validation-6026] 'I need to see in which situations can I ask for a refund': same
+  A (9w, stop): I will check the help center for refund policies.
+  B (9w, stop): I will check the help center for refund policies.
+
+[validation-64] 'could you help me cancel purchase 12314?': same
+  A (7w, stop): I will check your order details first.
+  B (7w, stop): I will check your order details first.
+
+[validation-105] 'I would like to cancel purchase 13265, I need help': same
+  A (8w, stop): I will check your order details for #13265.
+  B (8w, stop): I will check your order details for #13265.
+
+[test_unseen_intents-17943] 'want help to inform of an issue with online payments': same
+  A (26w, stop): Hello Sneha! I will check your recent orders to see if you have any payment issues. Please let me know which order you are referring to.
+  B (26w, stop): Hello Sneha! I will check your recent orders to see if you have any payment issues. Please let me know which order you are referring to.
+
+[test_unseen_intents-18382] 'I do not know how to infgorm of payment problems': same
+  A (21w, stop): Hello Tamanna! I'll help you with payment issues. First, could you please tell me which order you are having trouble with?
+  B (21w, stop): Hello Tamanna! I'll help you with payment issues. First, could you please tell me which order you are having trouble with?
+
+[test_unseen_intents-2372] 'i want help trying to modify my delivery address': same
+  A (25w, stop): I will check your order details first to see if you have an active order. Please let me know which order you are referring to.
+  B (25w, stop): I will check your order details first to see if you have an active order. Please let me know which order you are referring to.
+
+[test_unseen_intents-18579] 'i do ont know how i can report an issue with payment': same
+  A (23w, stop): Hello Udyati! I'll help you report a payment issue. First, let's check your recent orders. Which order number would you like to report?
+  B (23w, stop): Hello Udyati! I'll help you report a payment issue. First, let's check your recent orders. Which order number would you like to report?
+
+[test_unseen_intents-18072] 'how to repoft troubles with online payment': same
+  A (10w, stop): I will check the help center for payment troubleshooting steps.
+  B (10w, stop): I will check the help center for payment troubleshooting steps.
+
+10 identical, 0 differ in kind, of 10 prompts

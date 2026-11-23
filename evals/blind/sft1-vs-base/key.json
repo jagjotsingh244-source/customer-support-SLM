@@ -1,0 +1,219 @@
+{
+ "systems": [
+  "base-mac",
+  "sft1-mac"
+ ],
+ "seed": 3407,
+ "pairs": [
+  {
+   "n": 1,
+   "id": "validation-19289",
+   "split": "validation",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 2,
+   "id": "validation-9307",
+   "split": "validation",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 3,
+   "id": "test_unseen_intents-2948",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 4,
+   "id": "validation-6624",
+   "split": "validation",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 5,
+   "id": "validation-21495",
+   "split": "validation",
+   "reply_1": "sft1-mac",
+   "reply_2": "base-mac"
+  },
+  {
+   "n": 6,
+   "id": "test_unseen_intents-18206",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 7,
+   "id": "validation-7659",
+   "split": "validation",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 8,
+   "id": "validation-13285",
+   "split": "validation",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 9,
+   "id": "validation-6446",
+   "split": "validation",
+   "reply_1": "sft1-mac",
+   "reply_2": "base-mac"
+  },
+  {
+   "n": 10,
+   "id": "test_unseen_intents-18821",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 11,
+   "id": "test_unseen_intents-2800",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 12,
+   "id": "test_unseen_intents-2236",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 13,
+   "id": "test_unseen_intents-2108",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 14,
+   "id": "validation-15958",
+   "split": "validation",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 15,
+   "id": "validation-21237",
+   "split": "validation",
+   "reply_1": "sft1-mac",
+   "reply_2": "base-mac"
+  },
+  {
+   "n": 16,
+   "id": "test_unseen_intents-18600",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 17,
+   "id": "test_unseen_intents-18409",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 18,
+   "id": "test_unseen_intents-18438",
+   "split": "test_unseen_intents",
+   "reply_1": "sft1-mac",
+   "reply_2": "base-mac"
+  },
+  {
+   "n": 19,
+   "id": "validation-13316",
+   "split": "validation",
+   "reply_1": "sft1-mac",
+   "reply_2": "base-mac"
+  },
+  {
+   "n": 20,
+   "id": "validation-8284",
+   "split": "validation",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 21,
+   "id": "test_unseen_intents-2440",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 22,
+   "id": "validation-16278",
+   "split": "validation",
+   "reply_1": "sft1-mac",
+   "reply_2": "base-mac"
+  },
+  {
+   "n": 23,
+   "id": "test_unseen_intents-18813",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 24,
+   "id": "validation-230",
+   "split": "validation",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 25,
+   "id": "test_unseen_intents-18852",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 26,
+   "id": "validation-19425",
+   "split": "validation",
+   "reply_1": "sft1-mac",
+   "reply_2": "base-mac"
+  },
+  {
+   "n": 27,
+   "id": "validation-13405",
+   "split": "validation",
+   "reply_1": "sft1-mac",
+   "reply_2": "base-mac"
+  },
+  {
+   "n": 28,
+   "id": "test_unseen_intents-18745",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 29,
+   "id": "test_unseen_intents-18658",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  },
+  {
+   "n": 30,
+   "id": "test_unseen_intents-18061",
+   "split": "test_unseen_intents",
+   "reply_1": "base-mac",
+   "reply_2": "sft1-mac"
+  }
+ ]
+}

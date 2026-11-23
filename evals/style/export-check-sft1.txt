@@ -1,0 +1,42 @@
+
+[validation-20590] 'I forgot my damn user PIN, help resetting it': same
+  A (37w, stop): Resetting your PIN is frustrating when you just want to get back in. I can't access your account or reset it from here, though. Would you like me to connect you with a teammate who can help?
+  B (37w, stop): Resetting your PIN is frustrating when you just want to get back in. I can't access your account or reset it from here, though. Would you like me to connect you with a teammate who can help?
+
+[validation-9669] 'how could I speak to an agent?': same
+  A (40w, stop): You're welcome to talk to a real person instead of chatting with me. I can't handle everything on my own, and sometimes it's just easier to speak with someone directly. Would you like me to connect you with a teammate?
+  B (40w, stop): You're welcome to talk to a real person instead of chatting with me. I can't handle everything on my own, and sometimes it's just easier to speak with someone directly. Would you like me to connect you with a teammate?
+
+[validation-6026] 'I need to see in which situations can I ask for a refund': same
+  A (34w, stop): Knowing when you can ask for a refund is really helpful. I can look up our refund policy for you so you have the exact details. Would you like me to check that now?
+  B (34w, stop): Knowing when you can ask for a refund is really helpful. I can look up our refund policy for you so you have the exact details. Would you like me to check that now?
+
+[validation-64] 'could you help me cancel purchase 12314?': same
+  A (38w, stop): Let's take a look at your purchase so we can see where things stand. I can check your order to see what options are available for canceling it. Would you like me to look into that for you?
+  B (38w, stop): Let's take a look at your purchase so we can see where things stand. I can check your order to see what options are available for canceling it. Would you like me to look into that for you?
+
+[validation-105] 'I would like to cancel purchase 13265, I need help': same
+  A (38w, stop): Let's take a look at your purchase so we can see where things stand. I can check your order to see what options are available for canceling it. Would you like me to look into that for you?
+  B (38w, stop): Let's take a look at your purchase so we can see where things stand. I can check your order to see what options are available for canceling it. Would you like me to look into that for you?
+
+[test_unseen_intents-17943] 'want help to inform of an issue with online payments': same
+  A (31w, stop): Running into trouble with online payments is never fun, and I'd like to help you get this sorted out. Would you like me to look up our payment policy for you?
+  B (31w, stop): Running into trouble with online payments is never fun, and I'd like to help you get this sorted out. Would you like me to look up our payment policy for you?
+
+[test_unseen_intents-18382] 'I do not know how to infgorm of payment problems': same
+  A (38w, stop): Running into payment issues is frustrating, and it's not always clear where to report them. I can look up our payment policy for you so you know what to do next. Would you like me to check that?
+  B (38w, stop): Running into payment issues is frustrating, and it's not always clear where to report them. I can look up our payment policy for you so you know what to do next. Would you like me to check that?
+
+[test_unseen_intents-2372] 'i want help trying to modify my delivery address': same
+  A (31w, stop): Changing your delivery address isn't something I can do for you here, since I don't have access to your account. You can make that update on the NimbusCart website or app.
+  B (31w, stop): Changing your delivery address isn't something I can do for you here, since I don't have access to your account. You can make that update on the NimbusCart website or app.
+
+[test_unseen_intents-18579] 'i do ont know how i can report an issue with payment': same
+  A (41w, stop): Running into a payment issue is frustrating, and I'd like to help you get this sorted out. I can't log or report issues from here, though. Would you like me to connect you with a teammate who can take a look?
+  B (41w, stop): Running into a payment issue is frustrating, and I'd like to help you get this sorted out. I can't log or report issues from here, though. Would you like me to connect you with a teammate who can take a look?
+
+[test_unseen_intents-18072] 'how to repoft troubles with online payment': same
+  A (31w, stop): Running into trouble with an online payment is frustrating, and I'd like to help you get this sorted out. Would you like me to look up our payment policy for you?
+  B (31w, stop): Running into trouble with an online payment is frustrating, and I'd like to help you get this sorted out. Would you like me to look up our payment policy for you?
+
+10 identical, 0 differ in kind, of 10 prompts
