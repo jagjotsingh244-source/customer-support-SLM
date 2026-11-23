@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from functools import cache
 
 import numpy as np
+from psycopg.rows import tuple_row
 
 # Query prefixes from the model cards, used only with use_prefix=True. bge models were trained with an
 # instruction in front of short retrieval queries and none in front of passages;
@@ -50,7 +51,8 @@ class Embedder:
 
     def check_index(self, conn) -> None:
         """Fail loudly if kb_chunks holds vectors from a different model, or none."""
-        models = {r[0] for r in conn.execute("SELECT DISTINCT embedding_model FROM kb_chunks").fetchall()}
+        models = {r[0] for r in conn.cursor(row_factory=tuple_row).execute(
+            "SELECT DISTINCT embedding_model FROM kb_chunks").fetchall()}
         if models != {self.name}:
             raise RuntimeError(f"kb_chunks is embedded with {sorted(map(str, models))}, not {self.name}; "
                                f"run: uv run --group rag python rag/index.py --model {self.name}")

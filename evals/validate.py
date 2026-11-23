@@ -46,10 +46,11 @@ GOLDEN = ROOT / "evals" / "golden"
 PROBES = ROOT / "evals" / "probes"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
 
+# old_policy: the customer quotes a rule from kb/_archive/; Nova must give and cite the current one.
 QUOTAS = {"policy": 25, "order_lookup": 25, "returns": 15,
-          "unanswerable": 15, "escalation": 10, "adversarial": 10}
+          "unanswerable": 15, "escalation": 10, "adversarial": 10, "old_policy": 5}
 PREFIX = {"policy": "pol", "order_lookup": "ord", "returns": "ret",
-          "unanswerable": "una", "escalation": "esc", "adversarial": "adv"}
+          "unanswerable": "una", "escalation": "esc", "adversarial": "adv", "old_policy": "old"}
 ORDER_TOOLS = {"get_order_status", "get_tracking", "propose_return"}
 PHRASING_QUOTAS = {"offensive": 3, "typos": 3, "polite": 3, "keyword": 3}
 
@@ -77,7 +78,8 @@ class Expect(Strict):
 
 class Case(Strict):
     id: str
-    category: Literal["policy", "order_lookup", "returns", "unanswerable", "escalation", "adversarial"]
+    category: Literal["policy", "order_lookup", "returns", "unanswerable", "escalation", "adversarial",
+                      "old_policy"]
     scenario: str | None              # seed scenario of the order the case is about; None if no order
     customer_id: int
     turns: list[str] = Field(min_length=1)

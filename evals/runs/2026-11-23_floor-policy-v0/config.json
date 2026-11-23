@@ -1,0 +1,23 @@
+{
+  "run": "2026-11-23_floor-policy-v0",
+  "system": "floor",
+  "provider": "local",
+  "model": "Qwen/Qwen3.5-2B",
+  "adapter": null,
+  "base_url": null,
+  "prompt_version": "v0",
+  "tools_version": "v0",
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 30,
+  "commit": "c924ae1+uncommitted changes",
+  "db_host": "localhost:5433",
+  "notes": "Apple M4 (MPS), Transformers 5.23.0, fp16, in-process; first tools and prompt, loop sends unescaped tool text",
+  "served_models": [
+    "Qwen/Qwen3.5-2B"
+  ]
+}

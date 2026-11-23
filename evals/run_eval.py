@@ -46,10 +46,21 @@ Scoring (deterministic, yes/no per case):
                   asked for, a possible loss, a dispute) need the hand-off itself.
   all             every check passed, with the strict tool checks: correct and efficient
   all_required    every check passed, with required_calls in place of the strict tool checks: correct
+  cites           (cases with expected sources) some reply cites a help-center section as [kb:<id>]
+  cites_source    (cases with expected sources) some reply cites one of the expected sources
+  grounded        no reply has a grounding issue (agent/grounding.py): every number in it appears in the
+                  tool results it was given, and every citation was retrieved. Recomputed from the saved
+                  messages, so it applies to old runs too. Not part of all / all_required
+
+eval-v2 (2026-11-23) adds cites, cites_source and grounded for the help-center retrieval work; every
+eval-v1 metric is unchanged, and every run was rescored with it.
 
 The scorer is versioned (SCORER_VERSION). It is frozen while systems are compared: every system (floor,
 ceiling, every fine-tuned candidate) is scored by the same version, and a change needs a written reason,
 a new version and a --rescore of every run, so all reports stay on one version.
+
+--tools picks the tool set (v1: help-center retrieval; v0: the first full-text search) and --prompt the
+system prompt version; both are recorded in config.json. --category runs only some categories.
 
 --max-calls changes the loop's limit of model calls per turn (default 4, the same for every system).
 Use it only for clearly labelled diagnostics (--system diagnostic), never for the floor or ceiling.
@@ -69,16 +80,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from agent.loop import run_turn  # noqa: E402
-from agent.prompts import PROMPT_VERSION, system_prompt  # noqa: E402
-from agent.tools_v0 import REGISTRY, TOOLS, Session, connect  # noqa: E402
+from agent.grounding import check_conversation  # noqa: E402
+from agent.prompts import PROMPT_VERSION, PROMPTS, system_prompt  # noqa: E402
 from config import now  # noqa: E402
 from evals.validate import PHRASING_QUOTAS, QUOTAS, load, load_probes, normalize  # noqa: E402
 
 RUNS = ROOT / "evals" / "runs"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
-SCORER_VERSION = "eval-v1"   # frozen 2026-11-22, before the floor results were seen
+SCORER_VERSION = "eval-v2"   # eval-v1 frozen 2026-11-22; v2 (2026-11-23) only adds the last three metrics
 METRICS = ["tool_names", "tool_args", "required_calls", "valid_json", "facts", "forbidden", "escalation",
-           "all", "all_required"]
+           "all", "all_required", "cites", "cites_source", "grounded"]
 DEFAULT_ARGS = {"list_my_orders": {"limit": 5}}
 SAMPLING = {   # named settings for the sampling comparison; temperature is passed separately
     "default": {},
@@ -101,15 +112,24 @@ def make_client(a):
     return OpenAI(base_url=a.base_url, api_key=os.environ.get("OPENAI_API_KEY", "EMPTY"))
 
 
+def tool_module(version: str):
+    if version == "v0":
+        from agent import tools_v0 as m
+    else:
+        from agent import tools_v1 as m   # needs the rag dependency group
+    return m
+
+
 def run_case(case, client, a, conn) -> dict:
     """One golden case, fresh session for its customer; scripted user turns."""
-    session = Session.open(conn, case.customer_id)
-    messages = [{"role": "system", "content": system_prompt(now(), session.customer_name)}]
+    tools = tool_module(a.tools)
+    session = tools.Session.open(conn, case.customer_id)
+    messages = [{"role": "system", "content": system_prompt(now(), session.customer_name, a.prompt)}]
     turns = []
     for text in case.turns:
         messages.append({"role": "user", "content": text})
         t0 = time.perf_counter()
-        reply, tr = run_turn(client, a.model, messages, TOOLS, REGISTRY, session, max_steps=a.max_calls,
+        reply, tr = run_turn(client, a.model, messages, tools.TOOLS, tools.REGISTRY, session, max_steps=a.max_calls,
                              temperature=a.temperature, sampling=SAMPLING[a.sampling])
         tr["turn_s"] = round(time.perf_counter() - t0, 3)
         tr["reply"] = reply
@@ -142,7 +162,7 @@ def run(a) -> Path:
     cases, errors = load_cases(a.cases)
     if errors:
         sys.exit(f"{a.cases} cases have format errors; run evals/validate.py" + (" --probes" if a.cases == "probes" else ""))
-    cases = [c for _, c in cases if (not a.ids or c.id in a.ids)]
+    cases = [c for _, c in cases if (not a.ids or c.id in a.ids) and (not a.category or c.category in a.category)]
     if a.limit:
         cases = cases[: a.limit]
 
@@ -156,11 +176,12 @@ def run(a) -> Path:
         path.write_text("".join(json.dumps(t, default=str, ensure_ascii=False) + "\n" for t in done.values()))
 
     config = {"run": a.run, "system": a.system, "provider": a.provider, "model": a.model, "adapter": a.adapter,
-              "base_url": a.base_url, "prompt_version": PROMPT_VERSION, "temperature": a.temperature,
+              "base_url": a.base_url, "prompt_version": a.prompt, "tools_version": a.tools,
+              "temperature": a.temperature,
               "sampling": a.sampling, "sampling_settings": SAMPLING[a.sampling], "max_model_calls_per_turn": a.max_calls,
               "case_set": a.cases, "paired_run": a.paired_run, "cases": len(cases), "commit": git_commit(), "db_host": DB_URL.split("@")[-1].split("/")[0],
               "notes": a.notes}
-    client, conn = make_client(a), connect(DB_URL)
+    client, conn = make_client(a), tool_module(a.tools).connect(DB_URL)
     todo = [c for c in cases if c.id not in done]
     print(f"{a.run}: {len(cases)} cases, {len(done)} already done, {len(todo)} to run")
     with path.open("a") as f:
@@ -214,8 +235,10 @@ def _in_order(exp, got) -> bool:
 
 
 def score(case, trace: dict) -> dict:
+    """True/False per metric; None where a metric does not apply (cites* for cases without sources)."""
+    has_sources = bool(case.expect.sources)
     if "error" in trace:
-        return {m: False for m in METRICS}
+        return {m: (None if m.startswith("cites") and not has_sources else False) for m in METRICS}
     e = case.expect
     got, exp = trace["tool_calls"], e.tool_calls
     replies = normalize(" ".join(r or "" for r in trace["replies"]))
@@ -235,11 +258,22 @@ def score(case, trace: dict) -> dict:
     rest = [s[m] for m in ("valid_json", "facts", "forbidden", "escalation")]
     s["all"] = s["tool_names"] and s["tool_args"] and all(rest)
     s["all_required"] = s["required_calls"] and all(rest)
+    checked = check_conversation(trace.get("messages", []))
+    cited = {c for r in checked for c in r["cited"]}
+    s["cites"] = bool(cited) if has_sources else None
+    s["cites_source"] = bool(cited & set(e.sources)) if has_sources else None
+    s["grounded"] = not any(r["issues"] for r in checked)
     return s
 
 
 def pct(k: int, n: int) -> str:
     return f"{k}/{n} ({100 * k / n:.0f}%)" if n else "-"
+
+
+def pct_of(ss: list[dict], m: str) -> str:
+    """Share of cases where metric m passed, over the cases it applies to."""
+    xs = [s[m] for s in ss if s[m] is not None]
+    return pct(sum(xs), len(xs))
 
 
 def paired_rows(cases, scores, paired_run: str | None) -> list[str]:
@@ -284,10 +318,9 @@ def report(out: Path) -> str:
             "|---|---|" + "---|" * len(METRICS)]
     for cat in [c for c in order if c in by_cat]:
         ss = by_cat[cat]
-        rows.append(f"| {cat} | {len(ss)} | " + " | ".join(pct(sum(s[m] for s in ss), len(ss)) for m in METRICS) + " |")
+        rows.append(f"| {cat} | {len(ss)} | " + " | ".join(pct_of(ss, m) for m in METRICS) + " |")
     allss = list(scores.values())
-    rows.append(f"| **all** | {len(allss)} | " + " | ".join(f"**{pct(sum(s[m] for s in allss), len(allss))}**"
-                                                          for m in METRICS) + " |")
+    rows.append(f"| **all** | {len(allss)} | " + " | ".join(f"**{pct_of(allss, m)}**" for m in METRICS) + " |")
     if case_set == "probes":
         rows += paired_rows(cases, scores, config.get("paired_run"))
 
@@ -297,10 +330,15 @@ def report(out: Path) -> str:
     def q(xs, p):
         return xs[min(len(xs) - 1, int(p * len(xs)))] if xs else 0
     errors = [t for t in traces if "error" in t]
+    checked = {t["id"]: check_conversation(t.get("messages", [])) for t in ok}
+    replies = [r for rs in checked.values() for r in rs]
+    flagged = [r for r in replies if r["issues"]]
+    issue_lines = [f"- {i}: " + "; ".join(r["issues"]) for i, rs in sorted(checked.items()) for r in rs if r["issues"]]
     offers = [t["id"] for t in traces if "error" not in t and cases[t["id"]].category == "unanswerable"
               and cases[t["id"]].expect.should_escalate and not t["escalated"] and offered_handoff(t["final_reply"])]
     lines = [
         f"## {config['run']} · {config['system']} · `{config['model']}` · prompt {config['prompt_version']} · "
+        f"tools {config.get('tools_version', 'v0')} · "
         f"temperature {config['temperature']} · sampling {config['sampling']} · scorer {SCORER_VERSION}",
         "",
         f"Provider `{config['provider']}`; served by {', '.join(f'`{m}`' for m in config.get('served_models', [])) or 'n/a'}; "
@@ -316,8 +354,12 @@ def report(out: Path) -> str:
         f"Unanswerable cases that passed escalation by offering a hand-off: {len(offers)}"
         + (": " + ", ".join(offers) if offers else "."),
         f"Cases that errored (scored as failures): {len(errors)}" + (": " + ", ".join(t["id"] for t in errors) if errors else "."),
+        f"Grounding: {len(flagged)} of {len(replies)} replies have an issue "
+        f"({100 * len(flagged) / len(replies):.0f} per 100 replies), {sum(len(r['issues']) for r in flagged)} issues."
+        if replies else "Grounding: no replies.",
         "",
         "Failed cases: " + ", ".join(i for i, s in sorted(scores.items()) if not s["all"]),
+        *(["", "Grounding issues:", *issue_lines] if issue_lines else []),
     ]
     text = "\n".join(lines) + "\n"
     (out / "report.md").write_text(text)
@@ -337,8 +379,11 @@ def main() -> None:
     ap.add_argument("--max-calls", type=int, default=4, help="model calls per turn; change only for diagnostics")
     ap.add_argument("--limit", type=int, help="only the first N cases (smoke test)")
     ap.add_argument("--ids", nargs="*", help="only these case ids")
+    ap.add_argument("--category", nargs="*", help="only these categories, e.g. policy old_policy")
+    ap.add_argument("--tools", choices=["v0", "v1"], default="v1", help="tool set (v1 needs --group rag)")
+    ap.add_argument("--prompt", choices=list(PROMPTS), default=PROMPT_VERSION, help="system prompt version")
     ap.add_argument("--cases", choices=["golden", "probes"], default="golden",
-                    help="the 100-case golden set, or the phrasing probes (reported apart)")
+                    help="the golden set (105 cases), or the phrasing probes (reported apart)")
     ap.add_argument("--paired-run", help="for --cases probes: a golden run of the same system, to show each "
                     "probe next to its clean twin")
     ap.add_argument("--notes", default="", help="free text stored in config.json")

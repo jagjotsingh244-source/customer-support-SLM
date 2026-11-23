@@ -1,5 +1,5 @@
 {
- "scorer_version": "eval-v1",
+ "scorer_version": "eval-v2",
  "scores": {
   "ord-phr-01": {
    "tool_names": false,
@@ -10,7 +10,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ret-phr-02": {
    "tool_names": false,
@@ -21,7 +24,10 @@
    "forbidden": false,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "pol-phr-03": {
    "tool_names": false,
@@ -32,7 +38,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "ord-phr-04": {
    "tool_names": true,
@@ -43,7 +52,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "pol-phr-05": {
    "tool_names": false,
@@ -54,7 +66,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "ret-phr-06": {
    "tool_names": false,
@@ -65,7 +80,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "ord-phr-07": {
    "tool_names": false,
@@ -76,7 +94,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "pol-phr-08": {
    "tool_names": false,
@@ -87,7 +108,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "esc-phr-09": {
    "tool_names": false,
@@ -98,7 +122,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-phr-10": {
    "tool_names": false,
@@ -109,7 +136,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ret-phr-11": {
    "tool_names": false,
@@ -120,7 +150,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "una-phr-12": {
    "tool_names": false,
@@ -131,7 +164,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   }
  }
 }

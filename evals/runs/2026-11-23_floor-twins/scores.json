@@ -1,5 +1,5 @@
 {
- "scorer_version": "eval-v1",
+ "scorer_version": "eval-v2",
  "scores": {
   "esc-004": {
    "tool_names": false,
@@ -10,7 +10,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-003": {
    "tool_names": false,
@@ -21,7 +24,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-006": {
    "tool_names": false,
@@ -32,7 +38,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-015": {
    "tool_names": true,
@@ -43,7 +52,10 @@
    "forbidden": true,
    "escalation": true,
    "all": true,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-017": {
    "tool_names": true,
@@ -54,7 +66,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "pol-001": {
    "tool_names": false,
@@ -65,7 +80,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "pol-009": {
    "tool_names": true,
@@ -76,7 +94,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "pol-010": {
    "tool_names": false,
@@ -87,7 +108,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "ret-001": {
    "tool_names": true,
@@ -98,7 +122,10 @@
    "forbidden": true,
    "escalation": true,
    "all": true,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ret-004": {
    "tool_names": false,
@@ -109,7 +136,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ret-013": {
    "tool_names": false,
@@ -120,7 +150,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "una-002": {
    "tool_names": false,
@@ -131,7 +164,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   }
  }
 }

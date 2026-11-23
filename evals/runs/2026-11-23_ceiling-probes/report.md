@@ -1,14 +1,14 @@
-## 2026-11-23_ceiling-probes · ceiling · `gemini-4-hydrogen` · prompt v0 · temperature 0.2 · sampling default · scorer eval-v1
+## 2026-11-23_ceiling-probes · ceiling · `gemini-4-hydrogen` · prompt v0 · tools v0 · temperature 0.2 · sampling default · scorer eval-v2
 
 Provider `gemini`; served by `gemini-4-hydrogen`; commit `3a99d84`; database `localhost:5433`; up to 4 model calls per turn. Notes: phrasing probes; same setup as 2026-11-22_ceiling (Vertex AI global, local database copy)
 
-| Phrasing | n | tool_names | tool_args | required_calls | valid_json | facts | forbidden | escalation | all | all_required |
-|---|---|---|---|---|---|---|---|---|---|---|
-| offensive | 3 | 0/3 (0%) | 0/3 (0%) | 3/3 (100%) | 3/3 (100%) | 1/3 (33%) | 2/3 (67%) | 2/3 (67%) | 0/3 (0%) | 1/3 (33%) |
-| typos | 3 | 1/3 (33%) | 0/3 (0%) | 3/3 (100%) | 3/3 (100%) | 2/3 (67%) | 3/3 (100%) | 3/3 (100%) | 0/3 (0%) | 2/3 (67%) |
-| polite | 3 | 0/3 (0%) | 0/3 (0%) | 2/3 (67%) | 3/3 (100%) | 1/3 (33%) | 3/3 (100%) | 2/3 (67%) | 0/3 (0%) | 1/3 (33%) |
-| keyword | 3 | 0/3 (0%) | 0/3 (0%) | 2/3 (67%) | 3/3 (100%) | 3/3 (100%) | 3/3 (100%) | 2/3 (67%) | 0/3 (0%) | 2/3 (67%) |
-| **all** | 12 | **1/12 (8%)** | **0/12 (0%)** | **10/12 (83%)** | **12/12 (100%)** | **7/12 (58%)** | **11/12 (92%)** | **9/12 (75%)** | **0/12 (0%)** | **6/12 (50%)** |
+| Phrasing | n | tool_names | tool_args | required_calls | valid_json | facts | forbidden | escalation | all | all_required | cites | cites_source | grounded |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| offensive | 3 | 0/3 (0%) | 0/3 (0%) | 3/3 (100%) | 3/3 (100%) | 1/3 (33%) | 2/3 (67%) | 2/3 (67%) | 0/3 (0%) | 1/3 (33%) | 0/1 (0%) | 0/1 (0%) | 3/3 (100%) |
+| typos | 3 | 1/3 (33%) | 0/3 (0%) | 3/3 (100%) | 3/3 (100%) | 2/3 (67%) | 3/3 (100%) | 3/3 (100%) | 0/3 (0%) | 2/3 (67%) | 0/2 (0%) | 0/2 (0%) | 3/3 (100%) |
+| polite | 3 | 0/3 (0%) | 0/3 (0%) | 2/3 (67%) | 3/3 (100%) | 1/3 (33%) | 3/3 (100%) | 2/3 (67%) | 0/3 (0%) | 1/3 (33%) | 0/1 (0%) | 0/1 (0%) | 3/3 (100%) |
+| keyword | 3 | 0/3 (0%) | 0/3 (0%) | 2/3 (67%) | 3/3 (100%) | 3/3 (100%) | 3/3 (100%) | 2/3 (67%) | 0/3 (0%) | 2/3 (67%) | - | - | 3/3 (100%) |
+| **all** | 12 | **1/12 (8%)** | **0/12 (0%)** | **10/12 (83%)** | **12/12 (100%)** | **7/12 (58%)** | **11/12 (92%)** | **9/12 (75%)** | **0/12 (0%)** | **6/12 (50%)** | **0/4 (0%)** | **0/4 (0%)** | **12/12 (100%)** |
 
 Each probe next to its clean twin in run `2026-11-22_ceiling` (all = every check passed with the strict tool checks; all_required = with required_calls):
 
@@ -34,5 +34,6 @@ Latency per turn (model calls + tools + database): median 7.97 s, p95 37.15 s, m
 Model calls: 40; mean prompt tokens 1259, mean completion tokens 200.
 Unanswerable cases that passed escalation by offering a hand-off: 0.
 Cases that errored (scored as failures): 0.
+Grounding: 0 of 12 replies have an issue (0 per 100 replies), 0 issues.
 
 Failed cases: esc-phr-09, ord-phr-01, ord-phr-04, ord-phr-07, ord-phr-10, pol-phr-03, pol-phr-05, pol-phr-08, ret-phr-02, ret-phr-06, ret-phr-11, una-phr-12

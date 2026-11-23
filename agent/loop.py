@@ -9,6 +9,8 @@ switching is a change of base_url and model, nothing else.
 import json
 import time
 
+from agent.grounding import grounding_issues, tool_contents_before
+
 FALLBACK_REPLY = "Let me connect you with a teammate."
 
 
@@ -16,8 +18,9 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
     """Answer the last user message in `messages` (appended to in place).
 
     Returns (reply, trace). The trace keeps what the scorecard needs: every tool
-    call with its raw argument string, whether it parsed, and its result; and
-    every model call with its latency and token counts. `sampling` adds extra
+    call with its raw argument string, whether it parsed, and its result; every
+    model call with its latency and token counts; and the reply's grounding
+    issues (agent/grounding.py), logged, never fixed. `sampling` adds extra
     request settings (e.g. top_p, presence_penalty) on top of temperature.
     """
     trace = {"tool_calls": [], "model_calls": [], "escalated": False}
@@ -35,6 +38,7 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
         msg = r.choices[0].message
         messages.append(msg.model_dump(exclude_none=True))
         if not msg.tool_calls:
+            trace["grounding"] = grounding_issues(msg.content, tool_contents_before(messages, len(messages)))
             return msg.content, trace
         for call in msg.tool_calls:
             raw = call.function.arguments
@@ -53,8 +57,10 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
                 trace["escalated"] = True
             trace["tool_calls"].append({"name": call.function.name, "args": raw, "parsed": parsed,
                                         "result": result})
+            # ensure_ascii=False: the model reads "1–3 days" and "₹49", not "1\u20133" and "\u20b949".
             messages.append({"role": "tool", "tool_call_id": call.id,
-                             "content": json.dumps(result, default=str)})
+                             "content": json.dumps(result, default=str, ensure_ascii=False)})
     trace["escalated"] = True                       # ran out of steps: hand off
+    trace["grounding"] = []                         # the fixed fallback states no facts
     messages.append({"role": "assistant", "content": FALLBACK_REPLY})
     return FALLBACK_REPLY, trace

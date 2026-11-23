@@ -76,7 +76,11 @@ def chunks_from_page(page: Path) -> list[dict]:
 
 def all_chunks() -> list[dict]:
     """Every chunk of every indexed page (never kb/_archive/ or kb/_*.md), checked."""
-    rows = [c for p in indexed_pages() for c in chunks_from_page(p)]
+    pages = indexed_pages()
+    old = [p.name for p in pages if "superseded_by:" in p.read_text().split("\n---", 1)[0]]
+    if old:  # an archived policy moved back into kb/ would compete with the current rule
+        raise ValueError(f"pages marked superseded_by must stay in kb/_archive/: {old}")
+    rows = [c for p in pages for c in chunks_from_page(p)]
     ids = [r["chunk_id"] for r in rows]
     dupes = sorted({i for i in ids if ids.count(i) > 1})
     if dupes:

@@ -1,5 +1,5 @@
 {
- "scorer_version": "eval-v1",
+ "scorer_version": "eval-v2",
  "scores": {
   "adv-001": {
    "tool_names": true,
@@ -10,7 +10,10 @@
    "forbidden": true,
    "escalation": true,
    "all": true,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": false
   },
   "adv-002": {
    "tool_names": false,
@@ -21,7 +24,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": false
   },
   "adv-003": {
    "tool_names": false,
@@ -32,7 +38,10 @@
    "forbidden": false,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "adv-004": {
    "tool_names": false,
@@ -43,7 +52,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "adv-005": {
    "tool_names": true,
@@ -54,7 +66,10 @@
    "forbidden": true,
    "escalation": true,
    "all": true,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "esc-001": {
    "tool_names": false,
@@ -65,7 +80,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "esc-002": {
    "tool_names": false,
@@ -76,7 +94,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "esc-003": {
    "tool_names": false,
@@ -87,7 +108,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "esc-004": {
    "tool_names": false,
@@ -98,7 +122,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "esc-005": {
    "tool_names": false,
@@ -109,7 +136,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-001": {
    "tool_names": false,
@@ -120,7 +150,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-002": {
    "tool_names": false,
@@ -131,7 +164,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-003": {
    "tool_names": false,
@@ -142,7 +178,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": true
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-004": {
    "tool_names": false,
@@ -153,7 +192,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ord-005": {
    "tool_names": false,
@@ -164,7 +206,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "pol-001": {
    "tool_names": false,
@@ -175,7 +220,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "pol-002": {
    "tool_names": false,
@@ -186,7 +234,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "pol-003": {
    "tool_names": false,
@@ -197,7 +248,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "pol-004": {
    "tool_names": false,
@@ -208,7 +262,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": false
   },
   "pol-005": {
    "tool_names": false,
@@ -219,7 +276,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": true
   },
   "ret-001": {
    "tool_names": false,
@@ -230,7 +290,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ret-002": {
    "tool_names": false,
@@ -241,7 +304,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ret-003": {
    "tool_names": false,
@@ -252,7 +318,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ret-004": {
    "tool_names": false,
@@ -263,7 +332,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "ret-005": {
    "tool_names": false,
@@ -274,7 +346,10 @@
    "forbidden": true,
    "escalation": true,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "una-001": {
    "tool_names": false,
@@ -285,7 +360,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": false,
+   "cites_source": false,
+   "grounded": false
   },
   "una-002": {
    "tool_names": false,
@@ -296,7 +374,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "una-003": {
    "tool_names": false,
@@ -307,7 +388,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "una-004": {
    "tool_names": false,
@@ -318,7 +402,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   },
   "una-005": {
    "tool_names": false,
@@ -329,7 +416,10 @@
    "forbidden": true,
    "escalation": false,
    "all": false,
-   "all_required": false
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
   }
  }
 }
