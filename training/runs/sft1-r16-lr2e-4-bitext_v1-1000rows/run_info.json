@@ -1,0 +1,147 @@
+{
+ "run_name": "sft1-r16-lr2e-4-bitext_v1-1000rows",
+ "config": {
+  "model_name": "unsloth/Qwen3.5-2B",
+  "r": 16,
+  "lora_alpha": 16,
+  "lora_dropout": 0.0,
+  "target_modules": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "dataset_name": "123jagjot/nimbus-bitext-v1",
+  "dataset_revision": "975c80864824005c28c22ef0411049fb81f33c8e",
+  "data_version": "bitext_v1",
+  "max_seq_length": 256,
+  "train_rows": 1000,
+  "learning_rate": 0.0002,
+  "num_train_epochs": 1,
+  "per_device_train_batch_size": 2,
+  "gradient_accumulation_steps": 8,
+  "warmup_ratio": 0.05,
+  "lr_scheduler_type": "cosine",
+  "optim": "adamw_8bit",
+  "weight_decay": 0.0,
+  "seed": 3407,
+  "eval_steps": 10,
+  "save_steps": 1000,
+  "logging_steps": 5,
+  "per_device_eval_batch_size": 8,
+  "probe_max_new_tokens": 80,
+  "output_root": "outputs",
+  "hub_user": "123jagjot",
+  "run_prefix": "sft1"
+ },
+ "plan": {
+  "examples_per_step": 16,
+  "steps": 63,
+  "warmup_steps": 4,
+  "evaluations": 7
+ },
+ "data": {
+  "train": {
+   "rows": 1000,
+   "max_tokens": 250,
+   "mean_tokens": 224.9,
+   "mean_trained_tokens": 41.2,
+   "mask_checked_rows": 200
+  },
+  "validation": {
+   "rows": 235,
+   "max_tokens": 248,
+   "mean_tokens": 224.8,
+   "mean_trained_tokens": 41.2,
+   "mask_checked_rows": 200
+  },
+  "test_unseen_intents": {
+   "rows": 594,
+   "max_tokens": 248,
+   "mean_tokens": 222.6,
+   "mean_trained_tokens": 40.9,
+   "mask_checked_rows": 200
+  }
+ },
+ "dataset": {
+  "name": "123jagjot/nimbus-bitext-v1",
+  "revision": "975c80864824005c28c22ef0411049fb81f33c8e"
+ },
+ "prompt_version": "v0",
+ "probe_customer": "Anay Vasa",
+ "probes": [
+  "hello",
+  "thanks, bye",
+  "i want to cancel my order",
+  "where is my refund??",
+  "where is my order?",
+  "your service is terrible",
+  "can you change my address",
+  "i want to talk to a real person"
+ ],
+ "git": {
+  "commit": "e3ee11be1517f8b928b63e5612e6a5a3f0865c67",
+  "dirty": false
+ },
+ "versions": {
+  "torch": "2.11.0+cu130",
+  "transformers": "5.17.0",
+  "peft": "0.21.2",
+  "unsloth": "2026.11.7",
+  "unsloth_zoo": "2026.11.7",
+  "accelerate": "1.15.0",
+  "datasets": "4.8.5",
+  "bitsandbytes": "0.50.2",
+  "triton": "3.6.0"
+ },
+ "gpu": "Tesla T4",
+ "precision": "fp16",
+ "trainable_params": 10911744,
+ "hand_count": 10911744,
+ "wrapped_layers": 96,
+ "memory_gb": {
+  "after_load": 4.44,
+  "peak_allocated": 4.94,
+  "peak_reserved": 5.09
+ },
+ "train_seconds": 976,
+ "total_seconds": 1007,
+ "train_loss": 1.1336,
+ "eval_losses": {
+  "0": {
+   "eval_validation_loss": 2.0746,
+   "eval_unseen_loss": 2.0471
+  },
+  "10": {
+   "eval_validation_loss": 1.6261,
+   "eval_unseen_loss": 1.5913
+  },
+  "20": {
+   "eval_validation_loss": 1.0233,
+   "eval_unseen_loss": 1.1712
+  },
+  "30": {
+   "eval_validation_loss": 0.9036,
+   "eval_unseen_loss": 1.0686
+  },
+  "40": {
+   "eval_validation_loss": 0.8545,
+   "eval_unseen_loss": 1.035
+  },
+  "50": {
+   "eval_validation_loss": 0.8175,
+   "eval_unseen_loss": 0.9934
+  },
+  "60": {
+   "eval_validation_loss": 0.803,
+   "eval_unseen_loss": 0.9829
+  },
+  "63": {
+   "eval_validation_loss": 0.8018,
+   "eval_unseen_loss": 0.9812
+  }
+ }
+}
