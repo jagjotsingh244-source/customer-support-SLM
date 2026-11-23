@@ -9,9 +9,12 @@ Needs the `rag` dependency group: uv run --group rag ...
 
 from dataclasses import dataclass
 from functools import cache
+from typing import TYPE_CHECKING
 
-import numpy as np
 from psycopg.rows import tuple_row
+
+if TYPE_CHECKING:  # numpy comes with the rag group; importing this module must work without it
+    import numpy as np
 
 # Query prefixes from the model cards, used only with use_prefix=True. bge models were trained with an
 # instruction in front of short retrieval queries and none in front of passages;
@@ -42,10 +45,10 @@ class Embedder:
         if self.name not in MODELS:
             raise ValueError(f"unknown embedding model {self.name}; known: {sorted(MODELS)}")
 
-    def passages(self, texts: list[str]) -> np.ndarray:
+    def passages(self, texts: list[str]) -> "np.ndarray":
         return _load(self.name).encode(texts, normalize_embeddings=True, batch_size=32)
 
-    def query(self, text: str) -> np.ndarray:
+    def query(self, text: str) -> "np.ndarray":
         prefix = MODELS[self.name] if self.use_prefix else ""
         return _load(self.name).encode(prefix + text, normalize_embeddings=True)
 
