@@ -1,0 +1,299 @@
+{
+ "script": "b",
+ "customer": 10,
+ "mode": "state",
+ "right_order": 14,
+ "of": 14,
+ "max_prompt_tokens": 2119,
+ "turns": [
+  {
+   "turn": 1,
+   "customer": "hi, my speaker hasnt come yet, order 11652",
+   "want": 11652,
+   "reply": "Your order 11652 is in transit. The speaker arrived at the Ahmedabad hub on November 18, 2026, and the estimated delivery is November 15, 2026. The shipment is currently being processed.\n\nIs there anything else I can help you with?",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1099,
+    1375
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 2,
+   "customer": "who is delivering it?",
+   "want": 11652,
+   "reply": "The delivery is from SwiftShip. The item was last scanned at the Ahmedabad hub on November 18, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1452,
+    1364
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 3,
+   "customer": "when was it meant to get here?",
+   "want": 11652,
+   "reply": "The Mini portable speaker was meant to arrive on 2026-11-15.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1407,
+    1367
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 4,
+   "customer": "also i bought a steam iron in july, order 10208. did it reach me?",
+   "want": 10208,
+   "reply": "Yes, your steam iron arrived. It was delivered on July 15, 2026, at 4:38 PM IST in Mumbai.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1417,
+    1449
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 5,
+   "customer": "what did i pay for the iron?",
+   "want": 10208,
+   "reply": "You paid ₹1,499.00 for the Steam iron via UPI.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1496,
+    1442
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 6,
+   "customer": "was that by upi?",
+   "want": 10208,
+   "reply": "Yes, you paid ₹1,499.00 for the Steam iron via UPI.",
+   "right_order": true,
+   "tools": [],
+   "prompt_tokens": [
+    1473
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 7,
+   "customer": "back to the speaker - where is it right now?",
+   "want": 11652,
+   "reply": "The speaker is at the Ahmedabad hub, last scanned on 2026-11-18.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1266,
+    1461
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 8,
+   "customer": "can you give me its tracking id?",
+   "want": 11652,
+   "reply": "The tracking ID for your Mini portable speaker is SS70001588.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1462,
+    1421
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 9,
+   "customer": "do you deliver on sundays?",
+   "want": null,
+   "reply": "The order is in transit with an ETA of 2026-11-15. Since it's already shipped, delivery will happen within 2–4 days after shipping.\n\nWe do not deliver on Sundays.",
+   "right_order": null,
+   "tools": [
+    [
+     "search_help_center",
+     "{\"query\": \"delivery days\"}"
+    ],
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ],
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1453,
+    1508,
+    1897,
+    2119
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 10,
+   "customer": "the iron, can i still send it back?",
+   "want": 10208,
+   "reply": "The iron is delivered, but no return has been started. You can initiate a return now. What reason applies?",
+   "right_order": true,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ],
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1229,
+    1580,
+    1795
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 11,
+   "customer": "which courier brought it?",
+   "want": 10208,
+   "reply": "The courier is BlueLine.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1223,
+    1443
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 12,
+   "customer": "and the speaker, is it late?",
+   "want": 11652,
+   "reply": "I have escalated this issue to the support team. A teammate will contact you shortly.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ],
+    [
+     "escalate_to_human",
+     "{\"reason\": \"lost_parcel\", \"summary\": \"Customer reports speaker delivery is 3 days late from Nov 15 to Nov 18\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1463,
+    1421,
+    1582
+   ],
+   "escalated": true
+  },
+  {
+   "turn": 13,
+   "customer": "what should i do about it?",
+   "want": 11652,
+   "reply": "Order 11652 is shipped with a mini portable speaker. You mentioned a steam iron and this speaker. What issue are you facing with this order?",
+   "right_order": true,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ],
+    [
+     "get_order_status",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1226,
+    1597,
+    1874
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 14,
+   "customer": "how much was it?",
+   "want": 11652,
+   "reply": "The Mini portable speaker in order 11652 was ₹1299.00.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1236,
+    1453
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 15,
+   "customer": "ok last thing, what was the iron's tracking number?",
+   "want": 10208,
+   "reply": "The tracking number for the Steam iron is BL70000208.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1493,
+    1462
+   ],
+   "escalated": false
+  }
+ ]
+}

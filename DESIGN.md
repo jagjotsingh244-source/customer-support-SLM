@@ -45,20 +45,26 @@ Estimates get replaced by measurements as the project goes on.
   Over all 100 golden cases on the same setup (2026-11-22, Kaggle T4): **median 4.33 s, p95 7.71 s per turn**
   (104 turns, 311 model calls, about 3 per turn). The baseline turns mostly make two or three tool calls, so the
   p95 is over the 3 s target; fewer wasted calls (see `evals/reports/00_baseline_floor.md`) is the first lever.
-- **Context window: 8,192 tokens** — *target* for the total. The split is an *estimate*:
-  - system prompt: 500 (*measured* with the tool schemas: system prompt v0 + 6 tool schemas + a 15-token user message = 939 tokens on the first model pass)
-  - tool schemas: 700 (*measured* in the generation experiments: 656 tokens for the 6 draft tools, about 180 fixed + about 80 per tool; 700 leaves room for one more tool).
-    *Measured* for the typed tools (`agent/tools_v2.py`, 2026-11-23): **782 tokens, 82 over the allotment**: 584 for the six
-    schemas and 198 for the chat template's fixed tool instructions, which we cannot shorten. Pydantic's generated schemas
-    were 953 before removing what only the validator needs (titles, minimum/maximum, lengths, defaults) and shortening the
-    descriptions; the v1 tools were 781. The reallocation is decided with the full context budget, not here
-  - history: 5,000 (was 4,000; it takes the 1,000 freed from retrieved chunks. Refine with synthetic conversations
-    and the eval harness)
-  - retrieved chunks: 1,000 (was 2,000). *Measured*: one `search_help_center` result (top 3 sections, JSON
-    included) is 256 Qwen tokens at the median and 342 at most over the 2B model's policy runs; an empty result
-    is about 20. 1,000 holds three full searches in one conversation. Chunks themselves: 104, 19–120 tokens each.
-  - reply headroom: 992
-- **Max size of one user message: 1,500 tokens** — *target*, enforced in code before the model sees the message (about 1,100 words). Over the cap: no model call; reply with a fixed message asking for the main question or the order number. Keeps one message from taking more than 1,500 of the 5,000 history tokens. Built with the guardrails; tested in the baseline eval (a 3,000-token message must get the polite decline, not an error). When the full prompt is still too long, trim the oldest history first, then retrieved chunks; never the system prompt or tool schemas.
+- **Context window: 8,192 tokens** (`--max-model-len`), of which **4,200 go to the prompt and 512 to the reply** —
+  *target*, enforced in code before every model call (`agent/state.py`, `PROMPT_BUDGET`). A 2B model does best with a
+  short context laid out the same way every time, and a budget held by code means vLLM never rejects a long chat.
+  The rest of the window is headroom, not a reserve to grow into. Measured 2026-11-23 with Qwen3.5-2B's tokenizer on
+  the rendered chat template:
+
+  | Part | Allotment | Measured | Rule |
+  |---|---|---|---|
+  | System prompt | 300 | 219 (v1), 273 (v2) | Fixed; versioned in `agent/prompts.py` |
+  | Tool schemas | 800 | 782 (584 for the six schemas, 198 the template's fixed tool text) | Fixed; titles and validator-only keys stripped |
+  | Conversation state | 300 | 168 for two orders with tracking and status; up to 4 orders shown | Rebuilt by code from tool results every model call; never written by the model |
+  | Recent history | 1,800 | at most 6 messages, cut only at a customer message | Older turns dropped whole, never a tool call without its result |
+  | This turn's tool results | 1,000 | 233 median, 389 max per result (floor run, tools v2) | Compact JSON, no nulls or empty lists |
+  | **Prompt total** | **4,200** | 1,093–1,611 over a scripted 15-turn chat (full history would reach 4,912) | `fit()` drops the oldest turns until it fits |
+  | Reply | 512 | replies 29 median, 63 max | `max_tokens` on the request |
+
+  Earlier split, replaced: system 500, tools 700, history 5,000, retrieved chunks 1,000, reply 992. History was the
+  biggest share and nothing enforced it; with a state block carrying what older turns said, a long chat no longer
+  needs its whole history in the prompt.
+- **Max size of one user message: 1,500 tokens** — *target*, enforced in code before the model sees the message (about 1,100 words). Over the cap: no model call; reply with a fixed message asking for the main question or the order number. Keeps one message from taking most of the 1,800 history tokens. Built with the guardrails; tested in the baseline eval (a 3,000-token message must get the polite decline, not an error). When the prompt is too long, the oldest history goes first (whole turns); never the system prompt, the tool schemas, the state or the current turn.
 - **Cost per 1,000 conversations: ~$5** — *estimate*. Assumes a GPU at about $1/hour serving about 200 conversations/hour. Replace with the real GPU rate and measured throughput once serving is set up.
 
 ## Risk tests
@@ -261,3 +267,5 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-23 | Empty results say what has not happened, not what is not allowed: "No return has been started for this order." | The first wording, "No return on this order.", was read as "cannot be returned" and caused 6 needless hand-offs (`2026-11-23_floor-tools-v2-first-wording`) |
 | 2026-11-23 | Voided shipping labels (order cancelled after packing) are not shipments in `get_tracking` | 63 seeded orders; the first tools gave out their tracking numbers as if the parcels had shipped |
 | 2026-11-23 | Requirement for the chat UI: the return Confirm card shows the item, the refund estimate **and the reason being claimed** | The model chooses the reason: it proposed an opened speaker the customer found "meh" as `faulty` (`ret-009`), which passes eligibility. The customer's click is the check only if they see what they are confirming |
+| 2026-11-23 | Context budget enforced in code: 4,200 tokens of prompt + 512 for the reply (was a split of 8,192 with 5,000 for history and nothing enforcing it). History trimmed to at most 6 messages, cut only at a customer message; a state block built from tool results at the end of the system prompt; prompt v2 (one tool at a time, use the state); at most two tool calls run per step | Two scripted 15-turn chats with the real 2B model (`evals/reports/02c_context_budget.md`): with state 28/28 turns on the right order, prompts at most 2,119 tokens; the old loop 25/28 and 5,042 tokens; trimming without state 16/28 |
+| 2026-11-23 | The state labels each order by its items (`1080p webcam = order 11904: ...`) and names the last order looked up with its items | The first layout, a bare `Order in focus: 10689` line, made the model look up the focus order when the customer named another item: 9/14, worse than no state (11/14). Chosen on one chat, confirmed on a held-out one (14/14) |

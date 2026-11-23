@@ -1,0 +1,274 @@
+{
+ "script": "b",
+ "customer": 10,
+ "mode": "full",
+ "right_order": 12,
+ "of": 14,
+ "max_prompt_tokens": 4500,
+ "turns": [
+  {
+   "turn": 1,
+   "customer": "hi, my speaker hasnt come yet, order 11652",
+   "want": 11652,
+   "reply": "Your speaker is in transit. It was last scanned at the Ahmedabad hub on November 18, 2026. The delivery estimate is November 15, 2026. Is there anything else I can help you with?",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1080,
+    1274
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 2,
+   "customer": "who is delivering it?",
+   "want": 11652,
+   "reply": "The delivery is handled by SwiftShip. The tracking number is SS70001588.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1337,
+    1531
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 3,
+   "customer": "when was it meant to get here?",
+   "want": 11652,
+   "reply": "It was meant to arrive by November 15, 2026. The last scan was on November 18, 2026, at the Ahmedabad hub.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1567,
+    1761
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 4,
+   "customer": "also i bought a steam iron in july, order 10208. did it reach me?",
+   "want": 10208,
+   "reply": "Your steam iron was delivered to Mumbai. The order was placed on July 11, 2026, and the item is not opened. Is there anything else I can help you with?",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1829,
+    2045
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 5,
+   "customer": "what did i pay for the iron?",
+   "want": 10208,
+   "reply": "You paid ₹1,499 via UPI for the steam iron. There was no shipping fee.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    2100,
+    2316
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 6,
+   "customer": "was that by upi?",
+   "want": 10208,
+   "reply": "Yes, the payment was made via UPI.",
+   "right_order": false,
+   "tools": [],
+   "prompt_tokens": [
+    2350
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 7,
+   "customer": "back to the speaker - where is it right now?",
+   "want": 11652,
+   "reply": "The speaker is currently in transit. It was last scanned at the Ahmedabad hub on November 18, 2026. The delivery estimate is November 15, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    2381,
+    2575
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 8,
+   "customer": "can you give me its tracking id?",
+   "want": 11652,
+   "reply": "The tracking number is SS70001588.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    2632,
+    2826
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 9,
+   "customer": "do you deliver on sundays?",
+   "want": null,
+   "reply": "The help center doesn't cover delivery schedules. I don't have information about delivery days.",
+   "right_order": null,
+   "tools": [
+    [
+     "search_help_center",
+     "{\"query\": \"delivery policy\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    2853,
+    3165
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 10,
+   "customer": "the iron, can i still send it back?",
+   "want": 10208,
+   "reply": "The steam iron cannot be returned. It was delivered on July 15, 2026, which is outside the 15-day return window.",
+   "right_order": true,
+   "tools": [
+    [
+     "propose_return",
+     "{\"order_id\": 10208, \"line_no\": 1, \"reason\": \"changed_mind\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    3199,
+    3337
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 11,
+   "customer": "which courier brought it?",
+   "want": 10208,
+   "reply": "The steam iron was delivered by BlueLine. The tracking number is BL70000208.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    3381,
+    3601
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 12,
+   "customer": "and the speaker, is it late?",
+   "want": 11652,
+   "reply": "The speaker is not late. It was last scanned at the Ahmedabad hub on November 18, 2026, and the delivery estimate is November 15, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    3638,
+    3832
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 13,
+   "customer": "what should i do about it?",
+   "want": 11652,
+   "reply": "I've escalated this issue to the support team. They will contact you shortly.",
+   "right_order": false,
+   "tools": [
+    [
+     "escalate_to_human",
+     "{\"reason\": \"lost_parcel\", \"summary\": \"Customer is concerned about a speaker that hasn't arrived by the delivery date.\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    3888,
+    4002
+   ],
+   "escalated": true
+  },
+  {
+   "turn": 14,
+   "customer": "how much was it?",
+   "want": 11652,
+   "reply": "The speaker costs ₹1,299. There was no shipping fee.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    4029,
+    4246
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 15,
+   "customer": "ok last thing, what was the iron's tracking number?",
+   "want": 10208,
+   "reply": "The steam iron's tracking number is BL70000208.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    4280,
+    4500
+   ],
+   "escalated": false
+  }
+ ]
+}

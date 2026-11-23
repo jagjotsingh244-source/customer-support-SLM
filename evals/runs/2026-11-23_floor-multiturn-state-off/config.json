@@ -1,0 +1,24 @@
+{
+  "run": "2026-11-23_floor-multiturn-state-off",
+  "system": "diagnostic",
+  "provider": "local",
+  "model": "Qwen/Qwen3.5-2B",
+  "adapter": null,
+  "base_url": null,
+  "prompt_version": "v2",
+  "tools_version": "v2",
+  "state": false,
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 3,
+  "commit": "5e35e04+uncommitted changes",
+  "db_host": "localhost:5433",
+  "notes": "Apple M4 (MPS), Transformers 5.23.0, fp16, in-process; tools v2, prompt v2; the multi-turn golden cases; state off",
+  "served_models": [
+    "Qwen/Qwen3.5-2B"
+  ]
+}

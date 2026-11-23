@@ -1,0 +1,141 @@
+{
+ "customer_id": 416,
+ "customer_name": "Pranav Sood",
+ "results": {
+  "list_my_orders": {
+   "orders": [
+    {
+     "order_id": 11904,
+     "placed_on": "2026-11-12",
+     "status": "shipped",
+     "total_inr": "2799.00",
+     "items": "1080p webcam"
+    },
+    {
+     "order_id": 10689,
+     "placed_on": "2026-09-16",
+     "status": "delivered",
+     "total_inr": "947.00",
+     "items": "Screen protector, Tote bag"
+    },
+    {
+     "order_id": 10190,
+     "placed_on": "2026-07-09",
+     "status": "delivered",
+     "total_inr": "1899.00",
+     "items": "USB-C hub"
+    }
+   ]
+  },
+  "get_tracking:11904": {
+   "order_id": 11904,
+   "shipped": true,
+   "order_status": "shipped",
+   "shipments": [
+    {
+     "shipment_id": 1836,
+     "carrier": "SwiftShip",
+     "tracking_no": "SS70001836",
+     "status": "in_transit",
+     "eta": "2026-11-16",
+     "items": "1080p webcam",
+     "last_scan_at": "2026-11-18 13:51:00+05:30",
+     "last_scan_location": "Nagpur hub",
+     "last_scan_event": "arrived_hub"
+    }
+   ]
+  },
+  "get_order_status:11904": {
+   "order_id": 11904,
+   "status": "shipped",
+   "placed_at": "2026-11-12 10:59:00+05:30",
+   "payment_method": "card",
+   "total_inr": "2799.00",
+   "shipping_fee_inr": "0.00",
+   "ship_city": "Mysuru",
+   "items": [
+    {
+     "line_no": 1,
+     "name": "1080p webcam",
+     "category": "electronics",
+     "qty": 1,
+     "unit_price_inr": "2799.00",
+     "opened": false
+    }
+   ],
+   "returns": "No return has been started for this order.",
+   "refunds": "No refund has been issued for this order."
+  },
+  "get_tracking:10689": {
+   "order_id": 10689,
+   "shipped": true,
+   "order_status": "delivered",
+   "shipments": [
+    {
+     "shipment_id": 689,
+     "carrier": "SwiftShip",
+     "tracking_no": "SS70000689",
+     "status": "delivered",
+     "eta": "2026-09-25",
+     "delivered_at": "2026-09-24 12:15:00+05:30",
+     "items": "Screen protector, Tote bag",
+     "last_scan_at": "2026-09-24 12:15:00+05:30",
+     "last_scan_location": "Mysuru",
+     "last_scan_event": "delivered"
+    }
+   ]
+  },
+  "get_order_status:10689": {
+   "order_id": 10689,
+   "status": "delivered",
+   "placed_at": "2026-09-16 10:55:00+05:30",
+   "payment_method": "wallet",
+   "total_inr": "947.00",
+   "shipping_fee_inr": "0.00",
+   "ship_city": "Mysuru",
+   "items": [
+    {
+     "line_no": 1,
+     "name": "Screen protector",
+     "category": "accessories",
+     "qty": 2,
+     "unit_price_inr": "249.00",
+     "opened": false
+    },
+    {
+     "line_no": 2,
+     "name": "Tote bag",
+     "category": "accessories",
+     "qty": 1,
+     "unit_price_inr": "449.00",
+     "opened": false
+    }
+   ],
+   "returns": "No return has been started for this order.",
+   "refunds": "No refund has been issued for this order."
+  },
+  "search_help_center:refund time card": {
+   "results": [
+    {
+     "id": "refunds-payment-methods#card",
+     "title": "Refunds by payment method › Card",
+     "text": "Card refunds go back to the card you paid with and arrive in 5–7 business days\nafter we send them. Your bank may show the refund as a credit on your next\nstatement.",
+     "effective_date": "2026-10-01"
+    },
+    {
+     "id": "refunds-timing#how-long-until-the-refund-reaches-you",
+     "title": "Refund timing › How long until the refund reaches you",
+     "text": "After we send the refund, it reaches you in:\n- UPI: 1–3 business days\n- Wallet: 1–3 business days\n- Card: 5–7 business days\n- Cash on delivery: 5–7 business days by bank transfer, counted from the day\n  you add your bank details\n\nBusiness days are Monday to Friday.",
+     "effective_date": "2026-10-01"
+    },
+    {
+     "id": "refunds-payment-methods#wallet",
+     "title": "Refunds by payment method › Wallet",
+     "text": "Wallet refunds go back to the same wallet and arrive in 1–3 business days after\nwe send them.",
+     "effective_date": "2026-10-01"
+    }
+   ],
+   "note": "Cite results as [kb:<id>]. If none answer the question, say so."
+  }
+ }
+}

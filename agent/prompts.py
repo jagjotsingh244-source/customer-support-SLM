@@ -37,7 +37,15 @@ SYSTEM_V1 = SYSTEM_V0.replace(
     "  results, say the help center does not cover it and offer to connect a teammate.\n")
 assert SYSTEM_V1 != SYSTEM_V0
 
-PROMPTS = {"v0": SYSTEM_V0, "v1": SYSTEM_V1}
+# v2: v1 plus two rules for long conversations, used with the conversation state that the loop appends
+# after the prompt (agent/state.py) and the token budget that drops older history.
+SYSTEM_V2 = SYSTEM_V1 + """
+- Call one tool at a time, and read its result before calling the next.
+- The conversation state below holds facts from tool results earlier in this
+  chat; older messages may be gone. Use it, and call a tool for anything it lacks."""
+assert SYSTEM_V2.startswith(SYSTEM_V1)
+
+PROMPTS = {"v0": SYSTEM_V0, "v1": SYSTEM_V1, "v2": SYSTEM_V2}
 
 
 def system_prompt(today: datetime, customer_name: str, version: str = PROMPT_VERSION) -> str:

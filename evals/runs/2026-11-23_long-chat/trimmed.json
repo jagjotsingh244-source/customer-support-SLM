@@ -1,0 +1,285 @@
+{
+ "script": "a",
+ "customer": 416,
+ "mode": "trimmed",
+ "right_order": 9,
+ "of": 14,
+ "max_prompt_tokens": 1598,
+ "turns": [
+  {
+   "turn": 1,
+   "customer": "where is my order 11904?",
+   "want": 11904,
+   "reply": "Your order 11904 is shipped and is currently in transit. It was last scanned at the Nagpur hub on November 18, 2026. The estimated delivery is November 16, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1094,
+    1291
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 2,
+   "customer": "which courier is it with?",
+   "want": 11904,
+   "reply": "The courier is SwiftShip. Your order 11904 is in transit with tracking number SS70001836.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1355,
+    1286
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 3,
+   "customer": "and when was it supposed to arrive?",
+   "want": 11904,
+   "reply": "The order was supposed to arrive on 2026-11-16.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1330,
+    1288
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 4,
+   "customer": "ok. what about order 10689, did that arrive?",
+   "want": 10689,
+   "reply": "Yes, order 10689 has been delivered. It arrived at Mysuru on September 24, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1329,
+    1324
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 5,
+   "customer": "what was in that one?",
+   "want": 10689,
+   "reply": "The order contains a screen protector and a tote bag.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1366,
+    1314
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 6,
+   "customer": "how much did i pay for it?",
+   "want": 10689,
+   "reply": "You paid ₹947.00 for this order.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1339,
+    1354
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 7,
+   "customer": "going back to the webcam order, where was it last scanned?",
+   "want": 11904,
+   "reply": "The webcam order (10689) was last scanned at Mysuru on September 24, 2026.",
+   "right_order": false,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1386,
+    1321
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 8,
+   "customer": "whats the tracking number again?",
+   "want": 11904,
+   "reply": "The tracking number is SS70000689. The order was delivered on September 24, 2026.",
+   "right_order": false,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1362,
+    1315
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 9,
+   "customer": "how long do refunds take for card payments?",
+   "want": null,
+   "reply": "Card refunds arrive in 5–7 business days after we send them. Your bank may show it as a credit on your next statement.",
+   "right_order": null,
+   "tools": [
+    [
+     "search_help_center",
+     "{\"query\": \"refunds card payment\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1360,
+    1394
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 10,
+   "customer": "can i return the tote bag?",
+   "want": 10689,
+   "reply": "The order is delivered and no return has been started. To return the tote bag, I need to know the reason for the return. Is it faulty, damaged in transit, wrong item, or changed mind?",
+   "right_order": true,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ],
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1435,
+    1311,
+    1598
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 11,
+   "customer": "when was it delivered?",
+   "want": 10689,
+   "reply": "I need to check which order you're referring to. Could you please provide the order number?",
+   "right_order": false,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ]
+   ],
+   "prompt_tokens": [
+    1088,
+    1309
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 12,
+   "customer": "ok and the webcam one, is it delayed?",
+   "want": 11904,
+   "reply": "The webcam is in transit, arriving on 2026-11-16. Is this what you were expecting?",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1344,
+    1290
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 13,
+   "customer": "should i wait or will you do something?",
+   "want": 11904,
+   "reply": "I will escalate this to a teammate. Please wait.",
+   "right_order": false,
+   "tools": [
+    [
+     "escalate_to_human",
+     "{\"reason\": \"not_received\", \"summary\": \"Customer waiting for webcam delivery\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1332,
+    1195
+   ],
+   "escalated": true
+  },
+  {
+   "turn": 14,
+   "customer": "what was the total of that order?",
+   "want": 11904,
+   "reply": "I see three orders. Which order number are you asking about?",
+   "right_order": false,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ]
+   ],
+   "prompt_tokens": [
+    1220,
+    1312
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 15,
+   "customer": "thanks. and the tote bag order, how much was that one?",
+   "want": 10689,
+   "reply": "The tote bag order was ₹449.00.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1345,
+    1360
+   ],
+   "escalated": false
+  }
+ ]
+}

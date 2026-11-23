@@ -1,0 +1,309 @@
+{
+ "script": "b",
+ "customer": 10,
+ "mode": "trimmed",
+ "right_order": 7,
+ "of": 14,
+ "max_prompt_tokens": 2007,
+ "turns": [
+  {
+   "turn": 1,
+   "customer": "hi, my speaker hasnt come yet, order 11652",
+   "want": 11652,
+   "reply": "The shipment shows \"arrived_hub\" at the Ahmedabad hub on November 18, 2026. The delivery estimate was November 15, 2026. The speaker should have arrived. Please confirm if it's received.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ],
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1099,
+    1293,
+    1537
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 2,
+   "customer": "who is delivering it?",
+   "want": 11652,
+   "reply": "Order 12681 is shipped with SwiftShip. Is this the order you're asking about?",
+   "right_order": true,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ],
+    [
+     "get_tracking",
+     "{\"order_id\": 12960}"
+    ],
+    [
+     "get_tracking",
+     "{\"order_id\": 12681}"
+    ]
+   ],
+   "prompt_tokens": [
+    1088,
+    1439,
+    1543,
+    1763
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 3,
+   "customer": "when was it meant to get here?",
+   "want": 11652,
+   "reply": "I need to know which order you're asking about. Could you please provide the order number?",
+   "right_order": false,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ]
+   ],
+   "prompt_tokens": [
+    1091,
+    1442
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 4,
+   "customer": "also i bought a steam iron in july, order 10208. did it reach me?",
+   "want": 10208,
+   "reply": "Yes, your steam iron has been delivered. It was scanned in Mumbai on July 15, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1490,
+    1326
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 5,
+   "customer": "what did i pay for the iron?",
+   "want": 10208,
+   "reply": "You paid ₹1499 for the Steam iron on order 10208.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1366,
+    1307
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 6,
+   "customer": "was that by upi?",
+   "want": 10208,
+   "reply": "Yes, that was by UPI. I can see from the order details that payment was made via UPI. Is there anything else you need help with?",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1339,
+    1305
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 7,
+   "customer": "back to the speaker - where is it right now?",
+   "want": 11652,
+   "reply": "The order 10208 has been delivered. The Steam iron was delivered to Mumbai on July 15, 2026.",
+   "right_order": false,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1354,
+    1314
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 8,
+   "customer": "can you give me its tracking id?",
+   "want": 11652,
+   "reply": "The tracking ID for order 10208 is BL70000208.",
+   "right_order": false,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10208}"
+    ]
+   ],
+   "prompt_tokens": [
+    1359,
+    1311
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 9,
+   "customer": "do you deliver on sundays?",
+   "want": null,
+   "reply": "Based on the help center, delivery to metro cities takes 2–4 days after the order ships. Since today is Friday, November 20, 2026, and orders ship 1–2 days after the first one, delivery to metro cities should arrive by November 22–24. However, I need to check your specific order to confirm.",
+   "right_order": null,
+   "tools": [
+    [
+     "search_help_center",
+     "{\"query\": \"shipping delivery days\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1346,
+    1379
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 10,
+   "customer": "the iron, can i still send it back?",
+   "want": 10208,
+   "reply": "Let me connect you with a teammate.",
+   "right_order": false,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ],
+    [
+     "get_order_status",
+     "{\"order_id\": 12960}"
+    ],
+    [
+     "get_order_status",
+     "{\"order_id\": 12681}"
+    ],
+    [
+     "get_order_status",
+     "{\"order_id\": 12079}"
+    ]
+   ],
+   "prompt_tokens": [
+    1472,
+    1444,
+    1727,
+    2007
+   ],
+   "escalated": true
+  },
+  {
+   "turn": 11,
+   "customer": "which courier brought it?",
+   "want": 10208,
+   "reply": "Which order is the courier for? Please provide the order number.",
+   "right_order": false,
+   "tools": [
+    [
+     "list_my_orders",
+     "{\"limit\": 5}"
+    ]
+   ],
+   "prompt_tokens": [
+    1088,
+    1439
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 12,
+   "customer": "and the speaker, is it late?",
+   "want": 11652,
+   "reply": "The order is in transit and was last scanned on November 18, 2026. The delivery estimate was November 15, 2026, which is in the past. Is this the order you are referring to?",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1466,
+    1285
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 13,
+   "customer": "what should i do about it?",
+   "want": 11652,
+   "reply": "I have escalated your order to the support team. They will contact you shortly.",
+   "right_order": false,
+   "tools": [
+    [
+     "escalate_to_human",
+     "{\"reason\": \"lost_parcel\", \"summary\": \"Order 11652 is late for delivery\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    1349,
+    1200
+   ],
+   "escalated": true
+  },
+  {
+   "turn": 14,
+   "customer": "how much was it?",
+   "want": 11652,
+   "reply": "The order total was ₹1299.00.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1227,
+    1305
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 15,
+   "customer": "ok last thing, what was the iron's tracking number?",
+   "want": 10208,
+   "reply": "The iron's tracking number is SS70001588.",
+   "right_order": false,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11652}"
+    ]
+   ],
+   "prompt_tokens": [
+    1336,
+    1289
+   ],
+   "escalated": false
+  }
+ ]
+}

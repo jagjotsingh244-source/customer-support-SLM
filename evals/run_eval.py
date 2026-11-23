@@ -136,11 +136,16 @@ def run_case(case, client, a, conn) -> dict:
     messages = [{"role": "system", "content": system_prompt(now(), session.customer_name, a.prompt)}]
     turns = []
     dispatch = getattr(tools, "DISPATCH", tools.REGISTRY)   # typed tools validate; the first ones run as they are
+    context = None
+    if a.state:                                     # a fresh state per case; history trimmed to the budget
+        from agent.state import Context, token_counter
+        context = Context(token_counter(tools.TOOLS))
     for n, text in enumerate(case.turns, 1):
         messages.append({"role": "user", "content": text})
         t0 = time.perf_counter()
         reply, tr = run_turn(client, a.model, messages, tools.TOOLS, dispatch, session, max_steps=a.max_calls,
-                             temperature=a.temperature, sampling=SAMPLING[a.sampling], trace_id=f"{case.id}-{n}")
+                             temperature=a.temperature, sampling=SAMPLING[a.sampling], trace_id=f"{case.id}-{n}",
+                             context=context)
         tr["turn_s"] = round(time.perf_counter() - t0, 3)
         tr["reply"] = reply
         turns.append(tr)
@@ -186,7 +191,7 @@ def run(a) -> Path:
         path.write_text("".join(json.dumps(t, default=str, ensure_ascii=False) + "\n" for t in done.values()))
 
     config = {"run": a.run, "system": a.system, "provider": a.provider, "model": a.model, "adapter": a.adapter,
-              "base_url": a.base_url, "prompt_version": a.prompt, "tools_version": a.tools,
+              "base_url": a.base_url, "prompt_version": a.prompt, "tools_version": a.tools, "state": a.state,
               "temperature": a.temperature,
               "sampling": a.sampling, "sampling_settings": SAMPLING[a.sampling], "max_model_calls_per_turn": a.max_calls,
               "case_set": a.cases, "paired_run": a.paired_run, "cases": len(cases), "commit": git_commit(), "db_host": DB_URL.split("@")[-1].split("/")[0],
@@ -401,6 +406,8 @@ def main() -> None:
     ap.add_argument("--tools", choices=["v0", "v1", "v2"], default="v1",
                     help="tool set (v1, v2 need --group rag; v2 needs db/roles.py applied)")
     ap.add_argument("--prompt", choices=list(PROMPTS), default=PROMPT_VERSION, help="system prompt version")
+    ap.add_argument("--state", action="store_true",
+                    help="send the conversation state and only the history that fits the token budget (agent/state.py)")
     ap.add_argument("--cases", choices=["golden", "probes"], default="golden",
                     help="the golden set (107 cases), or the phrasing probes (reported apart)")
     ap.add_argument("--paired-run", help="for --cases probes: a golden run of the same system, to show each "

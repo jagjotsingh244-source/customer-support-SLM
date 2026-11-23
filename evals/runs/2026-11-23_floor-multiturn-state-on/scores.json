@@ -1,0 +1,47 @@
+{
+ "scorer_version": "eval-v3",
+ "scores": {
+  "adv-010": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
+  },
+  "esc-009": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": false,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
+  },
+  "ret-002": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
+  }
+ }
+}

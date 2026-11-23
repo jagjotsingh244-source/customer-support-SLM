@@ -12,9 +12,11 @@ import time
 import uuid
 
 from agent.grounding import grounding_issues, tool_contents_before
+from agent.state import MAX_CALLS_PER_STEP, parse_args
 
 log = logging.getLogger("nova.tools")
 FALLBACK_REPLY = "Let me connect you with a teammate."
+SKIPPED = {"error": "skipped", "detail": "Only two tool calls run at a time. Call one tool, read its result, then the next."}
 # Tool-call markup the server's parser should have turned into tool_calls (Qwen3.5's qwen3_coder format).
 # Seen in the reply text, it means the model tried to call a tool and the parser could not read the call.
 TOOL_MARKUP = ("<tool_call>", "<function=")
@@ -50,7 +52,7 @@ def legacy_dispatch(registry: dict):
 
 
 def run_turn(client, model, messages, tools, registry, session, max_steps=4, temperature=0.2, sampling=None,
-             trace_id=None):
+             trace_id=None, context=None):
     """Answer the last user message in `messages` (appended to in place).
 
     Returns (reply, trace). The trace keeps what the scorecard needs: every tool
@@ -67,6 +69,12 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
     the model meant to call a tool and the parser could not read it. So is an
     empty reply with no call. Both are counted in trace["format_errors"], never
     shown to the customer, and the turn ends with the hand-off reply.
+
+    With a `context` (agent/state.py), each request is the system prompt with the
+    conversation state appended plus the history that fits the token budget, the
+    state is updated from every tool result, and at most two tool calls run per
+    step. `messages` always keeps the whole conversation, for the trace. Without
+    one, every message is sent, as in the first runs.
     """
     trace = {"trace_id": trace_id or uuid.uuid4().hex[:8], "tool_calls": [], "model_calls": [], "escalated": False,
              "format_errors": 0}
@@ -74,9 +82,14 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
     attempts = {}                                   # failed calls per tool in this turn (agent/tools_v2.call_tool)
     turn = sum(1 for m in messages if m.get("role") == "user")
     for _ in range(max_steps):
+        sent = context.prepare(messages) if context else messages
         t0 = time.perf_counter()
-        r = client.chat.completions.create(model=model, messages=messages, tools=tools,
+        r = client.chat.completions.create(model=model, messages=sent, tools=tools,
                                            temperature=temperature, max_tokens=512, **(sampling or {}))
+        if context:
+            trace.setdefault("sent", []).append({"messages": len(sent), "of": len(messages),
+                                                 "budget_tokens": context.count_tokens(sent),
+                                                 "state": sent[0]["content"].split("\n\n")[-1]})
         trace["model_calls"].append({
             "latency_s": round(time.perf_counter() - t0, 3),
             "prompt_tokens": r.usage.prompt_tokens if r.usage else None,
@@ -95,8 +108,13 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
         if not msg.tool_calls:
             trace["grounding"] = grounding_issues(msg.content, tool_contents_before(messages, len(messages)))
             return msg.content, trace
-        for call in msg.tool_calls:
+        for k, call in enumerate(msg.tool_calls):
             name, raw = call.function.name, call.function.arguments
+            if context and k >= MAX_CALLS_PER_STEP:     # one call per step is the rule; two are tolerated
+                messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(SKIPPED)})
+                trace["tool_calls"].append({"name": name, "args": raw, "parsed": False, "result": SKIPPED,
+                                            "ok": False, "latency_ms": 0})
+                continue
             try:
                 parsed = isinstance(json.loads(raw), dict)
             except (json.JSONDecodeError, TypeError):
@@ -107,6 +125,8 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             ok = not (isinstance(result, dict) and "error" in result)
             if name == "escalate_to_human" and ok:
                 trace["escalated"] = True
+            if context:
+                context.state.update(name, parse_args(raw), result)
             # ensure_ascii=False: the model reads "1–3 days" and "₹49", not "1\u20133" and "\u20b949".
             content = json.dumps(result, default=str, ensure_ascii=False)
             trace["tool_calls"].append({"name": name, "args": raw, "parsed": parsed, "result": result,

@@ -32,6 +32,8 @@ import transformers
 from openai.types.chat import ChatCompletion
 from transformers import AutoTokenizer, LogitsProcessor, LogitsProcessorList
 
+from agent.chat_template import for_template as _for_template
+
 TOOL_CALL = re.compile(r"<tool_call>\s*<function=([^>\s]+)>(.*?)</function>\s*</tool_call>", re.S)
 PARAM = re.compile(r"<parameter=([^>\s]+)>(.*?)</parameter>", re.S)
 
@@ -80,21 +82,6 @@ def parse_tool_calls(text: str, tools: list[dict]) -> tuple[str | None, list[dic
                       "function": {"name": name, "arguments": json.dumps(args, ensure_ascii=False)}})
     content = text.split("<tool_call>")[0].strip() if calls else text.strip()
     return content or None, calls
-
-
-def _for_template(messages: list[dict]) -> list[dict]:
-    """OpenAI-style history -> what the Qwen template expects (tool-call arguments as a mapping)."""
-    out = []
-    for m in messages:
-        m = {k: v for k, v in m.items() if k in ("role", "content", "tool_calls", "tool_call_id")}
-        if m.get("content") is None:
-            m["content"] = ""
-        if m.get("tool_calls"):
-            m["tool_calls"] = [{"type": "function", "id": c.get("id"), "function": {
-                "name": c["function"]["name"],
-                "arguments": json.loads(c["function"]["arguments"] or "{}")}} for c in m["tool_calls"]]
-        out.append(m)
-    return out
 
 
 def attach_adapter(model, adapter: str):

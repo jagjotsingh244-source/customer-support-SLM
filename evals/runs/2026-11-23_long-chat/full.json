@@ -1,0 +1,280 @@
+{
+ "script": "a",
+ "customer": 416,
+ "mode": "full",
+ "right_order": 13,
+ "of": 14,
+ "max_prompt_tokens": 5042,
+ "turns": [
+  {
+   "turn": 1,
+   "customer": "where is my order 11904?",
+   "want": 11904,
+   "reply": "Your order 11904 is shipped and is currently in transit. It was last scanned at the Nagpur hub on November 18, 2026. The tracking number is SS70001836.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1075,
+    1272
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 2,
+   "customer": "which courier is it with?",
+   "want": 11904,
+   "reply": "Your order is with SwiftShip. The tracking number is SS70001836.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1335,
+    1532
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 3,
+   "customer": "and when was it supposed to arrive?",
+   "want": 11904,
+   "reply": "Your order was supposed to arrive on November 16, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    1567,
+    1764
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 4,
+   "customer": "ok. what about order 10689, did that arrive?",
+   "want": 10689,
+   "reply": "Order 10689 has been delivered. It was delivered on September 24, 2026, at 12:15 PM. The tracking number is SS70000689.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    1804,
+    2029
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 5,
+   "customer": "what was in that one?",
+   "want": 10689,
+   "reply": "Order 10689 contained a Screen protector and a Tote bag. It was delivered on September 24, 2026, at 12:15 PM. The tracking number is SS70000689.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    2090,
+    2315
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 6,
+   "customer": "how much did i pay for it?",
+   "want": 10689,
+   "reply": "You paid ₹947.00 for order 10689. The payment was made using your wallet, and there was no shipping fee. The order contained 2 Screen protectors and 1 Tote bag.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    2384,
+    2647
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 7,
+   "customer": "going back to the webcam order, where was it last scanned?",
+   "want": 11904,
+   "reply": "The webcam order was last scanned at the Nagpur hub on November 18, 2026, at 1:51 PM. The tracking number is SS70001836.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    2714,
+    2911
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 8,
+   "customer": "whats the tracking number again?",
+   "want": 11904,
+   "reply": "The tracking number for order 11904 is SS70001836.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    2969,
+    3166
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 9,
+   "customer": "how long do refunds take for card payments?",
+   "want": null,
+   "reply": "For card payments, refunds typically take 5–7 business days to arrive. This includes the time it takes for your bank to process the refund and for it to appear on your next statement.",
+   "right_order": null,
+   "tools": [
+    [
+     "search_help_center",
+     "{\"query\": \"refund card payment time\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    3203,
+    3562
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 10,
+   "customer": "can i return the tote bag?",
+   "want": 10689,
+   "reply": "Unfortunately, you cannot return the tote bag. It was delivered on September 24, 2026, which is outside the 15-day return window.",
+   "right_order": true,
+   "tools": [
+    [
+     "propose_return",
+     "{\"order_id\": 10689, \"line_no\": 2, \"reason\": \"changed_mind\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    3614,
+    3753
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 11,
+   "customer": "when was it delivered?",
+   "want": 10689,
+   "reply": "The tote bag was delivered on September 24, 2026, at 12:15 PM.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    3799,
+    4024
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 12,
+   "customer": "ok and the webcam one, is it delayed?",
+   "want": 11904,
+   "reply": "The webcam order is not delayed. It was shipped on November 16, 2026, and is currently in transit, with a last scan at the Nagpur hub on November 18, 2026. The expected delivery date is November 16, 2026.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_tracking",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    4066,
+    4263
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 13,
+   "customer": "should i wait or will you do something?",
+   "want": 11904,
+   "reply": "I've escalated your request for the webcam order status. A teammate will contact you shortly.",
+   "right_order": false,
+   "tools": [
+    [
+     "escalate_to_human",
+     "{\"reason\": \"not_received\", \"summary\": \"Customer wants to know if they should wait for webcam order or if I can take action\"}"
+    ]
+   ],
+   "prompt_tokens": [
+    4343,
+    4458
+   ],
+   "escalated": true
+  },
+  {
+   "turn": 14,
+   "customer": "what was the total of that order?",
+   "want": 11904,
+   "reply": "The total for order 11904 is ₹2,799.00. The payment was made using your card, and there was no shipping fee. The order contains one 1080p webcam.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 11904}"
+    ]
+   ],
+   "prompt_tokens": [
+    4490,
+    4711
+   ],
+   "escalated": false
+  },
+  {
+   "turn": 15,
+   "customer": "thanks. and the tote bag order, how much was that one?",
+   "want": 10689,
+   "reply": "The total for order 10689 is ₹947.00. The payment was made using your wallet, and there was no shipping fee. The order contained 2 Screen protectors and 1 Tote bag.",
+   "right_order": true,
+   "tools": [
+    [
+     "get_order_status",
+     "{\"order_id\": 10689}"
+    ]
+   ],
+   "prompt_tokens": [
+    4779,
+    5042
+   ],
+   "escalated": false
+  }
+ ]
+}
