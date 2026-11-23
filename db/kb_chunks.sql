@@ -25,9 +25,16 @@ CREATE TABLE kb_chunks (
   -- Qwen3.5-2B tokens in path + newline + body: what the chunk costs in
   -- Nova's context budget.
   tokens         INT  NOT NULL CHECK (tokens BETWEEN 1 AND 400),
-  -- Filled when the chunks are embedded; the size matches the embedding model.
-  embedding      vector(384),
+  -- Filled by `rag/index.py --model ...`. No fixed size, so models of any
+  -- dimension can be compared; embedding_model records which one wrote it, and
+  -- search refuses to embed a query with a different model.
+  embedding       vector,
+  embedding_model TEXT,
   tsv tsvector GENERATED ALWAYS AS (to_tsvector('english', path || ' ' || body)) STORED
 );
 
 CREATE INDEX ON kb_chunks USING GIN (tsv);
+-- No vector index: at about 100 rows an exact scan takes well under a
+-- millisecond and never misses a neighbour, while HNSW is approximate. Add one
+-- (and give the column a fixed size) if the help center grows to many
+-- thousands of chunks.

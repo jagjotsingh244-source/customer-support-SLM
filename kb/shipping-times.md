@@ -18,8 +18,9 @@ Mumbai, Delhi, Bengaluru, Chennai, Kolkata, Hyderabad, Pune and Ahmedabad.
 Delivery to all other cities takes 4–7 days after the order ships.
 
 ## Estimated delivery date
-Once your order ships, its tracking page shows an estimated delivery date. Nova
-quotes this date and does not give a different one.
+Once your order ships, its tracking page shows an estimated delivery date: the
+day the order should arrive. Nova quotes this date and does not give a different
+one.
 
 ## If the estimated delivery date has passed
 The shipment is delayed. We cannot promise a new delivery date; Nova shares

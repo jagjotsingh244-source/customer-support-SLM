@@ -22,7 +22,9 @@ send the item back to you.
 
 ## Earbuds, earphones and trimmers
 In-ear earbuds, earphones and beard trimmers are marked "Not returnable" once
-unsealed, for hygiene reasons (see "Items you cannot return").
+unsealed, for hygiene reasons (see "Items you cannot return"). If one arrives
+faulty, damaged in transit or as the wrong item, tell us within 7 days of
+delivery and we replace it after inspection.
 
 ## After the 7-day return window
 Electronics more than 7 days after delivery cannot be returned. If the item

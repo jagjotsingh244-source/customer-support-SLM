@@ -31,7 +31,7 @@ return window and proposes a return. The return starts only after you confirm
 it.
 
 ## Pickup
-We collect the item from your delivery address 1–2 days after you confirm the
+We pick up the item from your delivery address 1–2 days after you confirm the
 return. Keep the item in the condition you received it, with all parts.
 
 ## Inspection

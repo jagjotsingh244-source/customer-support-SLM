@@ -9,7 +9,8 @@ tags: [payments, failed-payments, refunds]
 
 ## Money debited but no order
 Sometimes a payment fails after your bank has debited the money. When this
-happens, no order is created and nothing will ship.
+happens, no order is created and nothing will ship. The money comes back
+automatically within 5–7 business days (see "Automatic reversal").
 
 ## Automatic reversal
 Money debited for a failed payment comes back automatically within 5–7 business

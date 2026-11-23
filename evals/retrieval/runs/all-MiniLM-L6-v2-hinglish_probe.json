@@ -1,0 +1,775 @@
+{
+ "model": "sentence-transformers/all-MiniLM-L6-v2",
+ "query_prefix": false,
+ "file": "hinglish_probe.jsonl",
+ "query_ms_median": 5.3193336352705956,
+ "summary": {
+  "vector": {
+   "recall@3": 0.5,
+   "mrr": 0.2708333333333333,
+   "by_segment": {
+    "customer_words": 0.5
+   }
+  },
+  "fulltext_all": {
+   "recall@3": 0.0,
+   "mrr": 0.0,
+   "by_segment": {
+    "customer_words": 0.0
+   }
+  },
+  "fulltext_any": {
+   "recall@3": 0.25,
+   "mrr": 0.3541666666666667,
+   "by_segment": {
+    "customer_words": 0.25
+   }
+  },
+  "hybrid_all": {
+   "recall@3": 0.5,
+   "mrr": 0.2708333333333333,
+   "by_segment": {
+    "customer_words": 0.5
+   }
+  },
+  "hybrid_any": {
+   "recall@3": 0.5,
+   "mrr": 0.4375,
+   "by_segment": {
+    "customer_words": 0.5
+   }
+  }
+ },
+ "questions": [
+  {
+   "id": "ret-h01",
+   "source": "customer_words:hinglish",
+   "question": "refund kab aayega, paisa wapas kab milega",
+   "answers": [
+    [
+     "refunds-timing#how-long-until-the-refund-reaches-you",
+     "refunds-timing#if-the-refund-has-not-arrived"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.4120318994484097
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.40241439313717264
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.37797395849538606
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.36946408516596996
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.3551404821537776
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.34207711408683916
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.33542078696117694
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.33051560389623547
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.3269054901172841
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.31797134065969923
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.013790939
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.013790939
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.013790939
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.013790939
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.013790939
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.031099324975891997
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.030621785881252923
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.03057889822595705
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.03036576949620428
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.03030998851894374
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.02970950704225352
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.02943722943722944
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.02862400327131466
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.02844551282051282
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.028309409888357256
+     }
+    ]
+   }
+  },
+  {
+   "id": "ret-h02",
+   "source": "customer_words:hinglish",
+   "question": "order cancel karna hai",
+   "answers": [
+    [
+     "cancellations#before-the-order-ships",
+     "cancellations#after-the-order-ships"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.5295235479445997
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.525591282511278
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.5006360709288087
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.40619001351654527
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.4012812791727449
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.3931754954844122
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.3608864330717074
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.3603762637896073
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.3562868408814859
+     },
+     {
+      "chunk_id": "payment-failures#payment-methods",
+      "score": 0.30902360027887876
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.043880515
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.042322703
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.041241944
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.040634014
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "order-tracking#shipment-statuses",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.035884585
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "payment-failures#payment-methods",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.032266458495966696
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.03201844262295082
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.0315136476426799
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.0315136476426799
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.030776515151515152
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.029644268774703556
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.029411764705882353
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.02877846790890269
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.028693528693528692
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.027783137179239824
+     }
+    ]
+   }
+  },
+  {
+   "id": "ret-h03",
+   "source": "customer_words:hinglish",
+   "question": "mera order kab aayega",
+   "answers": [
+    [
+     "shipping-times#estimated-delivery-date",
+     "order-tracking#where-to-find-tracking",
+     "shipping-times#delivery-time-to-metro-cities",
+     "shipping-times#delivery-time-to-other-cities"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.25645089913758345
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.24637410800534265
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.24392471444382424
+     },
+     {
+      "chunk_id": "order-tracking#where-to-find-tracking",
+      "score": 0.2405318010487324
+     },
+     {
+      "chunk_id": "account-and-address#signing-in",
+      "score": 0.24005746126003769
+     },
+     {
+      "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
+      "score": 0.23794961828444106
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.23588310969224335
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.2284521379605574
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.2281632342387211
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.224654300490278
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.022244222
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.022244222
+     },
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "order-tracking#orders-in-more-than-one-shipment",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "order-tracking#where-to-find-tracking",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "privacy#other-people-s-orders",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.020686409
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.020686409
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.020686409
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "order-tracking#where-to-find-tracking",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "account-and-address#signing-in",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "order-tracking#where-to-find-tracking",
+      "score": 0.030776515151515152
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.030414746543778803
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.029551337359792925
+     },
+     {
+      "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
+      "score": 0.02923602219376867
+     },
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.02886002886002886
+     },
+     {
+      "chunk_id": "privacy#other-people-s-orders",
+      "score": 0.02843888664784187
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.028373015873015873
+     },
+     {
+      "chunk_id": "order-tracking#orders-in-more-than-one-shipment",
+      "score": 0.027884615384615386
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.027364110201042444
+     }
+    ]
+   }
+  },
+  {
+   "id": "ret-h04",
+   "source": "customer_words:hinglish",
+   "question": "paise kat gaye par order nahi hua",
+   "answers": [
+    [
+     "payment-failures#money-debited-but-no-order",
+     "payment-failures#automatic-reversal"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.19958404608058145
+     },
+     {
+      "chunk_id": "order-tracking#carriers-and-tracking-numbers",
+      "score": 0.18303099820110402
+     },
+     {
+      "chunk_id": "order-tracking#shipment-statuses",
+      "score": 0.17489909978525076
+     },
+     {
+      "chunk_id": "payment-failures#payment-methods",
+      "score": 0.17242874667473185
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.1668461461754953
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.16026071726498914
+     },
+     {
+      "chunk_id": "shipping-split-shipments#tracking-each-shipment",
+      "score": 0.15527068643148656
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.15161873082891342
+     },
+     {
+      "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
+      "score": 0.14794323183121139
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.14745112374716285
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.012710984
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.012710984
+     },
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.012363597
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.012363597
+     },
+     {
+      "chunk_id": "order-tracking#orders-in-more-than-one-shipment",
+      "score": 0.012363597
+     },
+     {
+      "chunk_id": "order-tracking#where-to-find-tracking",
+      "score": 0.012363597
+     },
+     {
+      "chunk_id": "privacy#other-people-s-orders",
+      "score": 0.012363597
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.011820805
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.011820805
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.011820805
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "order-tracking#carriers-and-tracking-numbers",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "order-tracking#shipment-statuses",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "payment-failures#payment-methods",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "shipping-split-shipments#tracking-each-shipment",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.03128054740957967
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.030330882352941176
+     },
+     {
+      "chunk_id": "order-tracking#orders-in-more-than-one-shipment",
+      "score": 0.029273504273504274
+     },
+     {
+      "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
+      "score": 0.028577260665441927
+     },
+     {
+      "chunk_id": "order-tracking#shipment-statuses",
+      "score": 0.02853124372111714
+     },
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.028373015873015873
+     },
+     {
+      "chunk_id": "order-tracking#where-to-find-tracking",
+      "score": 0.028309409888357256
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.02797339593114241
+     },
+     {
+      "chunk_id": "privacy#other-people-s-orders",
+      "score": 0.02774588595484118
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.02744360902255639
+     }
+    ]
+   }
+  }
+ ]
+}

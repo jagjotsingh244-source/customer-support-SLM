@@ -1,0 +1,6941 @@
+{
+ "model": "BAAI/bge-small-en-v1.5",
+ "query_prefix": true,
+ "file": "model_queries.jsonl",
+ "query_ms_median": 5.129958037286997,
+ "summary": {
+  "vector": {
+   "recall@3": 0.918918918918919,
+   "mrr": 0.831081081081081,
+   "by_segment": {
+    "gemini": 0.96,
+    "qwen2b": 0.8333333333333334
+   }
+  },
+  "fulltext_all": {
+   "recall@3": 0.2972972972972973,
+   "mrr": 0.2972972972972973,
+   "by_segment": {
+    "gemini": 0.32,
+    "qwen2b": 0.25
+   }
+  },
+  "fulltext_any": {
+   "recall@3": 0.7297297297297297,
+   "mrr": 0.7507829257829258,
+   "by_segment": {
+    "gemini": 0.8,
+    "qwen2b": 0.5833333333333334
+   }
+  },
+  "hybrid_all": {
+   "recall@3": 0.8918918918918919,
+   "mrr": 0.8288288288288289,
+   "by_segment": {
+    "gemini": 0.96,
+    "qwen2b": 0.75
+   }
+  },
+  "hybrid_any": {
+   "recall@3": 0.8918918918918919,
+   "mrr": 0.8558558558558559,
+   "by_segment": {
+    "gemini": 0.96,
+    "qwen2b": 0.75
+   }
+  }
+ },
+ "questions": [
+  {
+   "id": "mq-qwen2b-001",
+   "source": "qwen2b:pol-001:2026-11-22_floor",
+   "question": "return policy bedsheet",
+   "answers": [
+    [
+     "returns-general#return-window"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.6759603409814476
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.660252273656232
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6498668223857613
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.6494909346710568
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.6401884221581406
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.6399056148641614
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.6364398652720703
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.6358706951141538
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.6288984485450192
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.6262817828319376
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.030221859
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.028848393
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.028848393
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.028848393
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.028848393
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.03154495777446597
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.030621785881252923
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.030330882352941176
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.03030998851894374
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.029644268774703556
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.029206349206349208
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.028991596638655463
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.02804284323271665
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.027583600982429624
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-002",
+   "source": "qwen2b:pol-002:2026-11-22_floor",
+   "question": "return electronics date",
+   "answers": [
+    [
+     "returns-electronics#return-window",
+     "returns-general#return-window",
+     "returns-electronics#after-the-7-day-return-window"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.7561601851081972
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.7493469639639506
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.7444394078516621
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.7430819188180449
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.7176354573043103
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.673987825275204
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.6434730674906425
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.621341466903691
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.620186246644632
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.6152778038548126
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.31298158
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.07317641
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.057803735
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.05643027
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.0499232
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.04911263
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.047846112
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.045594532
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.0315136476426799
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.03149801587301587
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.031009615384615385
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.029644268774703556
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.029418126757516764
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.029411764705882353
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.028665028665028666
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.027402402402402402
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-003",
+   "source": "qwen2b:pol-003:2026-11-22_floor",
+   "question": "return policy headphones opened",
+   "answers": [
+    [
+     "returns-electronics#opened-electronics",
+     "returns-general#return-window"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.7395807284241728
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.7019319356639346
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.6832474092540048
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.6719522285390268
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6623756088242297
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6564649147848837
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.6554891271743465
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6501765444927381
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.6494717195472637
+     },
+     {
+      "chunk_id": "returns-non-returnable#how-to-tell",
+      "score": 0.6467174694920366
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.041372817
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.037864573
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.0374424
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.0374424
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.022244222
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.022244222
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.022244222
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.021636294
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-non-returnable#how-to-tell",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.032266458495966696
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.0315136476426799
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.03128054740957967
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.030798389007344232
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.02970950704225352
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.029418126757516764
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.02938045560996381
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.029083245521601686
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.028125
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.02786377708978328
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-004",
+   "source": "qwen2b:pol-004:2026-11-22_floor",
+   "question": "return window order date delivery date",
+   "answers": [
+    [
+     "returns-general#when-the-return-window-starts",
+     "shipping-split-shipments#return-window-for-split-orders"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.7751518487930298
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.7722945213317871
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.7116830348968506
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6832328642378114
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.6774065090771623
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6699002981185913
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.6687787177066875
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.668243944644928
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.6541516390948522
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.6502012014389038
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.7744186
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.74942404
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.6247362
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.070333794
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.06687198
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.06687198
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.060454972
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.04694548
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.046503045
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.045489836
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.045256797
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.042112462
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.041626118
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.031746031746031744
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.03076923076923077
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.03055037313432836
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.029910714285714287
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.029857397504456328
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.02923602219376867
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.028985507246376812
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.028814262023217248
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-008",
+   "source": "qwen2b:pol-008:2026-11-22_floor",
+   "question": "return pickup time",
+   "answers": [
+    [
+     "returns-general#pickup"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.7401483500092252
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.7256581239990706
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.71971863508225
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.717236561610495
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.7145570389266374
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.7007506311387213
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.6879055090006992
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6821339536985144
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.6625340379794871
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.6457361945116813
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.070321985
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.061383694
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.06079271
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.06079271
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.0499232
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.04911263
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.047846112
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.030221859
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.029658964
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.03201844262295082
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.03201844262295082
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.030834914611005692
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.030798389007344232
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.029571646010002173
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.028717948717948718
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.02800626713670192
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.027364110201042444
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.025816122584943372
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-009",
+   "source": "qwen2b:pol-009:2026-11-22_floor",
+   "question": "return policy money back timing",
+   "answers": [
+    [
+     "refunds-timing#when-we-send-a-refund-for-a-return",
+     "returns-general#inspection"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "payment-failures#automatic-reversal",
+      "score": 0.7041229429318288
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.7039856071489375
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.6979770660400391
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.6964611411094666
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.6912880539894104
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.6911227475258462
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.6903310191236761
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.6880396194434405
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.6865054368972778
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.6851761937141418
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.030396353
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.029953921
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.029467577
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.028707668
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.028707668
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.02735672
+     },
+     {
+      "chunk_id": "payment-failures#automatic-reversal",
+      "score": 0.024317084
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.024317084
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.024317084
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.018133115
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "payment-failures#automatic-reversal",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "payment-failures#automatic-reversal",
+      "score": 0.03131881575727918
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.030886196246139225
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.030330882352941176
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.02976190476190476
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.0288981288981289
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.028717948717948718
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.027984344422700588
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.02744360902255639
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.016129032258064516
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-011",
+   "source": "qwen2b:pol-011:2026-11-22_floor",
+   "question": "money back card refund days",
+   "answers": [
+    [
+     "refunds-payment-methods#card",
+     "refunds-timing#how-long-until-the-refund-reaches-you"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.8054204939180497
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.7933132884893805
+     },
+     {
+      "chunk_id": "refunds-payment-methods#wallet",
+      "score": 0.7610713612714034
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.7559468375428572
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.7468332425703662
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.7454973984810138
+     },
+     {
+      "chunk_id": "payment-failures#automatic-reversal",
+      "score": 0.7158539935219881
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.7156547094686444
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.7133900906625391
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.7077599131083645
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.057415336
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.046840783
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.042554896
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.04086621
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.04086621
+     },
+     {
+      "chunk_id": "payment-failures#automatic-reversal",
+      "score": 0.039515264
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.03951526
+     },
+     {
+      "chunk_id": "refunds-payment-methods#wallet",
+      "score": 0.03951526
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.036475625
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.036475625
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "refunds-payment-methods#wallet",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "payment-failures#automatic-reversal",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "refunds-payment-methods#wallet",
+      "score": 0.03057889822595705
+     },
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.03047794966520434
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.030090497737556562
+     },
+     {
+      "chunk_id": "payment-failures#automatic-reversal",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.029957522915269395
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.029418126757516764
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.029273504273504274
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.028958333333333332
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-012",
+   "source": "qwen2b:pol-012:2026-11-22_floor",
+   "question": "cash on delivery refund",
+   "answers": [
+    [
+     "refunds-payment-methods#cash-on-delivery",
+     "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+     "refunds-timing#how-long-until-the-refund-reaches-you"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.8679344294188462
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.8614144059623704
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.8483882311849043
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.8203117679806309
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.8110842929978079
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.7924757847218826
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.7624937862172636
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.7551727586778744
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.7541466052357483
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.7394918513903848
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.83413345
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.699773
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.67937624
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.32978117
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.32491216
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.30392763
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.26691276
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.10084213
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.08401215
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.07950898
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.078242466
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.070924826
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.06937686
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.06937686
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.068110354
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.06079271
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.055163756
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.055163756
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.03125
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.03076923076923077
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.030303030303030304
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.028991596638655463
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.028814262023217248
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.014705882352941176
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.031009615384615385
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.030776515151515152
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.030536130536130537
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.029418126757516764
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.029211087420042643
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.028790389395194696
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.02877846790890269
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-016",
+   "source": "qwen2b:pol-016:2026-11-22_floor",
+   "question": "free delivery threshold",
+   "answers": [
+    [
+     "shipping-charges#free-shipping",
+     "shipping-charges#orders-of-499-or-less"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.7220324112196227
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.673535168170929
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.664365430810129
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.6314027905464172
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.6251068711280823
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.6236715316772461
+     },
+     {
+      "chunk_id": "shipping-split-shipments#shipping-charge",
+      "score": 0.6203345656394958
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.6192882061004639
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.6188411712646484
+     },
+     {
+      "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
+      "score": 0.6092142695656865
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.025330296
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.025330296
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.025330296
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#no-new-delivery-date-for-delayed-shipments",
+      "score": 0.025330296
+     },
+     {
+      "chunk_id": "payment-failures#payment-methods",
+      "score": 0.025330296
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "shipping-split-shipments#shipping-charge",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "cash-on-delivery#orders-in-more-than-one-shipment",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.031009615384615385
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.030886196246139225
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.030834914611005692
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.03009207275993712
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.02928692699490662
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.028205128205128206
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.027417840375586856
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.0259915611814346
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.015873015873015872
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-022",
+   "source": "qwen2b:pol-022:2026-11-22_floor",
+   "question": "warranty cracked screen",
+   "answers": [
+    [
+     "warranty#what-the-warranty-covers"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.7114338278770447
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.6938338279724121
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6669983466268583
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.6593202352523804
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.6544238719000751
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.634518065125828
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6216681599617004
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.6088042259216309
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.6070783084999027
+     },
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.5962631106376648
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.025330296
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.025330296
+     },
+     {
+      "chunk_id": "contacting-a-human#when-nova-hands-off",
+      "score": 0.020264236
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.020264236
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.0317780580075662
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.03154495777446597
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.0315136476426799
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.03149801587301587
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.03057889822595705
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.029850746268656716
+     },
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.02943722943722944
+     },
+     {
+      "chunk_id": "contacting-a-human#when-nova-hands-off",
+      "score": 0.027650648360030512
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.014705882352941176
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-023",
+   "source": "qwen2b:pol-023:2026-11-22_floor",
+   "question": "warranty start date",
+   "answers": [
+    [
+     "warranty#when-the-warranty-starts"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.8323559761047363
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.7432005405426025
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.7422107304460259
+     },
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.7155035138130188
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.7107203006744385
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.6853495052665189
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6764254166826369
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.6641559600830078
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6631865501403809
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.6472896916231263
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.61855817
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.07317641
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#no-new-delivery-date-for-delayed-shipments",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.027581878
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.03125763125763126
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.030834914611005692
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.030621785881252923
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.029957522915269395
+     },
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.02970950704225352
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.02967032967032967
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.029513888888888888
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.02819138376017471
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-qwen2b-025",
+   "source": "qwen2b:pol-025:2026-11-22_floor",
+   "question": "return bedsheet refund UPI",
+   "answers": [
+    [
+     "returns-general#return-window"
+    ],
+    [
+     "refunds-payment-methods#upi",
+     "refunds-timing#how-long-until-the-refund-reaches-you"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.7455046035937197
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.7202566766279931
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.697577631762315
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.6969191793299749
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.6947171455958957
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6735773080369332
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.6650653284710302
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.6554907169645702
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.6503577469926484
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.6487314733150958
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.040634014
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.040634014
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.0374424
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.035884585
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.0317780580075662
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.030886196246139225
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.030621785881252923
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.030330882352941176
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.03015873015873016
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.029850746268656716
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.02928692699490662
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.029273504273504274
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.028309409888357256
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.015873015873015872
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-001",
+   "source": "gemini:pol-001:2026-11-22_ceiling",
+   "question": "return policy bedsheet days",
+   "answers": [
+    [
+     "returns-general#return-window"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.7038236646704802
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6727900906080062
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.6589796739512588
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6566226678080165
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.6553549961851539
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.6488444386535225
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.6417294931927175
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.6408395958197
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6374215889745503
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.6282686625478937
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.041664116
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.0341959
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.030303030303030304
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.029850746268656716
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.028717948717948718
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.028693528693528692
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.02694394213381555
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.02658450704225352
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.02658450704225352
+     },
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.01639344262295082
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-002",
+   "source": "gemini:pol-002:2026-11-22_ceiling",
+   "question": "return electronics policy",
+   "answers": [
+    [
+     "returns-electronics#return-window",
+     "returns-general#return-window",
+     "returns-electronics#after-the-7-day-return-window"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.7634127367559894
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.7599322056729916
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.7595032166842494
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.755120903864016
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.733826182300633
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.7002057641805939
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.6936405690419533
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6924925836177918
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.6664103070512898
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.6656488775296999
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.057803735
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.05643027
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.0499232
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.047846112
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.029658964
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.032266458495966696
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.03125763125763126
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.031009615384615385
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.02904040404040404
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.02904040404040404
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.02900988017658188
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.027692895339954164
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.027650648360030512
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-003",
+   "source": "gemini:pol-003:2026-11-22_ceiling",
+   "question": "return opened headphones electronics changed mind",
+   "answers": [
+    [
+     "returns-electronics#opened-electronics",
+     "returns-general#return-window"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.7496801167917195
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.7440660665094345
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.705229124582682
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.6934167377253507
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6787883841630338
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.677426815032959
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.6634957394900489
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.6598715782165527
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.6577651492743354
+     },
+     {
+      "chunk_id": "returns-non-returnable#how-to-tell",
+      "score": 0.6477704258101936
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.062270314
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.03975449
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.039033987
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.035093717
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.035093717
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.034055177
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.026456086
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.026456086
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.026456086
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.0249616
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-non-returnable#how-to-tell",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.03125763125763126
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.03047794966520434
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.02970950704225352
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.029411764705882353
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.029386529386529386
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.029083245521601686
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-004",
+   "source": "gemini:pol-004:2026-11-22_ceiling",
+   "question": "return window delivery date order date",
+   "answers": [
+    [
+     "returns-general#when-the-return-window-starts",
+     "shipping-split-shipments#return-window-for-split-orders"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.7785936594009399
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.7743087410926819
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.709449052810669
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6820524538175006
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.6785449577245154
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.670373797416687
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6665172576904297
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.6630591746919636
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.6608692609745717
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.6476571559906006
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.7744186
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.74942404
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.6247362
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.070333794
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.06687198
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.06687198
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.060454972
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.04694548
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.046503045
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.045489836
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.045256797
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.042112462
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.041626118
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.031746031746031744
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.03076923076923077
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.03055037313432836
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.030303030303030304
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.029910714285714287
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.02900988017658188
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.028985507246376812
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.028594771241830064
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-005",
+   "source": "gemini:pol-005:2026-11-22_ceiling",
+   "question": "return window split shipment delivery date",
+   "answers": [
+    [
+     "returns-general#when-the-return-window-starts",
+     "shipping-split-shipments#return-window-for-split-orders"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.8743988275527954
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.8000898361206055
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.7632352709770203
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.7490021736024528
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.7290841775586724
+     },
+     {
+      "chunk_id": "shipping-split-shipments#tracking-each-shipment",
+      "score": 0.7086855346747927
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.7001545011905146
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6880828347230805
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.6825770139694214
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.6818419112421819
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.9192465
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.693432
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.070924826
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.06585877
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.06114452
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.046720322
+     },
+     {
+      "chunk_id": "shipping-split-shipments#tracking-each-shipment",
+      "score": 0.04482055
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.044187292
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#no-new-delivery-date-for-delayed-shipments",
+      "score": 0.040247023
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.037908196
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "shipping-split-shipments#tracking-each-shipment",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.031746031746031744
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.030776515151515152
+     },
+     {
+      "chunk_id": "shipping-split-shipments#tracking-each-shipment",
+      "score": 0.030536130536130537
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.028991596638655463
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.028958333333333332
+     },
+     {
+      "chunk_id": "cancellations#split-orders",
+      "score": 0.028814262023217248
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.028381642512077296
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.02761904761904762
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-006",
+   "source": "gemini:pol-006:2026-11-22_ceiling",
+   "question": "return earphones policy",
+   "answers": [
+    [
+     "returns-non-returnable#which-items-are-not-returnable",
+     "returns-electronics#earbuds-earphones-and-trimmers"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.7848423975893977
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.7133800770825153
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.6752857372335147
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6618535921748171
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6551662488232207
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6447921607022201
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.6374754309654281
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.6329998592734432
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.6318212935871341
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.6311630450292772
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.05498926
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.030221859
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.028848393
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.028848393
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.028848393
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.03125763125763126
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.030090497737556562
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.029957522915269395
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.02862400327131466
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.028484848484848484
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.028381642512077296
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.028309409888357256
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.028125
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-007",
+   "source": "gemini:pol-007:2026-11-22_ceiling",
+   "question": "non-returnable damaged broken arrives trimmer",
+   "answers": [
+    [
+     "returns-non-returnable#faulty-damaged-or-wrong-items",
+     "returns-electronics#earbuds-earphones-and-trimmers"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.7018415509556812
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.679617424034035
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.6715549230575562
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#damaged-on-arrival",
+      "score": 0.660592954088102
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.6507545293276987
+     },
+     {
+      "chunk_id": "returns-non-returnable#how-to-tell",
+      "score": 0.6447963330271057
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.6415827465529071
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.6403925800557494
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.6220145225524902
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.6034245727405217
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.040045988
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#damaged-on-arrival",
+      "score": 0.034497447
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.023219436
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.022676645
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.021711681
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.021395657
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.020505477
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.019540515
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.019540515
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.012952225
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#damaged-on-arrival",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-non-returnable#how-to-tell",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#damaged-on-arrival",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.03125763125763126
+     },
+     {
+      "chunk_id": "returns-non-returnable#which-items-are-not-returnable",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.029211087420042643
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.028693528693528692
+     },
+     {
+      "chunk_id": "returns-general#items-you-cannot-return",
+      "score": 0.028381642512077296
+     },
+     {
+      "chunk_id": "returns-non-returnable#change-of-mind",
+      "score": 0.028371628371628373
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.028174603174603175
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.02803921568627451
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-008",
+   "source": "gemini:pol-008:2026-11-22_ceiling",
+   "question": "return pickup timing after confirm",
+   "answers": [
+    [
+     "returns-general#pickup"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.7115418314933828
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.7059423748220441
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.7050307217258658
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.6897503918558235
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.6707448167052767
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6706396940922467
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6685702007156742
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.667314509589346
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.6615666948815275
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.6604319810867356
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.051082764
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.049394075
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.0374424
+     },
+     {
+      "chunk_id": "returns-general#why-a-return-can-be-rejected",
+      "score": 0.0374424
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.03683447
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "account-and-address#changing-your-phone-number-or-email",
+      "score": 0.030396355
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.022666395
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.03149801587301587
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.03047794966520434
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.030330882352941176
+     },
+     {
+      "chunk_id": "returns-general#how-to-start-a-return",
+      "score": 0.02967032967032967
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.02943722943722944
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.02803921568627451
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.027425373134328357
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.02632034632034632
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-009",
+   "source": "gemini:pol-009:2026-11-22_ceiling",
+   "question": "refund timeline after return",
+   "answers": [
+    [
+     "refunds-timing#when-we-send-a-refund-for-a-return",
+     "returns-general#inspection"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.771482013806165
+     },
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.7584818375563104
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.747601978695224
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.7446801288330597
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.743310354450654
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.741353414695067
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.740370445814399
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.7397526127026267
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.7393601161050835
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.7360601267850475
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.054178685
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.054178685
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.052912172
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.0499232
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.047846112
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.047846112
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.045594532
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.032266458495966696
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.031099324975891997
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.02928692699490662
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.02904040404040404
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.02900988017658188
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.028790389395194696
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.02844551282051282
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.027984344422700588
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.025478740668614087
+     },
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.016129032258064516
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-010",
+   "source": "gemini:pol-010:2026-11-22_ceiling",
+   "question": "UPI refund",
+   "answers": [
+    [
+     "refunds-payment-methods#upi",
+     "refunds-timing#how-long-until-the-refund-reaches-you"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.8332055906530877
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.7820922266189931
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.7460668087005615
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.7429453134536743
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.6727837324142456
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.6535255908966064
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.6461420481035698
+     },
+     {
+      "chunk_id": "payment-failures#payment-methods",
+      "score": 0.6444022059440613
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.6410664747874216
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.6368881247572985
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.41149223
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.113909446
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.008294815
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.079368256
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.07176917
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.07176917
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.04327259
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.04327259
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.04327259
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.04327259
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.04327259
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.041372817
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.041372817
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "payment-failures#payment-methods",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.031746031746031744
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.029631255487269536
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.029513888888888888
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.029083245521601686
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.0288981288981289
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.02877846790890269
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.028665028665028666
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-011",
+   "source": "gemini:pol-011:2026-11-22_ceiling",
+   "question": "refund card timeline days",
+   "answers": [
+    [
+     "refunds-payment-methods#card",
+     "refunds-timing#how-long-until-the-refund-reaches-you"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.8162461032720757
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.7673835754394531
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.743436336517334
+     },
+     {
+      "chunk_id": "refunds-payment-methods#wallet",
+      "score": 0.7408895050949167
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.7274985638262605
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.7247199580240288
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.708385859920285
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.7066301878315111
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.7022320032119751
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.6888947857743806
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.05855098
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.056570992
+     },
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.03683447
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "refunds-payment-methods#wallet",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "returns-general#inspection",
+      "score": 0.0341959
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "refunds-payment-methods#wallet",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.032266458495966696
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.032266458495966696
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.030776515151515152
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.03076923076923077
+     },
+     {
+      "chunk_id": "refunds-payment-methods#wallet",
+      "score": 0.030117753623188404
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.029418126757516764
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.029411764705882353
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.028484848484848484
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.027912386121341344
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-012",
+   "source": "gemini:pol-012:2026-11-22_ceiling",
+   "question": "cash on delivery refund",
+   "answers": [
+    [
+     "refunds-payment-methods#cash-on-delivery",
+     "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+     "refunds-timing#how-long-until-the-refund-reaches-you"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.8679344294188462
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.8614144059623704
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.8483882311849043
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.8203117679806309
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.8110842929978079
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.7924757847218826
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.7624937862172636
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.7551727586778744
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.7541466052357483
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.7394918513903848
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.83413345
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.699773
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.67937624
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.32978117
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.32491216
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.30392763
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.26691276
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.10084213
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.08401215
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.07950898
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.078242466
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.070924826
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.06937686
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.06937686
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.068110354
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.06079271
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.055163756
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.055163756
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.03125
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.03076923076923077
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.030303030303030304
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.028991596638655463
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.028814262023217248
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.014705882352941176
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.031009615384615385
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.030776515151515152
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.030536130536130537
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.029418126757516764
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.029211087420042643
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.028790389395194696
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.02877846790890269
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-013",
+   "source": "gemini:pol-013:2026-11-22_ceiling",
+   "question": "awaiting bank details refund",
+   "answers": [
+    [
+     "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+     "cash-on-delivery#refunds-for-cash-on-delivery-orders"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.8442146023320111
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.7891233924292539
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.7590642488839489
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.7588380801331428
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.7378474693848932
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.7085561118820884
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.6969821064764892
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.6946383921694279
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.6865436639351747
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.684761725039689
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.90728337
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.82866436
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.080107056
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.07915717
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.060370535
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.056570996
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.054882307
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "privacy#only-your-own-orders",
+      "score": 0.030396355
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.021636294
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.021636294
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.031746031746031744
+     },
+     {
+      "chunk_id": "privacy#bank-details",
+      "score": 0.03125
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.03076923076923077
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.02943722943722944
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.029198635976129584
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.028594771241830064
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.027242401779095628
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-014",
+   "source": "gemini:pol-014:2026-11-22_ceiling",
+   "question": "refund different UPI ID closed account",
+   "answers": [
+    [
+     "refunds-payment-methods#where-the-refund-goes"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.8197858548419649
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.7939327604850817
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.7244957253637491
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.718993144095354
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.6403288292296846
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.6331825693628109
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.631289921326047
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.6292983360353118
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.628677650847715
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.6277650220534203
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.05431941
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.036588203
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.023923056
+     },
+     {
+      "chunk_id": "privacy#only-your-own-orders",
+      "score": 0.020264236
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.014424196
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.013790939
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "payment-failures#if-the-money-has-not-come-back",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "refunds-payment-methods#upi",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "refunds-timing#how-long-until-the-refund-reaches-you",
+      "score": 0.03149801587301587
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.02987736900780379
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.029644268774703556
+     },
+     {
+      "chunk_id": "refunds-payment-methods#card",
+      "score": 0.029211087420042643
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.02900988017658188
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.028991596638655463
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.0288981288981289
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.028790389395194696
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-015",
+   "source": "gemini:pol-015:2026-11-22_ceiling",
+   "question": "shipping fee charge 49",
+   "answers": [
+    [
+     "shipping-charges#orders-of-499-or-less"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.7449812001012325
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.7195678353309682
+     },
+     {
+      "chunk_id": "shipping-split-shipments#shipping-charge",
+      "score": 0.6989997208714664
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.6887028998909664
+     },
+     {
+      "chunk_id": "shipping-charges#one-charge-per-order",
+      "score": 0.6813268255396602
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.6810504984229518
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.6711776256561327
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.661296566647497
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.6524262039407381
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.6242587642206983
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.060370535
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.05319362
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.042322703
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.040634014
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "shipping-charges#one-charge-per-order",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "shipping-split-shipments#shipping-charge",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.035884585
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "shipping-split-shipments#shipping-charge",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-charges#one-charge-per-order",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.031054405392392875
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.030776515151515152
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.030414746543778803
+     },
+     {
+      "chunk_id": "shipping-split-shipments#shipping-charge",
+      "score": 0.03036576949620428
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.030330882352941176
+     },
+     {
+      "chunk_id": "shipping-charges#one-charge-per-order",
+      "score": 0.03030998851894374
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.03015873015873016
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.029644268774703556
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.029273504273504274
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-016",
+   "source": "gemini:pol-016:2026-11-22_ceiling",
+   "question": "free delivery shipping minimum order",
+   "answers": [
+    [
+     "shipping-charges#free-shipping",
+     "shipping-charges#orders-of-499-or-less"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.7711764760929019
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.7456821647693136
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.6666680177054474
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.6592836569885846
+     },
+     {
+      "chunk_id": "shipping-split-shipments#shipping-charge",
+      "score": 0.6545017545821421
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.6448926502338277
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.644652920323963
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.6444919877638848
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.6443917327394213
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.6424265673669106
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.05471344
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.04829643
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.04694548
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.04694548
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.045152098
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.045152098
+     },
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.044665754
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.043905847
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.042554896
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-split-shipments#shipping-charge",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.030886196246139225
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.030776515151515152
+     },
+     {
+      "chunk_id": "cash-on-delivery#cancelling-a-cash-on-delivery-order",
+      "score": 0.030679156908665104
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.03055037313432836
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.029631255487269536
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.02923602219376867
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.029030910609857977
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.028787260106165783
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.028787260106165783
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.027984344422700588
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-017",
+   "source": "gemini:pol-017:2026-11-22_ceiling",
+   "question": "return refund delivery charge shipping fee",
+   "answers": [
+    [
+     "refunds-partial#shipping-charge-on-returns",
+     "shipping-charges#shipping-charge-on-cancellations-and-returns"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.8391366505108282
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.8247667759934989
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.7745062843259417
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.7715730667114258
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.7538282871246338
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.7513715028762817
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.6970530332891337
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.6961860422866344
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.6936427354812622
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.6912881135940552
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.054671224
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.051786378
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.04925335
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.04925335
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.04482055
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.040247027
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.03975449
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.039121233
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.036588203
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.035462413
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.03076923076923077
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.03057889822595705
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.03036576949620428
+     },
+     {
+      "chunk_id": "refunds-partial#example",
+      "score": 0.029513888888888888
+     },
+     {
+      "chunk_id": "refunds-partial#no-new-shipping-charge-on-the-items-you-keep",
+      "score": 0.02943722943722944
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.029211087420042643
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.028258706467661692
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.027364110201042444
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-018",
+   "source": "gemini:pol-018:2026-11-22_ceiling",
+   "question": "delivery shipping time ludhiana",
+   "answers": [
+    [
+     "shipping-times#delivery-time-to-other-cities"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.7367750437796011
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.7293869579569203
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.6730814174961306
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.6687729753526526
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.6393084574982313
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.6313827100903922
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.6243646368763167
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.6199708437954418
+     },
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.6171129802330799
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.6087696655804528
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.056993164
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.056993164
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.05319362
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.04939408
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.037995443
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.030536130536130537
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.02976190476190476
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.0293236301369863
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.028958333333333332
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.026856524873828405
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.015151515151515152
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-019",
+   "source": "gemini:pol-019:2026-11-22_ceiling",
+   "question": "delivery time shipping Pune",
+   "answers": [
+    [
+     "shipping-times#delivery-time-to-metro-cities"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.7602322673243839
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.7259615986393028
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.6769340615986488
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.6759712679437527
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.6753290086592474
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.6693381864227053
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#no-new-delivery-date-for-delayed-shipments",
+      "score": 0.6582774331238992
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.6469445263842607
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.6379208020113476
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.6374854281562101
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.58460283
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.07219134
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.056993164
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.05319362
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.04939408
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.037995443
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.037995443
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#no-new-delivery-date-for-delayed-shipments",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.031746031746031744
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.03125
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.029644268774703556
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.028717948717948718
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.027479766610201392
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.0273972602739726
+     },
+     {
+      "chunk_id": "cash-on-delivery#no-extra-charge",
+      "score": 0.026785714285714284
+     },
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.026742734890354787
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-020",
+   "source": "gemini:pol-020:2026-11-22_ceiling",
+   "question": "shipping dispatch time",
+   "answers": [
+    [
+     "shipping-times#when-your-order-ships"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.7334485054016113
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.7306975561796175
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.721290111541748
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.7073665014068533
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.6788972211541414
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#a-delayed-shipment",
+      "score": 0.6717503862529774
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.6691699225205241
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#a-possible-loss",
+      "score": 0.6675104299175274
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.666154146194458
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.6548255291685158
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.05066059
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.05066059
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "shipping-charges#shipping-charge-on-cancellations-and-returns",
+      "score": 0.028848393
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.027581878
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "shipping-split-shipments#when-the-later-shipment-ships",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#a-delayed-shipment",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#a-possible-loss",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "shipping-split-shipments#order-status-while-shipments-are-still-on-the-way",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.03201844262295082
+     },
+     {
+      "chunk_id": "shipping-times#when-your-order-ships",
+      "score": 0.03201844262295082
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.03200204813108039
+     },
+     {
+      "chunk_id": "shipping-times#orders-in-more-than-one-shipment",
+      "score": 0.03030998851894374
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.029386529386529386
+     },
+     {
+      "chunk_id": "shipping-charges#orders-of-499-or-less",
+      "score": 0.02900988017658188
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.028309409888357256
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.027783137179239824
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.027650648360030512
+     },
+     {
+      "chunk_id": "shipping-charges#free-shipping",
+      "score": 0.026785714285714284
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-021",
+   "source": "gemini:pol-021:2026-11-22_ceiling",
+   "question": "payment deducted order not placed refund",
+   "answers": [
+    [
+     "payment-failures#automatic-reversal",
+     "payment-failures#money-debited-but-no-order"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.7316816507293299
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.7267937389858132
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.7186823226592207
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.7119865760819276
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.7112868004270327
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.7100023031234741
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.70944930854742
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.6940311375837852
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.6908948421478271
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.6822983433186033
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.045152098
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.04086621
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.039515264
+     },
+     {
+      "chunk_id": "privacy#only-your-own-orders",
+      "score": 0.039515264
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.03385816
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.03385816
+     },
+     {
+      "chunk_id": "account-and-address#your-saved-address",
+      "score": 0.030396353
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.030396353
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.030396353
+     },
+     {
+      "chunk_id": "cancellations#before-the-order-ships",
+      "score": 0.029953921
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "refunds-timing#if-the-refund-has-not-arrived",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-returns",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "refunds-payment-methods#cash-on-delivery",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "payment-failures#money-debited-but-no-order",
+      "score": 0.031099324975891997
+     },
+     {
+      "chunk_id": "payment-failures#trying-again",
+      "score": 0.030798389007344232
+     },
+     {
+      "chunk_id": "cancellations#refund-after-cancelling",
+      "score": 0.030536130536130537
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.030536130536130537
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-cancellation",
+      "score": 0.029827662395050816
+     },
+     {
+      "chunk_id": "refunds-timing#cash-on-delivery-refunds-wait-for-bank-details",
+      "score": 0.02976190476190476
+     },
+     {
+      "chunk_id": "order-tracking#order-statuses",
+      "score": 0.02921395544346364
+     },
+     {
+      "chunk_id": "refunds-payment-methods#where-the-refund-goes",
+      "score": 0.02786377708978328
+     },
+     {
+      "chunk_id": "refunds-partial#shipping-charge-on-cancellations",
+      "score": 0.02782608695652174
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-022",
+   "source": "gemini:pol-022:2026-11-22_ceiling",
+   "question": "warranty cracked screen accidental damage",
+   "answers": [
+    [
+     "warranty#what-the-warranty-covers"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.7021390199661255
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.6624792218208313
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6596849763581183
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.6464064506534618
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.6413782835006714
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.6284002065658569
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6245614886283875
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#damaged-on-arrival",
+      "score": 0.6167938570029949
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.5989529429930124
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.5923633818409821
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.031747304
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.017795378
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#damaged-on-arrival",
+      "score": 0.016549127
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.016549127
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.016549127
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.016549127
+     },
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.016549127
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.015198177
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.015198177
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.015198177
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#damaged-on-arrival",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-general#reasons-for-a-return",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.03128054740957967
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.03125
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.03076923076923077
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#damaged-on-arrival",
+      "score": 0.03057889822595705
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.03021353930031804
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.03015873015873016
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.029644268774703556
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.029631255487269536
+     },
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.02843888664784187
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-023",
+   "source": "gemini:pol-023:2026-11-22_ceiling",
+   "question": "warranty start date",
+   "answers": [
+    [
+     "warranty#when-the-warranty-starts"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.8323559761047363
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.7432005405426025
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.7422107304460259
+     },
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.7155035138130188
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.7107203006744385
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.6853495052665189
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6764254166826369
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.6641559600830078
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6631865501403809
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.6472896916231263
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.61855817
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.07317641
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.045594532
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.029658964
+     },
+     {
+      "chunk_id": "delays-and-lost-shipments#no-new-delivery-date-for-delayed-shipments",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.027581878
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "warranty#when-the-warranty-starts",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "warranty#warranty-length",
+      "score": 0.03125763125763126
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.030834914611005692
+     },
+     {
+      "chunk_id": "warranty#making-a-warranty-claim",
+      "score": 0.030621785881252923
+     },
+     {
+      "chunk_id": "returns-non-returnable#warranty-still-applies",
+      "score": 0.030076888285843508
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.029957522915269395
+     },
+     {
+      "chunk_id": "warranty#what-the-warranty-covers",
+      "score": 0.02970950704225352
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.02967032967032967
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.029513888888888888
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.02819138376017471
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-024",
+   "source": "gemini:pol-024:2026-11-22_ceiling",
+   "question": "change delivery address",
+   "answers": [
+    [
+     "account-and-address#changing-the-delivery-address-of-an-order"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.8409787104763922
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.7990993977129832
+     },
+     {
+      "chunk_id": "account-and-address#your-saved-address",
+      "score": 0.7201290893477758
+     },
+     {
+      "chunk_id": "account-and-address#signing-in",
+      "score": 0.6403234433742233
+     },
+     {
+      "chunk_id": "account-and-address#changing-your-phone-number-or-email",
+      "score": 0.6364960724420429
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.6276850326248995
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.6211161469082658
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.612859437550408
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.6124352678733744
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.6091660727064523
+     }
+    ],
+    "fulltext_all": [
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.7876306
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.5025793
+     }
+    ],
+    "fulltext_any": [
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.08302708
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.078242466
+     },
+     {
+      "chunk_id": "account-and-address#your-saved-address",
+      "score": 0.054178685
+     },
+     {
+      "chunk_id": "account-and-address#changing-your-phone-number-or-email",
+      "score": 0.04911263
+     },
+     {
+      "chunk_id": "account-and-address#signing-in",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.040528473
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "cash-on-delivery#refunds-for-cash-on-delivery-orders",
+      "score": 0.027581878
+     },
+     {
+      "chunk_id": "shipping-charges#cash-on-delivery",
+      "score": 0.027581878
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "account-and-address#your-saved-address",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "account-and-address#signing-in",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "account-and-address#changing-your-phone-number-or-email",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "shipping-times#if-the-estimated-delivery-date-has-passed",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "shipping-times#estimated-delivery-date",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "account-and-address#changing-the-delivery-address-of-an-order",
+      "score": 0.03278688524590164
+     },
+     {
+      "chunk_id": "account-and-address#after-the-order-ships",
+      "score": 0.03225806451612903
+     },
+     {
+      "chunk_id": "account-and-address#your-saved-address",
+      "score": 0.031746031746031744
+     },
+     {
+      "chunk_id": "account-and-address#changing-your-phone-number-or-email",
+      "score": 0.031009615384615385
+     },
+     {
+      "chunk_id": "account-and-address#signing-in",
+      "score": 0.031009615384615385
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.029850746268656716
+     },
+     {
+      "chunk_id": "cash-on-delivery#paying-at-delivery",
+      "score": 0.028404512489927477
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.028169014084507043
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-other-cities",
+      "score": 0.027651515151515153
+     },
+     {
+      "chunk_id": "shipping-times#delivery-time-to-metro-cities",
+      "score": 0.027364110201042444
+     }
+    ]
+   }
+  },
+  {
+   "id": "mq-gemini-025",
+   "source": "gemini:pol-025:2026-11-22_ceiling",
+   "question": "return policy bedsheet days",
+   "answers": [
+    [
+     "returns-general#return-window"
+    ],
+    [
+     "refunds-payment-methods#upi",
+     "refunds-timing#how-long-until-the-refund-reaches-you"
+    ]
+   ],
+   "results": {
+    "vector": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.7038236646704802
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.6727900906080062
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.6589796739512588
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.6566226678080165
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.6553549961851539
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.6488444386535225
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.6417294931927175
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.6408395958197
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.6374215889745503
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.6282686625478937
+     }
+    ],
+    "fulltext_all": [],
+    "fulltext_any": [
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.041664116
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.039684128
+     },
+     {
+      "chunk_id": "cancellations#after-the-order-ships",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "returns-electronics#earbuds-earphones-and-trimmers",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.035884585
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "returns-electronics#how-we-check-a-fault",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "returns-general#pickup",
+      "score": 0.0341959
+     },
+     {
+      "chunk_id": "returns-non-returnable#faulty-damaged-or-wrong-items",
+      "score": 0.0341959
+     }
+    ],
+    "hybrid_all": [
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.01639344262295082
+     },
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.016129032258064516
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.015873015873015872
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.015625
+     },
+     {
+      "chunk_id": "returns-general#when-the-return-window-starts",
+      "score": 0.015384615384615385
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.015151515151515152
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.014925373134328358
+     },
+     {
+      "chunk_id": "shipping-split-shipments#return-window-for-split-orders",
+      "score": 0.014705882352941176
+     },
+     {
+      "chunk_id": "warranty#not-returnable-items",
+      "score": 0.014492753623188406
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.014285714285714285
+     }
+    ],
+    "hybrid_any": [
+     {
+      "chunk_id": "returns-general#return-window",
+      "score": 0.03252247488101533
+     },
+     {
+      "chunk_id": "returns-electronics#after-the-7-day-return-window",
+      "score": 0.031754032258064516
+     },
+     {
+      "chunk_id": "returns-electronics#return-window",
+      "score": 0.030303030303030304
+     },
+     {
+      "chunk_id": "returns-electronics#electronics-in-a-split-order",
+      "score": 0.029850746268656716
+     },
+     {
+      "chunk_id": "returns-electronics#opened-electronics",
+      "score": 0.028717948717948718
+     },
+     {
+      "chunk_id": "warranty#warranty-or-return",
+      "score": 0.028693528693528692
+     },
+     {
+      "chunk_id": "refunds-partial#returning-some-items-from-an-order",
+      "score": 0.02694394213381555
+     },
+     {
+      "chunk_id": "refunds-timing#when-we-send-a-refund-for-a-return",
+      "score": 0.02658450704225352
+     },
+     {
+      "chunk_id": "returns-general#returning-part-of-an-order",
+      "score": 0.02658450704225352
+     },
+     {
+      "chunk_id": "refunds-payment-methods#business-days",
+      "score": 0.01639344262295082
+     }
+    ]
+   }
+  }
+ ]
+}

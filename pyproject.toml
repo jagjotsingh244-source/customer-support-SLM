@@ -28,3 +28,7 @@ local-model = [
     "torch==2.15.0",
     "transformers==5.23.0",
 ]
+rag = [
+    "numpy>=2.5.5",
+    "sentence-transformers>=6.3.0",
+]

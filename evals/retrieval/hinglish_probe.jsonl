@@ -1,0 +1,4 @@
+{"id": "ret-h01", "source": "customer_words:hinglish", "question": "refund kab aayega, paisa wapas kab milega", "answers": [["refunds-timing#how-long-until-the-refund-reaches-you", "refunds-timing#if-the-refund-has-not-arrived"]]}
+{"id": "ret-h02", "source": "customer_words:hinglish", "question": "order cancel karna hai", "answers": [["cancellations#before-the-order-ships", "cancellations#after-the-order-ships"]]}
+{"id": "ret-h03", "source": "customer_words:hinglish", "question": "mera order kab aayega", "answers": [["shipping-times#estimated-delivery-date", "order-tracking#where-to-find-tracking", "shipping-times#delivery-time-to-metro-cities", "shipping-times#delivery-time-to-other-cities"]]}
+{"id": "ret-h04", "source": "customer_words:hinglish", "question": "paise kat gaye par order nahi hua", "answers": [["payment-failures#money-debited-but-no-order", "payment-failures#automatic-reversal"]]}

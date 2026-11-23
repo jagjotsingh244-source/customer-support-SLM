@@ -9,8 +9,8 @@ tags: [cancellations, refunds]
 
 ## Before the order ships
 You can cancel for free until the order ships, while its status is "Placed" or
-"Packed". Ask Nova or open the order page. The order is cancelled only after you
-confirm.
+"Packed". There is no cancellation fee. Ask Nova or open the order page. The
+order is cancelled only after you confirm.
 
 ## Refund after cancelling
 The refund is the full order total, including any shipping charge. We send it at

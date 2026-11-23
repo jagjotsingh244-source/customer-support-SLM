@@ -3,10 +3,13 @@
     uv run python rag/index.py                # chunk, check IDs, load the local database
     uv run python rag/index.py --stats        # also print token counts and the extremes
     uv run python rag/index.py --update-ids   # accept a changed set of chunk IDs
+    uv run --group rag python rag/index.py --model BAAI/bge-small-en-v1.5   # also embed
     DB_URL=... uv run python rag/index.py     # any other database
 
 Replaces the whole kb_chunks table in one transaction, so running it twice
-gives the same rows.
+gives the same rows. Without --model the embeddings are left empty (the CI
+check needs no model); with it, every chunk's path line and body are embedded
+and the model's name is stored next to each vector.
 
 Chunk IDs are a contract: citations, eval labels and old traces point at them.
 rag/chunk_ids.txt lists the current set, and loading stops if the chunker
@@ -18,9 +21,11 @@ with --update-ids.
 import argparse
 import statistics
 import sys
+import time
 from pathlib import Path
 
 import psycopg
+from pgvector.psycopg import register_vector
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -60,19 +65,34 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--stats", action="store_true")
     ap.add_argument("--update-ids", action="store_true")
+    ap.add_argument("--model", help="embedding model to fill the embedding column with")
     args = ap.parse_args()
 
     rows = all_chunks()
     check_ids([r["chunk_id"] for r in rows], args.update_ids)
+    for r in rows:
+        r["embedding"], r["embedding_model"] = None, None
+    if args.model:
+        from rag.embeddings import Embedder
+        emb = Embedder(args.model)
+        emb.passages(["warm up"])  # loads (and on first use downloads) the model outside the timing
+        start = time.perf_counter()
+        vectors = emb.passages([chunk_text(r["path"], r["body"]) for r in rows])
+        took = time.perf_counter() - start
+        for r, v in zip(rows, vectors):
+            r["embedding"], r["embedding_model"] = v, args.model
+        print(f"embedded {len(rows)} chunks with {args.model} ({vectors.shape[1]} dims) "
+              f"in {took:.1f} s on CPU")
 
     with psycopg.connect(DB_URL) as conn:  # one transaction: commits on success, rolls back on error
         conn.execute((ROOT / "db" / "kb_chunks.sql").read_text())
+        register_vector(conn)
         with conn.cursor() as cur:
             cur.executemany(
                 """INSERT INTO kb_chunks (chunk_id, page_id, path, body, policy_version,
-                                          effective_date, tokens)
+                                          effective_date, tokens, embedding, embedding_model)
                    VALUES (%(chunk_id)s, %(page_id)s, %(path)s, %(body)s, %(policy_version)s,
-                           %(effective_date)s, %(tokens)s)""",
+                           %(effective_date)s, %(tokens)s, %(embedding)s, %(embedding_model)s)""",
                 rows)
 
     pages = len({r["page_id"] for r in rows})
