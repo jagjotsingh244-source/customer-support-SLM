@@ -48,7 +48,7 @@ DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nim
 
 # old_policy: the customer quotes a rule from kb/_archive/; Nova must give and cite the current one.
 QUOTAS = {"policy": 25, "order_lookup": 25, "returns": 15,
-          "unanswerable": 15, "escalation": 10, "adversarial": 10, "old_policy": 5}
+          "unanswerable": 15, "escalation": 10, "adversarial": 12, "old_policy": 5}
 PREFIX = {"policy": "pol", "order_lookup": "ord", "returns": "ret",
           "unanswerable": "una", "escalation": "esc", "adversarial": "adv", "old_policy": "old"}
 ORDER_TOOLS = {"get_order_status", "get_tracking", "propose_return"}

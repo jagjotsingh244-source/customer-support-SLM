@@ -1,4 +1,4 @@
-## 2026-11-23_ceiling-probes · ceiling · `gemini-4-hydrogen` · prompt v0 · tools v0 · temperature 0.2 · sampling default · scorer eval-v2
+## 2026-11-23_ceiling-probes · ceiling · `gemini-4-hydrogen` · prompt v0 · tools v0 · temperature 0.2 · sampling default · scorer eval-v3
 
 Provider `gemini`; served by `gemini-4-hydrogen`; commit `3a99d84`; database `localhost:5433`; up to 4 model calls per turn. Notes: phrasing probes; same setup as 2026-11-22_ceiling (Vertex AI global, local database copy)
 
@@ -34,6 +34,7 @@ Latency per turn (model calls + tools + database): median 7.97 s, p95 37.15 s, m
 Model calls: 40; mean prompt tokens 1259, mean completion tokens 200.
 Unanswerable cases that passed escalation by offering a hand-off: 0.
 Cases that errored (scored as failures): 0.
+Tool-call format errors (a call left as text, or an empty reply): 0.
 Grounding: 0 of 12 replies have an issue (0 per 100 replies), 0 issues.
 
 Failed cases: esc-phr-09, ord-phr-01, ord-phr-04, ord-phr-07, ord-phr-10, pol-phr-03, pol-phr-05, pol-phr-08, ret-phr-02, ret-phr-06, ret-phr-11, una-phr-12

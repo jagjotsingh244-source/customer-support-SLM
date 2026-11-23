@@ -19,6 +19,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 KB = ROOT / "kb"
 sys.path.insert(0, str(ROOT))
+from db.roles import apply as apply_roles  # noqa: E402
 from db.seed import DB_URL  # noqa: E402
 
 FRONT_MATTER = re.compile(r"---\n(.*?)\n---\n(.*)", re.S)
@@ -79,6 +80,7 @@ def main() -> None:
                    VALUES (%(section_id)s, %(page_id)s, %(page_title)s, %(heading)s, %(body)s,
                            %(policy_version)s, %(effective_date)s)""",
                 rows)
+        apply_roles(conn)                  # the new table has no grants yet
 
     pages = len({r["page_id"] for r in rows})
     print(f"loaded {len(rows)} sections from {pages} pages into kb_sections")

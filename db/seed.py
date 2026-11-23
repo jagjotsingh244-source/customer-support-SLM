@@ -27,6 +27,7 @@ import psycopg
 from faker import Faker
 
 from config import IST, SEED, WINDOW_DAYS, now, partition_for
+from db.roles import apply as apply_roles
 
 NOW = now()
 TODAY = NOW.date()
@@ -579,6 +580,7 @@ def load(conn, customers, drafts, failed):
             if data:
                 marks = ", ".join(["%s"] * len(data[0]))
                 cur.executemany(f"INSERT INTO {table} VALUES ({marks})", data)
+    apply_roles(conn)                      # recreated tables have no grants or policies yet
     conn.commit()
     return rows
 

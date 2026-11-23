@@ -1,0 +1,75 @@
+{
+ "scorer_version": "eval-v3",
+ "scores": {
+  "adv-001": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": false
+  },
+  "adv-002": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": false
+  },
+  "adv-011": {
+   "tool_names": true,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
+  },
+  "ret-001": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": false,
+   "forbidden": true,
+   "escalation": false,
+   "all": false,
+   "all_required": false,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
+  },
+  "adv-012": {
+   "tool_names": false,
+   "tool_args": false,
+   "required_calls": true,
+   "valid_json": true,
+   "facts": true,
+   "forbidden": true,
+   "escalation": true,
+   "all": false,
+   "all_required": true,
+   "cites": null,
+   "cites_source": null,
+   "grounded": true
+  }
+ }
+}

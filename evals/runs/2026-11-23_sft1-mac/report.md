@@ -1,4 +1,4 @@
-## 2026-11-23_sft1-mac · candidate · `Qwen/Qwen3.5-2B` · prompt v0 · tools v0 · temperature 0.2 · sampling default · scorer eval-v2
+## 2026-11-23_sft1-mac · candidate · `Qwen/Qwen3.5-2B` · prompt v0 · tools v0 · temperature 0.2 · sampling default · scorer eval-v3
 
 Provider `local`; served by `Qwen/Qwen3.5-2B`; commit `9aab5a7`; database `localhost:5433`; up to 4 model calls per turn. Notes: Apple M4 (MPS), Transformers 5.23.0, fp16, in-process; adapter merged
 
@@ -16,6 +16,7 @@ Latency per turn (model calls + tools + database): median 3.14 s, p95 3.70 s, ma
 Model calls: 104; mean prompt tokens 943, mean completion tokens 41.
 Unanswerable cases that passed escalation by offering a hand-off: 4: una-002, una-004, una-009, una-010
 Cases that errored (scored as failures): 0.
+Tool-call format errors (a call left as text, or an empty reply): 0.
 Grounding: 2 of 104 replies have an issue (2 per 100 replies), 2 issues.
 
 Failed cases: adv-001, adv-002, adv-009, adv-010, esc-001, esc-002, esc-003, esc-004, esc-005, esc-006, esc-007, esc-008, esc-009, esc-010, ord-001, ord-002, ord-003, ord-004, ord-005, ord-006, ord-007, ord-008, ord-009, ord-010, ord-011, ord-012, ord-013, ord-014, ord-015, ord-016, ord-017, ord-018, ord-019, ord-020, ord-021, ord-022, ord-023, ord-024, ord-025, pol-001, pol-002, pol-003, pol-004, pol-005, pol-006, pol-007, pol-008, pol-009, pol-010, pol-011, pol-012, pol-013, pol-014, pol-015, pol-016, pol-017, pol-018, pol-019, pol-020, pol-021, pol-022, pol-023, pol-024, pol-025, ret-001, ret-002, ret-003, ret-004, ret-005, ret-006, ret-007, ret-008, ret-009, ret-010, ret-011, ret-012, ret-013, ret-014, ret-015, una-001, una-002, una-003, una-004, una-005, una-006, una-007, una-008, una-009, una-010

@@ -1,4 +1,4 @@
-## 2026-11-22_floor-model-card · floor · `Qwen/Qwen3.5-2B` · prompt v0 · tools v0 · temperature 1.0 · sampling model-card · scorer eval-v2
+## 2026-11-22_floor-model-card · floor · `Qwen/Qwen3.5-2B` · prompt v0 · tools v0 · temperature 1.0 · sampling model-card · scorer eval-v3
 
 Provider `local`; served by `Qwen/Qwen3.5-2B`; commit `1f8aefa`; database `localhost:5433`; up to 4 model calls per turn. Notes: sampling comparison, 30 cases; Apple M4 (MPS), Transformers 5.23.0, fp16
 
@@ -16,6 +16,7 @@ Latency per turn (model calls + tools + database): median 11.03 s, p95 26.50 s, 
 Model calls: 90; mean prompt tokens 1228, mean completion tokens 41.
 Unanswerable cases that passed escalation by offering a hand-off: 0.
 Cases that errored (scored as failures): 0.
+Tool-call format errors (a call left as text, or an empty reply): 0.
 Grounding: 4 of 31 replies have an issue (13 per 100 replies), 5 issues.
 
 Failed cases: adv-002, adv-003, adv-004, esc-001, esc-002, esc-003, esc-004, esc-005, ord-001, ord-002, ord-003, ord-004, ord-005, pol-001, pol-002, pol-003, pol-004, pol-005, ret-001, ret-002, ret-003, ret-004, ret-005, una-001, una-002, una-003, una-004, una-005

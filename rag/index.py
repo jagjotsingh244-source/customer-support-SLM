@@ -29,6 +29,7 @@ from pgvector.psycopg import register_vector
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+from db.roles import apply as apply_roles  # noqa: E402
 from db.seed import DB_URL  # noqa: E402
 from rag.chunks import all_chunks, chunk_text  # noqa: E402
 
@@ -94,6 +95,7 @@ def main() -> None:
                    VALUES (%(chunk_id)s, %(page_id)s, %(path)s, %(body)s, %(policy_version)s,
                            %(effective_date)s, %(tokens)s, %(embedding)s, %(embedding_model)s)""",
                 rows)
+        apply_roles(conn)                  # the new table has no grants yet
 
     pages = len({r["page_id"] for r in rows})
     print(f"loaded {len(rows)} chunks from {pages} pages into kb_chunks")

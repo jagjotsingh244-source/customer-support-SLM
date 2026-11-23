@@ -1,5 +1,5 @@
 {
- "scorer_version": "eval-v2",
+ "scorer_version": "eval-v3",
  "scores": {
   "old-001": {
    "tool_names": false,

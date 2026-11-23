@@ -134,3 +134,8 @@ One entry per session: what I did, what surprised me, what I'd do differently.
 - Surprised me: with the parser on and `tool_choice="none"`, vLLM threw away the model's call and returned a completely empty reply with HTTP 200, a failure no status check would see. Without the parser the call came back as ordinary text in `content`. The render also showed that the tool definitions (780 tokens) come before Nova's own rules, and that a tool result reaches the model as a customer turn with a `<tool_response>` wrapper.
 - Next time: check what a component returns when it fails, not only when it works; an empty success is harder to spot than an error.
 
+
+### 2026-11-23 · Tools that cannot leak or confirm
+- Did: `agent/tools_v2.py` with one strict Pydantic model per tool; three database roles with row-level security (`db/roles.sql`); return eligibility as one pure function with unit tests (`agent/returns.py`); `propose_return` writes only a proposal, and a FastAPI endpoint (`api/`) is the only path to a confirmed return. `tests/test_tool_guards.py` checks every guard against the database, and runs in CI. Two new golden cases (scorer `eval-v3`).
+- Surprised me: my first cross-customer test passed for the wrong reason: the other customer's order had no returns or refunds, so "zero rows" proved nothing for those tables; it now uses an order with rows in every table and checks the owner sees them first. Pydantic's schemas cost 953 tokens against the old tools' 781 until I stripped what only the validator needs. And the 2B model read the tool note "a Confirm button is shown to the customer" back to the customer word for word; a note telling it what to say worked.
+- Next time: before trusting a "nothing leaked" test, check that there was something to leak.
