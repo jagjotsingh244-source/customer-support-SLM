@@ -126,7 +126,20 @@ moments (8). For the 1.88B text parameters that is 30.1 GB (35.4 GB with the vis
 twice a T4's 15 GB. LoRA trains 0.49% of the parameters, so the optimizer state that dominates the full fine-tune
 nearly vanishes, and what is left is the frozen weights.
 
-**Measured peak memory** (`torch.cuda.max_memory_allocated()`): *to be measured on the first full training run.*
+**Measured on the first full run** (`sft1-r16-lr2e-4-bitext_v1`, Kaggle T4, fp16, Unsloth 2026.11.7; numbers from
+`training/runs/sft1-r16-lr2e-4-bitext_v1/run_info.json`):
+
+| | Estimate | Measured |
+|---|---|---|
+| After loading the base | 3.76 GB text only / 4.43 GB with the vision tower | **4.44 GB**: Unsloth loads the vision tower too |
+| Peak during training (`max_memory_allocated`) | 4.9–5.6 GB | **4.94 GB** (5.12 GB reserved) |
+| Trainable parameters | 10,911,744 | 10,911,744, 96 layers wrapped, none in the vision tower |
+| Saved adapter | about 44 MB in fp32 | 43.7 MB, fp32 |
+
+Training added only 0.50 GB above the loaded weights. The estimate allowed up to 1.02 GB for the logits alone, so
+Unsloth's chunked loss kept most of them from existing at once. A T4 has about 10 GB to spare at this batch size.
+
+**Time:** 278 steps in 2,412 s (40 min) including 12 evaluations with probes; 41 min for the whole run.
 
 ## Where the eval database lives
 
@@ -206,3 +219,4 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-22 | Baseline measured on all 100 golden cases (scorer `eval-v1`): floor 25/100 correct, ceiling 58/100; floor serving latency median 4.33 s, p95 7.71 s per turn | `evals/reports/00_baseline_floor.md` and `00_baseline_ceiling.md`; top three floor failure types counted from 30 read failures |
 | 2026-11-22 | Sampling: temperature 0.2 kept for the 2B (model card's 1.0 / top_k 20 / presence penalty 2.0 rejected) | Same 30 cases: 9/30 against 5/30 correct, 17/30 against 12/30 on facts, equal reply length |
 | 2026-11-23 | Fine-tuning: 16-bit LoRA, r = 16 / alpha = 16 to start, Unsloth's seven target modules (10.9M trainable parameters, 0.49%); estimated 4.9–5.6 GB per training step | `training/lora_budget.py`: hand count matches PEFT at r = 8, 16, 64. The seven names miss the 18 linear-attention layers' projections (kept as a known choice); `all-linear` would wrap the vision tower. Full fine-tuning needs about 30 GB, twice a T4 |
+| 2026-11-23 | Training memory measured: 4.44 GB after loading, 4.94 GB peak (estimate 4.9–5.6 GB); first full run took 40 min on a T4 | First full run, `training/runs/sft1-r16-lr2e-4-bitext_v1/run_info.json`. Unsloth loads the 331M-parameter vision tower even for text training |

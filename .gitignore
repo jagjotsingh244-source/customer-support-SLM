@@ -27,3 +27,6 @@ data/**/*
 
 # macOS
 .DS_Store
+
+# Unsloth writes compiled kernels next to the code it runs
+unsloth_compiled_cache/
