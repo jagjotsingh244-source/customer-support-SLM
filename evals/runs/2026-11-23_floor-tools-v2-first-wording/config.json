@@ -1,0 +1,23 @@
+{
+  "run": "2026-11-23_floor-tools-v2-first-wording",
+  "system": "diagnostic",
+  "provider": "local",
+  "model": "Qwen/Qwen3.5-2B",
+  "adapter": null,
+  "base_url": null,
+  "prompt_version": "v0",
+  "tools_version": "v2",
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 40,
+  "commit": "501012e+uncommitted changes",
+  "db_host": "localhost:5433",
+  "notes": "Apple M4 (MPS), Transformers 5.23.0, fp16, in-process; same settings as the first run of this model, tools v2 (typed arguments, errors written for the model, explicit empty results, database roles). First wording of the empty results: get_order_status said \"No return on this order.\", which the model read as \"cannot be returned\"; replaced by \"No return has been started for this order.\"",
+  "served_models": [
+    "Qwen/Qwen3.5-2B"
+  ]
+}

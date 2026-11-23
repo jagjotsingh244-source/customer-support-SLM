@@ -135,11 +135,12 @@ def run_case(case, client, a, conn) -> dict:
     session = tools.Session.open(conn, case.customer_id)
     messages = [{"role": "system", "content": system_prompt(now(), session.customer_name, a.prompt)}]
     turns = []
-    for text in case.turns:
+    dispatch = getattr(tools, "DISPATCH", tools.REGISTRY)   # typed tools validate; the first ones run as they are
+    for n, text in enumerate(case.turns, 1):
         messages.append({"role": "user", "content": text})
         t0 = time.perf_counter()
-        reply, tr = run_turn(client, a.model, messages, tools.TOOLS, tools.REGISTRY, session, max_steps=a.max_calls,
-                             temperature=a.temperature, sampling=SAMPLING[a.sampling])
+        reply, tr = run_turn(client, a.model, messages, tools.TOOLS, dispatch, session, max_steps=a.max_calls,
+                             temperature=a.temperature, sampling=SAMPLING[a.sampling], trace_id=f"{case.id}-{n}")
         tr["turn_s"] = round(time.perf_counter() - t0, 3)
         tr["reply"] = reply
         turns.append(tr)

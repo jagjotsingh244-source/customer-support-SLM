@@ -57,7 +57,7 @@ jobs:
       - name: Bad inserts are rejected
         run: test "$(psql "$DB_URL" -f db/break.sql 2>&1 | grep -c '^psql.*ERROR')" = 10
       - name: Tool guards hold in the database (roles, row-level security, propose-only writes, confirm endpoint)
-        run: uv run --frozen --group dev --group api pytest -q tests/test_tool_guards.py tests/test_eligibility.py tests/test_tool_markup.py
+        run: uv run --frozen --group dev --group api pytest -q tests/test_tool_guards.py tests/test_tool_errors.py tests/test_eligibility.py tests/test_tool_markup.py
 
   loss-mask:
     runs-on: ubuntu-latest

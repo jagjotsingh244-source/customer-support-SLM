@@ -190,9 +190,9 @@ def test_propose_records_a_proposal_only(eligible):
 
 def test_tools_treat_another_customers_order_as_missing():
     s = t.Session.open(CONNS, A)
-    assert t.REGISTRY["get_order_status"](s, order_id=B_ORDER) == {"error": "not_found"}
-    assert t.REGISTRY["get_tracking"](s, order_id=B_ORDER) == {"error": "not_found"}
-    assert t.REGISTRY["propose_return"](s, order_id=B_ORDER, line_no=1, reason="faulty") == {"error": "not_found"}
+    assert t.REGISTRY["get_order_status"](s, order_id=B_ORDER) == t.NOT_FOUND
+    assert t.REGISTRY["get_tracking"](s, order_id=B_ORDER) == t.NOT_FOUND
+    assert t.REGISTRY["propose_return"](s, order_id=B_ORDER, line_no=1, reason="faulty") == t.NOT_FOUND
 
 
 def test_customer_id_argument_is_refused():

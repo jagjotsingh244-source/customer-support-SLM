@@ -14,21 +14,28 @@ Four layers, narrowest first:
    refuses anything else from nova_writer. Confirming happens only in the backend, when the customer clicks
    Confirm (api/returns.py, role nova_confirmer). No tool here can confirm anything.
 
-Order lookups reuse the first tools' SQL (agent/tools_v0.py), so their results are unchanged and eval runs
-stay comparable; help-center search is the vector search of agent/tools_v1.py.
+And errors are part of the conversation, so they are written for the model: call_tool validates before
+anything runs, answers a bad call with one sentence saying what was wrong, what right looks like and what
+to do next, and after a second failure on the same tool steers the model to ask the customer or hand off.
+No tool returns an empty list, a null or a stack trace; an empty result is stated as a fact.
+
+Order lookups reuse the first tools' SQL (agent/tools_v0.py); results are compacted (no nulls, no empty
+lists) and leave out voided shipping labels. Help-center search is the vector search of agent/tools_v1.py.
 
 Needs db/roles.py applied (db/seed.py does it) and, for search, the `rag` dependency group.
 """
 
+import json
+import logging
 import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Literal, NamedTuple
+from typing import Literal, NamedTuple, get_args
 
 import psycopg
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from psycopg.rows import dict_row
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -167,10 +174,59 @@ class Session:
 
 
 # The six tools ---------------------------------------------------------------------------------------
+# No path returns [], None or a raw exception. An empty result is a sentence-shaped fact ("not shipped yet,
+# so there is no tracking number"), because a blank is what a small model fills with an invented value.
+# Every error has one shape, {"error": <code>, "detail": <one sentence for the model>}.
 
-list_my_orders = v0.list_my_orders          # same SQL; Session.all adds the database's own filter
-get_order_status = v0.get_order_status
-get_tracking = v0.get_tracking
+NOT_FOUND = {"error": "not_found",
+             "detail": "No order with that number on this account. Ask the customer to check it, or call list_my_orders."}
+
+
+def compact(row: dict) -> dict:
+    """Drop empty fields: a null is a blank the model may fill, and it costs tokens."""
+    return {k: v for k, v in row.items() if v is not None and v != []}
+
+
+def list_my_orders(session: Session, limit: int = 5) -> dict:
+    """The customer's most recent orders, newest first (the first tools' SQL)."""
+    rows = v0.list_my_orders(session, limit)
+    if not rows:
+        return {"note": "This account has no orders."}
+    return {"orders": [compact(r) for r in rows]}
+
+
+def get_order_status(session: Session, order_id: int) -> dict:
+    """One order: status, money, items, and any return or refund on it (the first tools' SQL)."""
+    out = v0.get_order_status(session, order_id)
+    if "error" in out:
+        return NOT_FOUND
+    out["items"] = [compact(i) for i in out["items"]]
+    # Say what has *not happened*, not what is not allowed: "No return on this order." was read by the 2B
+    # model as "this order cannot be returned", and it escalated a returnable frying pan (ret-001).
+    out["returns"] = [compact(r) for r in out["returns"]] or "No return has been started for this order."
+    out["refunds"] = [compact(f) for f in out["refunds"]] or "No refund has been issued for this order."
+    return compact(out)
+
+
+def get_tracking(session: Session, order_id: int) -> dict:
+    """Every shipment of one order, or why there is none (the first tools' SQL)."""
+    out = v0.get_tracking(session, order_id)
+    if "error" in out:
+        return NOT_FOUND
+    status = out["order_status"]
+    # A voided label (order cancelled after packing) has a tracking number that will never move: the
+    # first tools passed it on as if the parcel had shipped (63 seeded orders). It is not a shipment.
+    live = [b for b in out["shipments"] if b["status"] != "cancelled"]
+    if not live:
+        why = ("The order was cancelled before it shipped" if status == "cancelled" else "Not shipped yet")
+        return {"order_id": order_id, "shipped": False, "order_status": status,
+                "note": f"{why}, so there is no tracking number."}
+    boxes = []
+    for b in live:
+        if b["last_scan_at"] is None:
+            b["last_scan_event"] = "No scan yet."
+        boxes.append(compact(b))
+    return {"order_id": order_id, "shipped": True, "order_status": status, "shipments": boxes}
 
 
 def search_help_center(session: Session, query: str) -> dict:
@@ -179,7 +235,7 @@ def search_help_center(session: Session, query: str) -> dict:
     with session.read() as c:
         hits = [h for h in search.vector(c, _embedder().query(query), TOP_K) if h["score"] >= MIN_SCORE]
     if not hits:
-        return {"results": [], "note": NO_MATCH}
+        return {"note": NO_MATCH}
     return {"results": [{"id": h["chunk_id"], "title": h["path"], "text": h["body"],
                          "effective_date": str(h["effective_date"])} for h in hits],
             "note": CITE_NOTE}
@@ -190,9 +246,13 @@ def propose_return(session: Session, order_id: int, line_no: int, reason: str) -
     button. Creates nothing the customer has not yet confirmed."""
     t = now()
     with session.read() as c:
+        if item_facts(c, order_id, 1) is None:              # line 1 always exists: the order is not theirs
+            return NOT_FOUND
         item = item_facts(c, order_id, line_no)
         if item is None:
-            return {"error": "not_found"}
+            lines = c.execute("SELECT count(*) AS n FROM order_items WHERE order_id = %s", (order_id,)).fetchone()["n"]
+            return {"error": "no_such_item",
+                    "detail": f"Order {order_id} has lines 1 to {lines}. Call get_order_status to see which is which."}
         verdict = eligibility(item, reason, t)
         if verdict.ok:
             open_ = c.execute("""
@@ -200,8 +260,9 @@ def propose_return(session: Session, order_id: int, line_no: int, reason: str) -
                 WHERE r.order_id = %s AND x.line_no = %s AND r.status = 'proposed' AND r.proposed_at > %s
                 ORDER BY r.proposed_at DESC LIMIT 1""", (order_id, line_no, t - PROPOSAL_TTL)).fetchone()
     if not verdict.ok:
-        return {"order_id": order_id, "line_no": line_no, "item": item.name, "eligible": False,
-                "reason": verdict.reason, "window_days": verdict.window_days, "delivered_on": verdict.delivered_on}
+        return compact({"order_id": order_id, "line_no": line_no, "item": item.name, "eligible": False,
+                        "reason": verdict.reason, "window_days": verdict.window_days,
+                        "delivered_on": verdict.delivered_on})
     if open_:                                   # asked twice: the same proposal, not a second card
         pid = open_["return_id"]
     else:
@@ -251,8 +312,73 @@ def _typed(model: type[Args], fn):
 
 TOOLS = [as_tool(name, desc, model) for name, desc, model, _ in SPECS]
 MODELS = {name: model for name, _, model, _ in SPECS}
+FUNCTIONS = {name: fn for name, _, _, fn in SPECS}
 REGISTRY = {name: _typed(model, fn) for name, _, model, fn in SPECS}
 assert set(REGISTRY) == {t["function"]["name"] for t in TOOLS} == set(v0.REGISTRY)
+
+
+# Calling a tool: errors written for the model ---------------------------------------------------------
+# A good error says what was wrong, shows what right looks like, and suggests the next move. Nothing is
+# coerced: "#10482" or 10482.0 is refused, not quietly turned into 10482, so the habit stays visible (and
+# trainable), and a typo can never point at a different order.
+
+log = logging.getLogger("nova.tools")
+
+HINTS = {
+    "order_id": "Order numbers are 5 digits, like 10482, with no # or spaces. If unsure, call list_my_orders.",
+    "line_no": "line_no is the item's line number from get_order_status, like 1.",
+    "limit": "limit is a whole number from 1 to 10, like 5.",
+    "query": "query is a few words, like \"refund time for UPI\".",
+    "summary": "summary is one sentence for the teammate, 10 to 300 characters.",
+}
+EXAMPLES = {"list_my_orders": {"limit": 5}, "get_order_status": {"order_id": 10482},
+            "get_tracking": {"order_id": 10482}, "search_help_center": {"query": "return window electronics"},
+            "propose_return": {"order_id": 10482, "line_no": 1, "reason": "faulty"},
+            "escalate_to_human": {"reason": "other", "summary": "Customer asked for a person about a late order."}}
+GIVE_UP = ("Still invalid after a retry. Ask the customer to confirm the details, "
+           "or hand off with escalate_to_human.")
+
+
+def _explain(name: str, e: ValidationError) -> str:
+    """One plain sentence from Pydantic's first error. Never the raw error text or a stack trace."""
+    err = e.errors()[0]
+    field = str(err["loc"][0]) if err["loc"] else None
+    kind = err["type"]
+    example = json.dumps(EXAMPLES[name])
+    if kind in ("json_invalid", "model_type", "dict_type") or field is None:
+        return f"Arguments must be a JSON object, like {example}."
+    if kind == "extra_forbidden":
+        who = " The customer is always the signed-in account." if "customer" in field else ""
+        return f"{field} is not an argument of {name}.{who} Use only: {', '.join(MODELS[name].model_fields)}."
+    if kind == "literal_error":
+        allowed = ", ".join(get_args(MODELS[name].model_fields[field].annotation))
+        return f"{field} must be one of: {allowed}. Ask the customer if unsure."
+    hint = HINTS.get(field, err["msg"] + ".")
+    return f"{field} is required. {hint}" if kind == "missing" else hint
+
+
+def call_tool(name: str, raw_args: str | None, session: Session, attempts: dict) -> dict:
+    """Validate, then run. `attempts` counts failures per tool within one customer turn: after the second
+    failure on the same tool the model is steered to ask the customer or hand off, not to retry again."""
+    if name not in MODELS:
+        attempts[name] = attempts.get(name, 0) + 1
+        return {"error": "unknown_tool", "detail": f"There is no tool {name}. Available tools: {', '.join(MODELS)}."}
+    try:
+        args = MODELS[name].model_validate_json(raw_args or "{}")
+    except ValidationError as e:
+        attempts[name] = attempts.get(name, 0) + 1
+        return {"error": "invalid_arguments", "detail": GIVE_UP if attempts[name] >= 2 else _explain(name, e)}
+    try:
+        return FUNCTIONS[name](session, **args.model_dump())
+    except Exception:                               # a bug or an outage: logged here, never shown to the model
+        log.exception("tool %s failed", name)
+        attempts[name] = attempts.get(name, 0) + 1
+        return {"error": "tool_failed",
+                "detail": "The lookup failed on our side. Tell the customer you cannot check right now "
+                          "and offer a teammate."}
+
+
+DISPATCH = call_tool        # what the agent loop calls (agent/loop.py)
 
 
 def clear_agent_writes(owner_conn: psycopg.Connection) -> None:
