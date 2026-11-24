@@ -1,0 +1,24 @@
+{
+  "run": "2026-11-25_golden-sft2a",
+  "system": "candidate",
+  "provider": "openai",
+  "model": "sft2a",
+  "adapter": null,
+  "base_url": "https://jagjotsingh244-source--nova-student-serve.us-east.modal.run/v1",
+  "prompt_version": "v2",
+  "tools_version": "v2",
+  "state": true,
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 107,
+  "commit": "71f12cc+uncommitted changes",
+  "db_host": "localhost:5433",
+  "notes": "Modal L4, vLLM 0.34.0, bf16, adapters served as LoRA modules (max rank 16); one server for all four systems; prompt v2, tools v2, state block and history trimming as served",
+  "served_models": [
+    "sft2a"
+  ]
+}

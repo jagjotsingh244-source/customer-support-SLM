@@ -1,0 +1,136 @@
+{
+ "run_name": "sft2b-r16-lr1e-4-traj_v1",
+ "config": {
+  "model_name": "unsloth/Qwen3.5-2B",
+  "r": 16,
+  "lora_alpha": 16,
+  "lora_dropout": 0.0,
+  "target_modules": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "init_adapter": "data/adapters/sft1-r16-lr2e-4-bitext_v1",
+  "dataset_name": null,
+  "dataset_revision": null,
+  "data_path": "data/synthetic/nova-sft2-mix-v1",
+  "data_version": "traj_v1",
+  "tools": true,
+  "max_seq_length": 2432,
+  "train_rows": null,
+  "learning_rate": 0.0001,
+  "num_train_epochs": 1,
+  "per_device_train_batch_size": 8,
+  "gradient_accumulation_steps": 2,
+  "group_by_length": true,
+  "warmup_ratio": 0.05,
+  "lr_scheduler_type": "cosine",
+  "optim": "adamw_8bit",
+  "gradient_checkpointing": false,
+  "weight_decay": 0.0,
+  "seed": 3407,
+  "eval_steps": 100,
+  "save_steps": 100,
+  "logging_steps": 10,
+  "per_device_eval_batch_size": 8,
+  "probe_max_new_tokens": 120,
+  "output_root": "/outputs",
+  "hub_user": "123jagjot",
+  "run_prefix": "sft2b"
+ },
+ "plan": {
+  "examples_per_step": 16,
+  "steps": 593,
+  "warmup_steps": 30,
+  "evaluations": 6
+ },
+ "data": {
+  "train": {
+   "rows": 9485,
+   "max_tokens": 2432,
+   "mean_tokens": 1492.5,
+   "mean_trained_tokens": 44.5,
+   "mask_checked_rows": 200
+  },
+  "validation": {
+   "rows": 266,
+   "max_tokens": 2413,
+   "mean_tokens": 1458.6,
+   "mean_trained_tokens": 41.2,
+   "mask_checked_rows": 200
+  }
+ },
+ "dataset": {
+  "name": null,
+  "revision": null,
+  "path": "data/synthetic/nova-sft2-mix-v1"
+ },
+ "prompt_version": "v1",
+ "probe_customer": "Anay Vasa",
+ "probes": [
+  "hello",
+  "thanks, bye",
+  "i want to cancel my order",
+  "where is my refund??",
+  "where is my order?",
+  "your service is terrible",
+  "can you change my address",
+  "i want to talk to a real person"
+ ],
+ "git": {
+  "commit": "71f12cc",
+  "dirty": false,
+  "note": "run on Modal from a copy of the code at this commit (no .git in the container)"
+ },
+ "versions": {
+  "torch": "2.11.0",
+  "transformers": "5.17.0",
+  "peft": "0.21.2",
+  "unsloth": "2026.11.7",
+  "unsloth_zoo": "2026.11.7",
+  "accelerate": "1.15.0",
+  "datasets": "4.8.5",
+  "bitsandbytes": "0.50.2",
+  "triton": "3.6.0"
+ },
+ "gpu": "NVIDIA A100-SXM4-80GB",
+ "precision": "bf16",
+ "trainable_params": 10911744,
+ "hand_count": 10911744,
+ "wrapped_layers": 96,
+ "memory_gb": {
+  "after_load": 4.44,
+  "peak_allocated": 43.83,
+  "peak_reserved": 44.04
+ },
+ "train_seconds": 907,
+ "total_seconds": 983,
+ "train_loss": 0.2708,
+ "eval_losses": {
+  "0": {
+   "eval_validation_loss": 0.8775
+  },
+  "100": {
+   "eval_validation_loss": 0.3135
+  },
+  "200": {
+   "eval_validation_loss": 0.3016
+  },
+  "300": {
+   "eval_validation_loss": 0.2746
+  },
+  "400": {
+   "eval_validation_loss": 0.2501
+  },
+  "500": {
+   "eval_validation_loss": 0.2467
+  },
+  "593": {
+   "eval_validation_loss": 0.2452
+  }
+ }
+}

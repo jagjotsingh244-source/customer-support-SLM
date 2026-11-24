@@ -2,16 +2,17 @@
 
 One server answers for every system being compared: the base model under its own name and each adapter under a
 short name (sft1, sft2a, sft2b), the way vLLM serves LoRA modules. Same vLLM version, tool-call parser and
-settings as the student was checked with on Kaggle (requirements-serve.txt), on a cheaper card than the teacher's:
+settings as the student was checked with on Kaggle (requirements-serve.txt), on a cheaper card than the teacher's (an L4, or an A10G or L40S when no L4 is free):
 a 2B model needs about 5 GB.
 
 The adapters are uploaded from this machine into a Modal volume (no Hub token goes to Modal):
 
-    uv run --group teacher modal volume put nova-adapters data/adapters/sft1-r16-lr2e-4-bitext_v1 /sft1
-    uv run --group teacher modal volume put nova-adapters outputs/<sft2a run> /sft2a
-    uv run --group teacher modal volume put nova-adapters outputs/<sft2b run> /sft2b
+    # only the two adapter files per adapter (a run folder also holds its checkpoints)
+    uv run --group teacher modal volume put -f nova-adapters <adapter folder>/adapter_config.json /sft2a/adapter_config.json
+    uv run --group teacher modal volume put -f nova-adapters <adapter folder>/adapter_model.safetensors /sft2a/adapter_model.safetensors
     uv run --group teacher modal deploy serving/modal_student.py
     # then evals/run_eval.py --base-url <url>/v1 --model sft2a ... (OPENAI_API_KEY = TEACHER_API_KEY)
+    # adapters are read when a container starts: after adding one, stop the app (modal app stop -y nova-student)
 """
 
 import os
@@ -33,7 +34,7 @@ image = (
 )
 
 
-@app.function(image=image, gpu="L4", volumes={"/hf": weights, "/adapters": adapters},
+@app.function(image=image, gpu=["L4", "A10G", "L40S"], volumes={"/hf": weights, "/adapters": adapters},
               secrets=[modal.Secret.from_name("nova-teacher")], scaledown_window=300, timeout=8 * 3600,
               max_containers=1)
 @modal.concurrent(max_inputs=32)

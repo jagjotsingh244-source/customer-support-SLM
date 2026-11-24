@@ -76,10 +76,20 @@ a reply): proven on two-tool-call steps, where the template marks three spans an
 |---|---|
 | Teacher tests, pilots, the 397B attempt | about $6.5 |
 | Full run (3,270 conversations incl. pilots), tone and fact judging | about $11 |
-| Training SFT-2a and SFT-2b, golden-set comparison | see `03_sft2.md` |
+| Training SFT-2a and SFT-2b (about 15 minutes each on one A100) | about $0.80 |
+| Golden-set comparison, four systems on one GPU server | about $0.40 |
+| **Whole stage** | **about $18.3 of the $30 credit** |
 
 Throughput: about 15 conversations a minute at 20 in parallel; at 48 the prefix cache hit rate collapsed from 47% to
 8% and throughput fell to 9 a minute.
+
+## The result (`evals/reports/03_sft2.md`)
+
+Golden set, 107 cases, correct on everything: **base 29, SFT-1 11, SFT-2a 69, SFT-2b 67.** Both adapters tell a
+"thanks!" from an order question from step 100 of training. SFT-2a (from the base model) is served; starting from
+SFT-1 bought nothing, since SFT-1's habits had to be unlearned first. What still fails traces mostly to the data:
+hand-offs for parcels stuck far past their estimate (the filters taught "late is not lost" too well), out-of-scope
+requests declined without offering a teammate, and help-center sections misread.
 
 ## Mishaps worth keeping
 
@@ -88,3 +98,7 @@ Throughput: about 15 conversations a minute at 20 in parallel; at 48 the prefix 
 - A first request lost during a cold start left the generator waiting for 30 minutes: it now polls health first.
 - A session restart killed background jobs: long runs are launched detached.
 - A shell loop waiting for a run to finish matched its own command line and never ended.
+- Four eval runs sharing one database would clear each other's return proposals between cases: each ran on its own
+  copy (`CREATE DATABASE ... TEMPLATE nimbus`).
+- After a redeploy no container started for about ten minutes (no L4 free): the eval server now falls back to an
+  A10G or an L40S.
