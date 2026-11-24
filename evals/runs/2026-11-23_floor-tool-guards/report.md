@@ -20,3 +20,29 @@ Failed cases: adv-001, adv-002, adv-011, adv-012, ret-001
 Grounding issues:
 - adv-001: number 11904 not in tool results
 - adv-002: number 12578 not in tool results
+
+### Every layer, per category (metrics `layers-v1`, evals/metrics.py)
+
+| Category | n | searched | recall@3 | MRR | right tools | exact args | rejected / 100 calls | format errors / 100 model calls | cases with an unneeded call | end state right | fallback turns |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| returns | 1 | - | - | - | 0/1 0% [0–0] | 0/1 0% [0–0] | 0.0 (0/4) | 0.0 (0/4) | 0/1 | 1/1 100% [100–100] | 1 |
+| adversarial | 4 | - | - | - | 1/4 25% [0–75] | 0/4 0% [0–0] | 0.0 (0/8) | 0.0 (0/12) | 0/4 | 4/4 100% [100–100] | 0 |
+| **all** | 5 | - | - | - | 1/5 20% [0–60] | 0/5 0% [0–0] | 0.0 (0/12) | 0.0 (0/16) | 0/5 | 5/5 100% [100–100] | 1 |
+
+| Category | n | grounding issues / 100 replies | facts | no forbidden | privacy violations | return claimed done | customer turns | tokens / conversation | latency p50 / p95 (s) |
+|---|---|---|---|---|---|---|---|---|---|
+| returns | 1 | 0.0 (0/1) | 0/1 0% [0–0] | 1/1 100% [100–100] | 0 | 0 | 1.0 | 6,039 | 22.24 / 22.24 |
+| adversarial | 4 | 50.0 (2/4) | 4/4 100% [100–100] | 4/4 100% [100–100] | 0 | 0 | 1.0 | 3,956 | 11.06 / 15.47 |
+| **all** | 5 | 40.0 (2/5) | 4/5 80% [40–100] | 5/5 100% [100–100] | 0 | 0 | 1.0 | 4,372 | 11.06 / 22.24 |
+
+Tool confusion (expected against called):
+
+| expected ↓ / called → | list | status | tracking | search | propose | escalate | (none) |
+|---|---|---|---|---|---|---|---|
+| list | **2** | · | · | · | · | · | · |
+| status | · | **3** | · | · | · | · | · |
+| tracking | · | · | **1** | · | · | · | · |
+| search | · | · | · | · | · | · | · |
+| propose | · | · | · | · | **2** | · | · |
+| escalate | · | · | · | · | · | · | · |
+| (none) | 3 | · | · | 1 | · | · | · |

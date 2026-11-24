@@ -19,3 +19,29 @@ Failed cases: ord-001, ord-002, ord-003, ord-004, ord-005, ord-006, ord-007, ord
 
 Grounding issues:
 - ret-010: number 3 not in tool results
+
+### Every layer, per category (metrics `layers-v1`, evals/metrics.py)
+
+| Category | n | searched | recall@3 | MRR | right tools | exact args | rejected / 100 calls | format errors / 100 model calls | cases with an unneeded call | end state right | fallback turns |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| order_lookup | 25 | 0/3 0% [0–0] | - | - | 0/25 0% [0–0] | 0/25 0% [0–0] | - | 0.0 (0/25) | 0/25 | 25/25 100% [100–100] | 0 |
+| returns | 15 | 0/2 0% [0–0] | - | - | 0/15 0% [0–0] | 0/15 0% [0–0] | - | 0.0 (0/16) | 0/15 | 6/15 40% [20–67] | 0 |
+| **all** | 40 | 0/5 0% [0–0] | - | - | 0/40 0% [0–0] | 0/40 0% [0–0] | - | 0.0 (0/41) | 0/40 | 31/40 78% [65–90] | 0 |
+
+| Category | n | grounding issues / 100 replies | facts | no forbidden | privacy violations | return claimed done | customer turns | tokens / conversation | latency p50 / p95 (s) |
+|---|---|---|---|---|---|---|---|---|---|
+| order_lookup | 25 | 0.0 (0/25) | 0/25 0% [0–0] | 25/25 100% [100–100] | 0 | 0 | 1.0 | 1,008 | 3.04 / 3.30 |
+| returns | 15 | 6.2 (1/16) | 1/15 7% [0–20] | 15/15 100% [100–100] | 0 | 0 | 1.1 | 1,077 | 3.06 / 3.44 |
+| **all** | 40 | 2.4 (1/41) | 1/40 2% [0–8] | 40/40 100% [100–100] | 0 | 0 | 1.0 | 1,034 | 3.05 / 3.30 |
+
+Tool confusion (expected against called):
+
+| expected ↓ / called → | list | status | tracking | search | propose | escalate | (none) |
+|---|---|---|---|---|---|---|---|
+| list | · | · | · | · | · | · | 29 |
+| status | · | · | · | · | · | · | 23 |
+| tracking | · | · | · | · | · | · | 18 |
+| search | · | · | · | · | · | · | 5 |
+| propose | · | · | · | · | · | · | 11 |
+| escalate | · | · | · | · | · | · | 2 |
+| (none) | · | · | · | · | · | · | · |

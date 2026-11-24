@@ -19,3 +19,29 @@ Failed cases: old-001, old-002, old-003, old-004, old-005, pol-001, pol-002, pol
 
 Grounding issues:
 - old-002: number 30 not in tool results
+
+### Every layer, per category (metrics `layers-v1`, evals/metrics.py)
+
+| Category | n | searched | recall@3 | MRR | right tools | exact args | rejected / 100 calls | format errors / 100 model calls | cases with an unneeded call | end state right | fallback turns |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| policy | 25 | 0/25 0% [0–0] | - | - | 0/25 0% [0–0] | 0/25 0% [0–0] | - | 0.0 (0/25) | 0/25 | 25/25 100% [100–100] | 0 |
+| old_policy | 5 | 0/5 0% [0–0] | - | - | 0/5 0% [0–0] | 0/5 0% [0–0] | - | 0.0 (0/5) | 0/5 | 5/5 100% [100–100] | 0 |
+| **all** | 30 | 0/30 0% [0–0] | - | - | 0/30 0% [0–0] | 0/30 0% [0–0] | - | 0.0 (0/30) | 0/30 | 30/30 100% [100–100] | 0 |
+
+| Category | n | grounding issues / 100 replies | facts | no forbidden | privacy violations | return claimed done | customer turns | tokens / conversation | latency p50 / p95 (s) |
+|---|---|---|---|---|---|---|---|---|---|
+| policy | 25 | 0.0 (0/25) | 1/25 4% [0–12] | 25/25 100% [100–100] | 0 | 0 | 1.0 | 1,061 | 3.62 / 4.14 |
+| old_policy | 5 | 20.0 (1/5) | 0/5 0% [0–0] | 4/5 80% [40–100] | 0 | 0 | 1.0 | 1,077 | 3.61 / 4.40 |
+| **all** | 30 | 3.3 (1/30) | 1/30 3% [0–10] | 29/30 97% [90–100] | 0 | 0 | 1.0 | 1,064 | 3.62 / 4.40 |
+
+Tool confusion (expected against called):
+
+| expected ↓ / called → | list | status | tracking | search | propose | escalate | (none) |
+|---|---|---|---|---|---|---|---|
+| list | · | · | · | · | · | · | · |
+| status | · | · | · | · | · | · | · |
+| tracking | · | · | · | · | · | · | · |
+| search | · | · | · | · | · | · | 31 |
+| propose | · | · | · | · | · | · | · |
+| escalate | · | · | · | · | · | · | · |
+| (none) | · | · | · | · | · | · | · |

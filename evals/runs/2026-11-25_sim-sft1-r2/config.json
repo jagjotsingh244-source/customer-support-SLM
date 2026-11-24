@@ -1,0 +1,36 @@
+{
+  "run": "2026-11-25_sim-sft1-r2",
+  "system": "candidate",
+  "provider": "openai",
+  "model": "sft1",
+  "base_url": "https://jagjotsingh244-source--nova-student-serve.us-east.modal.run/v1",
+  "prompt_version": "v2",
+  "tools_version": "v2",
+  "state": true,
+  "temperature": 0.2,
+  "sampling": "default",
+  "max_model_calls_per_turn": 4,
+  "max_customer_turns": 8,
+  "case_set": "simulated",
+  "cases": 40,
+  "simulator": {
+    "url": "https://jagjotsingh244-source--nova-teacher-27b-serve.us-east.modal.run",
+    "model": "teacher",
+    "sampling": {
+      "temperature": 1.0,
+      "top_p": 0.95,
+      "extra_body": {
+        "top_k": 40,
+        "chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      }
+    }
+  },
+  "commit": "3330bf2+uncommitted changes",
+  "db": "localhost:5433/nimbus_sft1",
+  "notes": "Modal L4, vLLM 0.34.0, bf16, adapters served as LoRA modules (max rank 16); one server for all four systems; prompt v2, tools v2, state block and history trimming as served; repeated for pass^3",
+  "served_models": [
+    "sft1"
+  ]
+}

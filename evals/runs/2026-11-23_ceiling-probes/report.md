@@ -38,3 +38,35 @@ Tool-call format errors (a call left as text, or an empty reply): 0.
 Grounding: 0 of 12 replies have an issue (0 per 100 replies), 0 issues.
 
 Failed cases: esc-phr-09, ord-phr-01, ord-phr-04, ord-phr-07, ord-phr-10, pol-phr-03, pol-phr-05, pol-phr-08, ret-phr-02, ret-phr-06, ret-phr-11, una-phr-12
+
+### Every layer, per category (metrics `layers-v1`, evals/metrics.py)
+
+| Category | n | searched | recall@3 | MRR | right tools | exact args | rejected / 100 calls | format errors / 100 model calls | cases with an unneeded call | end state right | fallback turns |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| policy | 3 | 3/3 100% [100–100] | 3/3 100% [100–100] | 0.83 | 2/3 67% [0–100] | 0/3 0% [0–0] | 0.0 (0/11) | 0.0 (0/10) | 0/3 | 3/3 100% [100–100] | 1 |
+| order_lookup | 4 | - | - | - | 1/4 25% [0–75] | 0/4 0% [0–0] | 0.0 (0/15) | 0.0 (0/12) | 0/4 | 4/4 100% [100–100] | 1 |
+| returns | 3 | 1/1 100% [100–100] | 0/1 0% [0–0] | 0.00 | 1/3 33% [0–100] | 0/3 0% [0–0] | 0.0 (0/15) | 0.0 (0/11) | 0/3 | 1/3 33% [0–100] | 0 |
+| unanswerable | 1 | - | - | - | 0/1 0% [0–0] | 0/1 0% [0–0] | 0.0 (0/3) | 0.0 (0/3) | 0/1 | 0/1 0% [0–0] | 0 |
+| escalation | 1 | - | - | - | 0/1 0% [0–0] | 0/1 0% [0–0] | 0.0 (0/11) | 0.0 (0/4) | 0/1 | 0/1 0% [0–0] | 1 |
+| **all** | 12 | 4/4 100% [100–100] | 3/4 75% [25–100] | 0.62 | 4/12 33% [8–58] | 0/12 0% [0–0] | 0.0 (0/55) | 0.0 (0/40) | 0/12 | 8/12 67% [42–92] | 3 |
+
+| Category | n | grounding issues / 100 replies | facts | no forbidden | privacy violations | return claimed done | customer turns | tokens / conversation | latency p50 / p95 (s) |
+|---|---|---|---|---|---|---|---|---|---|
+| policy | 3 | 0.0 (0/3) | 2/3 67% [0–100] | 3/3 100% [100–100] | 0 | 0 | 1.0 | 4,795 | 7.80 / 15.88 |
+| order_lookup | 4 | 0.0 (0/4) | 3/4 75% [25–100] | 4/4 100% [100–100] | 0 | 0 | 1.0 | 3,936 | 8.14 / 13.05 |
+| returns | 3 | 0.0 (0/3) | 1/3 33% [0–100] | 2/3 67% [0–100] | 0 | 0 | 1.0 | 6,109 | 10.83 / 10.94 |
+| unanswerable | 1 | 0.0 (0/1) | 1/1 100% [100–100] | 1/1 100% [100–100] | 0 | 0 | 1.0 | 3,618 | 6.57 / 6.57 |
+| escalation | 1 | 0.0 (0/1) | 0/1 0% [0–0] | 1/1 100% [100–100] | 0 | 0 | 1.0 | 6,306 | 37.15 / 37.15 |
+| **all** | 12 | 0.0 (0/12) | 7/12 58% [33–83] | 11/12 92% [75–100] | 0 | 0 | 1.0 | 4,865 | 8.14 / 37.15 |
+
+Tool confusion (expected against called):
+
+| expected ↓ / called → | list | status | tracking | search | propose | escalate | (none) |
+|---|---|---|---|---|---|---|---|
+| list | **5** | · | · | · | · | · | · |
+| status | · | **3** | · | · | · | · | · |
+| tracking | · | · | **5** | · | · | · | · |
+| search | · | · | · | **5** | · | · | · |
+| propose | · | · | · | · | **2** | · | · |
+| escalate | 1 | · | · | 1 | · | · | · |
+| (none) | 1 | 4 | 2 | 26 | · | · | · |

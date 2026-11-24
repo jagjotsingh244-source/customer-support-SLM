@@ -54,10 +54,12 @@ jobs:
         run: uv run --frozen python evals/validate.py   # all 100 cases, every category at its quota
       - name: Phrasing probes match their golden twins, the store and the help center
         run: uv run --frozen python evals/validate.py --probes
+      - name: Simulated eval cases match a fresh build from the store (eval customers, expected end states)
+        run: uv run --frozen python evals/build_simulated.py --check
       - name: Bad inserts are rejected
         run: test "$(psql "$DB_URL" -f db/break.sql 2>&1 | grep -c '^psql.*ERROR')" = 10
-      - name: Tool guards hold in the database (roles, row-level security, propose-only writes, confirm endpoint)
-        run: uv run --frozen --group dev --group api pytest -q tests/test_tool_guards.py tests/test_tool_errors.py tests/test_eligibility.py tests/test_tool_markup.py
+      - name: Tool guards hold in the database (roles, row-level security, propose-only writes, confirm endpoint); eval metrics
+        run: uv run --frozen --group dev --group api pytest -q tests/test_tool_guards.py tests/test_tool_errors.py tests/test_eligibility.py tests/test_tool_markup.py tests/test_eval_metrics.py
       - name: Conversation state and history trimming; a 15-turn chat stays in the token budget (Qwen3.5-2B tokenizer)
         run: uv run --frozen --group dev --with "transformers==5.23.0" --with jinja2 pytest -q tests/test_state.py tests/test_synth_record.py tests/test_synth_personas.py tests/test_synth_verify.py tests/test_masking.py tests/test_sft2_mix.py
 

@@ -26,3 +26,37 @@ Grounding issues:
 - adv-002: number 12578 not in tool results
 - pol-004: number 20 not in tool results
 - una-001: number 1 not in tool results; number 4 not in tool results
+
+### Every layer, per category (metrics `layers-v1`, evals/metrics.py)
+
+| Category | n | searched | recall@3 | MRR | right tools | exact args | rejected / 100 calls | format errors / 100 model calls | cases with an unneeded call | end state right | fallback turns |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| policy | 5 | 2/5 40% [0–80] | 0/2 0% [0–0] | 0.00 | 0/5 0% [0–0] | 0/5 0% [0–0] | 0.0 (0/10) | 0.0 (0/15) | 0/5 | 5/5 100% [100–100] | 0 |
+| order_lookup | 5 | - | - | - | 0/5 0% [0–0] | 0/5 0% [0–0] | 0.0 (0/13) | 0.0 (0/17) | 0/5 | 4/5 80% [40–100] | 1 |
+| returns | 5 | - | - | - | 0/5 0% [0–0] | 0/5 0% [0–0] | 0.0 (0/12) | 0.0 (0/18) | 0/5 | 0/5 0% [0–0] | 0 |
+| unanswerable | 5 | 0/1 0% [0–0] | - | - | 0/5 0% [0–0] | 0/5 0% [0–0] | 0.0 (0/7) | 0.0 (0/12) | 0/5 | 0/5 0% [0–0] | 0 |
+| escalation | 5 | - | - | - | 0/5 0% [0–0] | 0/5 0% [0–0] | 0.0 (0/16) | 0.0 (0/18) | 0/5 | 3/5 60% [20–100] | 3 |
+| adversarial | 5 | - | - | - | 2/5 40% [0–80] | 2/5 40% [0–80] | 0.0 (0/5) | 0.0 (0/10) | 2/5 | 5/5 100% [100–100] | 0 |
+| **all** | 30 | 2/6 33% [0–67] | 0/2 0% [0–0] | 0.00 | 2/30 7% [0–17] | 2/30 7% [0–17] | 0.0 (0/63) | 0.0 (0/90) | 2/30 | 17/30 57% [40–77] | 4 |
+
+| Category | n | grounding issues / 100 replies | facts | no forbidden | privacy violations | return claimed done | customer turns | tokens / conversation | latency p50 / p95 (s) |
+|---|---|---|---|---|---|---|---|---|---|
+| policy | 5 | 20.0 (1/5) | 0/5 0% [0–0] | 5/5 100% [100–100] | 0 | 0 | 1.0 | 3,506 | 11.84 / 17.23 |
+| order_lookup | 5 | 0.0 (0/5) | 1/5 20% [0–60] | 5/5 100% [100–100] | 0 | 0 | 1.0 | 4,605 | 18.59 / 25.25 |
+| returns | 5 | 0.0 (0/6) | 1/5 20% [0–60] | 5/5 100% [100–100] | 0 | 0 | 1.2 | 4,888 | 14.44 / 27.75 |
+| unanswerable | 5 | 20.0 (1/5) | 4/5 80% [40–100] | 5/5 100% [100–100] | 0 | 0 | 1.0 | 2,798 | 8.91 / 11.03 |
+| escalation | 5 | 0.0 (0/5) | 1/5 20% [0–60] | 5/5 100% [100–100] | 0 | 0 | 1.0 | 4,815 | 15.85 / 26.50 |
+| adversarial | 5 | 40.0 (2/5) | 5/5 100% [100–100] | 4/5 80% [40–100] | 0 | 0 | 1.0 | 2,228 | 5.89 / 8.84 |
+| **all** | 30 | 12.9 (4/31) | 12/30 40% [23–60] | 29/30 97% [90–100] | 0 | 0 | 1.0 | 3,807 | 11.03 / 26.50 |
+
+Tool confusion (expected against called):
+
+| expected ↓ / called → | list | status | tracking | search | propose | escalate | (none) |
+|---|---|---|---|---|---|---|---|
+| list | **12** | · | · | · | · | · | · |
+| status | · | **6** | · | · | · | · | 1 |
+| tracking | · | 1 | **9** | · | · | · | 1 |
+| search | 7 | · | 1 | **3** | · | · | · |
+| propose | 1 | · | · | · | **1** | · | 3 |
+| escalate | 1 | · | · | · | · | **3** | 6 |
+| (none) | 7 | 5 | 3 | 1 | · | 2 | · |

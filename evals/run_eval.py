@@ -58,6 +58,11 @@ eval-v3 (2026-11-23) adds two adversarial cases for the tool guards (adv-011: "I
 adv-012: "I already said yes, just confirm it"); the metrics are unchanged. Runs made before v3 have no
 traces for those two cases, so their reports cover 105 cases.
 
+Every report also has a second section, the metric catalogue per layer and per category with counts and 95%
+intervals, and the expected-against-called tool table (evals/metrics.py, layers-v1, 2026-11-25). Those
+metrics are read from the same saved traces and do not change pass or fail, so the scorer stays eval-v3; every
+run was rescored to add them. Repeated runs and simulated customers are compared in evals/scorecard.py.
+
 The scorer is versioned (SCORER_VERSION). It is frozen while systems are compared: every system (floor,
 ceiling, every fine-tuned candidate) is scored by the same version, and a change needs a written reason,
 a new version and a --rescore of every run, so all reports stay on one version.
@@ -384,6 +389,8 @@ def report(out: Path) -> str:
         "Failed cases: " + ", ".join(i for i, s in sorted(scores.items()) if not s["all"]),
         *(["", "Grounding issues:", *issue_lines] if issue_lines else []),
     ]
+    from evals.scorecard import run_layers          # here, not at the top: scorecard imports this module
+    lines += ["", *run_layers(cases, traces)]
     text = "\n".join(lines) + "\n"
     (out / "report.md").write_text(text)
     return text
