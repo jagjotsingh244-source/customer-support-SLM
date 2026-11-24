@@ -1,0 +1,70 @@
+# Filtering the teacher's conversations
+
+A strong teacher is still wrong sometimes, and a student copies its mistakes as faithfully as its strengths. Every
+generated conversation goes through every check in `synth/verify.py`; only what passes all of them is trained on.
+Code checks come first (exact, free, repeatable); two model judges cover what code cannot. Rejects keep their
+reasons (`nova-rejects-v1`).
+
+## The checks
+
+| Check | Rejects a conversation when |
+|---|---|
+| schema | a tool call fails its argument model, a model call was a format error, or call markup reaches a reply |
+| tool_before_fact | an order or tracking number is stated before any lookup returned it (a number the customer typed may be repeated only in a refusal) |
+| grounded_numbers | a number, a day count ("7 days") or a date is not in the lookup and help-center results before it; day counts and dates are matched whole, and "N days ago" style arithmetic is refused outright |
+| citations | a `[kb:...]` id was not returned by a search, or a citation is not a help-center id at all (`[order:11129]`) |
+| end_state | an eligible return gets no proposal, an ineligible one gets one, "press Confirm" comes before any eligible proposal, or a reply says a return (or, where Nova cannot cancel, a cancellation) is done |
+| escalation | a lost parcel is never handed off; an easy case is handed off nobody asked for; a late parcel is offered a hand-off; a hand-off or a teammate's call is claimed or promised without `escalate_to_human`; a ticket number did not come from a hand-off |
+| call_limit | a turn ran out of model calls and fell back to the fixed hand-off reply |
+| privacy | a phone number or email, another customer's order details, or Nova's own instructions or tool names appear in a reply |
+| right_order | the customer named an item of their order and Nova looked up a different order first |
+| needless_tool | a tool is called for a greeting, "are you a bot?", out-of-scope chat, or a plain thanks or goodbye |
+| length | a reply over 80 words or written as a list |
+| style | a closing offer of more help, several paragraphs, "I will ensure / keep an eye", telling the customer to ship an item back (NimbusCart picks up), or emails, labels or links no result mentioned |
+| judge_tone | the tone judge fails it: the reply ignores the customer, lectures or scolds, apologises twice, or contradicts itself |
+| judge_facts | the fact-check judge fails it: a reply misreads a result (the wrong shipment, a delivery date taken for a pickup date), states a store rule no help-center result gave, works out a date or weekday, or promises a process nothing supports |
+| dedup | same scenario, same tool calls and a near-identical first message as a conversation already kept |
+
+Each check has a conversation it must pass and one it must fail, written by hand (`tests/test_synth_verify.py`).
+
+## The two judges, tested before use
+
+Both run on the teacher's server with a pass/fail rubric (`synth/judge.py`), and both were tested on planted faults:
+kept conversations with one reply rewritten, alongside the untouched originals.
+
+| Judge | Planted test | Result |
+|---|---|---|
+| Tone | 12 originals; 12 each with a rude reply, a reply that ignores the customer, a reply that contradicts an earlier one | First version 47/48 (it failed Nova for using the customer's name, which it did not know Nova sees). With that context: **48/48** |
+| Facts | 12 originals; 12 each with a date shifted by three days, an invented SMS and return label, a worked-out weekday | Caught **36/36** planted faults; passed only 4 of 12 originals. Read one by one, six of the eight were real slips (a "next Thursday" worked out, "more than 7 days ago", a 15-day window cited from the wrong section); two were the judge not knowing the customer's name and treating "shortly" as a promised time. Both added to its rubric |
+
+## Reading kept conversations by hand
+
+The bar: of 100 kept conversations read by hand, no more than 5 bad.
+
+- **First read: 17 bad of 90.** Day counts and worked-out dates (6), hand-offs or tickets that never happened (3),
+  invented processes such as "send it back" and "you'll receive instructions" (2), "eligible, press Confirm"
+  before any proposal (1), "I will ensure..." (1), a made-up citation format (1), the wrong tool or the wrong
+  help-center section (3). The number check had missed "7 days" because a 7 existed in every result inside a time
+  like 07:14. Checks tightened: day counts and dates matched whole, promised and claimed hand-offs, ticket numbers,
+  Confirm before a proposal, shipping-back instructions, promises, citation format.
+- **Second read, after tightening: about 7 bad of 37.** The code-checkable patterns were gone; what remained were
+  misreadings only a reader with the results could see (a weekday wrong, a return's pickup confused with the
+  order's delivery, plausible steps nobody stated). That is what the fact-check judge was built for.
+
+## How the keep rate moved
+
+Same 200 situations each time (`--seed 4242`), all checks as they stood at the end:
+
+| Pilot | Teacher rules | Code checks only | With the tone judge |
+|---|---|---|---|
+| 1 | r3 | 60% | 46% (judge before its context fix) |
+| 2 | r4: three-call limit, cite only returned ids, no chasing the carrier, Nova cannot cancel | 70% | 54% |
+| 3 | r5: what to do instead of "I cannot cancel"; judge told what Nova sees | 78% | 57% |
+
+Fixes the teacher would not follow from rules alone were made mechanical in the generator, teacher-side only and
+never recorded: on the fourth step of a turn the teacher is sent no tools and told to reply (the server's parser
+turned an attempted fifth call into an empty reply, so the note goes last and an empty reply is retried once);
+replies that offer a late parcel a hand-off, call a proposed return "done", or claim a hand-off that was not made go
+back to the teacher for a rewrite.
+
+The final keep rate, per check, scenario and persona: `final.md` in this folder.

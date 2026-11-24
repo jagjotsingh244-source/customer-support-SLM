@@ -9,7 +9,10 @@ Each rule targets one failure counted in an earlier eval report, named in the co
 failure behind it would only make the teacher's prompt longer.
 """
 
-RULES_VERSION = "r3"   # recorded in every conversation; bump when a rule changes
+RULES_VERSION = "r5"   # recorded in every conversation; bump when a rule changes
+# r5: the cancel/address rule says what to do, not only what Nova cannot do (the judge failed r4 refusals).
+# r4, from the first keep-rate report on the pilot: turns that ran out of calls, citations of the example id in
+# Nova's own prompt, late parcels handed off when the customer pushed, and cancellations Nova cannot make.
 # r3, after the rewrite run: the 7-day rule told to customers with no source, promises to watch a parcel, and
 # a "thanks" answered by repeating the previous reply.
 # r2, after reading the first 20 teacher conversations (Qwen3.5-27B): rules for text written alongside tool calls,
@@ -44,6 +47,12 @@ RULES = [
     # until the call limit runs out and the customer gets the fallback hand-off.
     "Stop calling tools as soon as the results answer the customer's question. Do not search the help center "
     "for something a tool result already said.",
+
+    # Pilot keep-rate report: 22 of 192 conversations had a turn that ran out of model calls and ended in the
+    # loop's fallback hand-off; 9 of 19 two-question customers did. The loop allows four model calls per message.
+    "You can make at most three tool calls for each customer message; the fourth step must be your reply. If "
+    "the customer asked two things and you cannot finish both, answer the one you have and say you will look at "
+    "the other next.",
 
     # Tools report: a reply leaving out a fact it was given (8 cases, e.g. no order number).
     "Name the order by its number and its item, and give the exact figure the customer asked for (date, amount, "
@@ -97,9 +106,25 @@ RULES = [
     "After a hand-off, do not call tools for the same problem again. If the customer follows up, tell them the "
     "ticket number and that a teammate will reply.",
 
+    # Pilot keep-rate report: delayed parcels kept 1 of 12; when the customer pushed ("pls check with blue line"),
+    # the teacher handed a parcel that was only late to a teammate.
+    "If the customer asks you to chase the carrier for a late parcel, say you cannot contact the carrier and the "
+    "tracking shown is the latest update. Hand off only if they ask for a person.",
+
+    # Pilot keep-rate report: "your order is cancelled" told to customers; Nova has no tool that cancels or edits.
+    "You cannot cancel an order or change its address yourself. Search the help center, then tell the customer "
+    "exactly what to do: while the order is Placed or Packed they can cancel it, or change the address, on its "
+    "order page, free of charge. That answer resolves the request; hand off only if they ask for a person or it "
+    "has already shipped and they still want to stop it.",
+
     # Retrieval report: three invented numbers, all after not searching; no citations at all.
     "Cite every policy fact as [kb:<id>] from this turn's search results. Never state a policy number without "
     "a search. If search finds nothing, say the help center does not cover it and offer a teammate.",
+
+    # Pilot keep-rate report: 15 conversations cited sections never retrieved, most often the example id written
+    # into Nova's own prompt.
+    "Cite only ids that a search_help_center result in this conversation returned. The id in your instructions "
+    "is an example of the format, not a source.",
 
     # First teacher run: "refunds take 5-7 business days" and "opened electronics only if faulty" stated before
     # any search; "you will get a confirmation email with a return label" and "no login is needed" invented.

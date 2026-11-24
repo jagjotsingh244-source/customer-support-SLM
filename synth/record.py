@@ -46,6 +46,24 @@ def with_student_prompt(messages: list[dict], state_block: str, budget: int, cou
     return fit([system] + [clean(m) for m in messages[1:]], budget, count_tokens, keep_turns)
 
 
+CALL_BUDGET = 3   # tool calls per customer message before the reply must come (the loop allows 4 model calls)
+# Teacher-only, never recorded. Two pilots ran out of calls in 22 and 27 of about 200 conversations although the
+# rules named the limit; told at the moment, the teacher answers with what it has, and the student learns from
+# the recording that the fourth step is a reply.
+LAST_STEP = ("You have used your three tool calls for this message. Reply to the customer now with what the "
+             "results show; do not call another tool.")
+
+
+def calls_this_turn(messages: list[dict]) -> int:
+    """Tool calls made since the last customer message."""
+    n = 0
+    for m in reversed(messages):
+        if m["role"] == "user":
+            break
+        n += len(m.get("tool_calls") or [])
+    return n
+
+
 @dataclass
 class RecordingContext(Context):
     """A Context for the teacher: sends the teacher its prompt, and records the student's view of every call."""
@@ -57,7 +75,10 @@ class RecordingContext(Context):
         state = self.state.render()
         student = with_student_prompt(messages, state, self.budget, self.count_tokens, self.keep_turns)
         self.steps.append({"at": len(messages), "messages": student})
-        self.last_sent = [{"role": "system", "content": self.teacher_system + "\n\n" + state}] + student[1:]
+        teacher = self.teacher_system + "\n\n" + state
+        if calls_this_turn(student) >= CALL_BUDGET:
+            teacher += "\n\n" + LAST_STEP
+        self.last_sent = [{"role": "system", "content": teacher}] + student[1:]
         return self.last_sent
 
 

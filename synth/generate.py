@@ -39,6 +39,9 @@ from synth.personas import BY_NAME, PERSONAS, Grid, Openers, dress  # noqa: E402
 from synth.scenarios import SCENARIOS, World, pick  # noqa: E402
 from synth.simulator import CustomerSimulator  # noqa: E402
 from synth.style import REWRITE_NOTE, style_problems  # noqa: E402
+from synth.record import LAST_STEP  # noqa: E402
+from synth.verify import CLAIMED_HANDOFF, HANDOFF_OFFER, LATE, PERSON_ASK, RETURN_DONE  # noqa: E402
+from agent.grounding import CITE, retrieved_ids  # noqa: E402
 
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
 RAW = ROOT / "data" / "synthetic" / "raw"
@@ -66,9 +69,67 @@ def env_from_dotenv(*keys: str) -> None:
             os.environ[k.strip()] = v.strip().strip('"').strip("'")
 
 
+def source_problems(reply: str, tool_texts: list[str]) -> list[str]:
+    """Numbers and citations the reply cannot back up, as rewrite instructions (the same test as the filter's
+    grounded_numbers and citations checks; today's date in the system prompt counts as a source)."""
+    out = []
+    bad = [x.split()[1] for x in grounding_issues(CITE.sub(" ", reply), tool_texts) if x.startswith("number")]
+    if bad:
+        out.append(f"it states {', '.join(bad)}, which no tool or help-center result gave; leave out numbers and "
+                   "rules you were not given")
+    known = retrieved_ids(tool_texts)
+    if cited := [c for c in CITE.findall(reply) if c not in known]:
+        out.append(f"it cites {', '.join(cited)}, which no search returned; cite only returned ids, or none")
+    return out
+
+
+def policy_problems(reply: str, messages: list[dict], scenario: str, had_return: bool = False) -> list[str]:
+    """Policy the teacher keeps breaking despite its rules, as rewrite instructions (the same tests as the
+    filter's escalation and end_state checks): offering a teammate for a parcel that is only late (18 and 22
+    conversations in two pilots), saying a return is done or initiated when it is only proposed (8 of 13 return
+    conversations in the third), and saying it handed off without calling escalate_to_human."""
+    out = []
+    asked = PERSON_ASK.search("\n".join(m["content"] for m in messages if m["role"] == "user"))
+    if scenario in LATE and HANDOFF_OFFER.search(reply) and not asked:
+        out.append("it offers a teammate for a parcel that is only late and still with the carrier; give the last "
+                   "scan and say it is still on its way, with no hand-off")
+    if RETURN_DONE.search(reply) and not had_return:
+        out.append("it says the return is done or started; it is only proposed until the customer presses "
+                   "Confirm, and you cannot see whether they did")
+    handed = any(t["function"]["name"] == "escalate_to_human" for m in messages for t in m.get("tool_calls") or [])
+    if CLAIMED_HANDOFF.search(reply) and not handed:
+        out.append("it says you handed the customer to a teammate, but you never called escalate_to_human; do not "
+                   "claim it")
+    return out
+
+
+class LastStepWithoutTools:
+    """Wraps the teacher's client for the last step of a turn (the request carries LAST_STEP, synth/record.py).
+
+    Told in the system prompt, the teacher still called a fourth tool in 19 turns of the third pilot. Sent with
+    no tools, it still tried in 38 turns of the first 500 of the full run, and the server's tool parser turned
+    each attempt into an empty reply. So the request also ends with the note as the last thing the teacher reads,
+    and an empty reply is asked for once more. All of this is the teacher's view only: the recorded step keeps
+    Nova's own request, and training renders it with the tools."""
+
+    def __init__(self, client):
+        self.client, self.chat, self.completions, self.models = client, self, self, client.models
+
+    def create(self, **kw):
+        if LAST_STEP not in kw["messages"][0]["content"]:
+            return self.client.chat.completions.create(**kw)
+        kw.pop("tools", None)
+        kw.pop("tool_choice", None)
+        kw["messages"] = kw["messages"] + [{"role": "user", "content": f"(Note from your supervisor: {LAST_STEP})"}]
+        r = self.client.chat.completions.create(**kw)
+        if not (r.choices[0].message.content or "").strip():
+            r = self.client.chat.completions.create(**{**kw, "temperature": 1.0})
+        return r
+
+
 class Generator:
     def __init__(self, teacher: OpenAI, sim: OpenAI, sim_model: str, db_url: str = DB_URL):
-        self.teacher, self.sim, self.sim_model, self.db_url = teacher, sim, sim_model, db_url
+        self.teacher, self.sim, self.sim_model, self.db_url = LastStepWithoutTools(teacher), sim, sim_model, db_url
         self.count = token_counter(tools.TOOLS)
         self.local = threading.local()
         self.busy: set[int] = set()                 # customers in a conversation right now
@@ -123,7 +184,8 @@ class Generator:
         finally:
             self._release(sc.customer_id)
 
-    def _rewrite(self, messages: list[dict], ctx, tr: dict, sampling: dict) -> str:
+    def _rewrite(self, messages: list[dict], ctx, tr: dict, sampling: dict, scenario: str = "",
+                 had_return: bool = False) -> str:
         """If the reply breaks a style rule, ask the teacher to rewrite it, at most MAX_REWRITES times.
 
         The note asking for it goes only to the teacher, after its own draft; the record keeps the request the
@@ -132,7 +194,9 @@ class Generator:
         reply = messages[-1]["content"]
         sources = "\n".join(m["content"] for m in messages if m["role"] == "tool")
         earlier = {m["content"].strip() for m in messages[:-1] if m["role"] == "assistant" and m.get("content")}
-        problems = style_problems(reply, sources)
+        tool_texts = tool_contents_before(messages, len(messages) - 1) + [messages[0]["content"]]
+        problems = (style_problems(reply, sources) + source_problems(reply, tool_texts) +
+                    policy_problems(reply, messages, scenario, had_return))
         tr["rewrites"] = []
         for _ in range(MAX_REWRITES):
             if not problems:
@@ -144,7 +208,8 @@ class Generator:
                                                      **sampling)
             new = (r.choices[0].message.content or "").strip()
             usable = new and not r.choices[0].message.tool_calls and new not in earlier   # not a copy of a reply
-            better = style_problems(new, sources) if usable else None
+            better = (style_problems(new, sources) + source_problems(new, tool_texts) +
+                      policy_problems(new, messages, scenario, had_return)) if usable else None
             tr["rewrites"].append({"problems": problems, "accepted": better is not None and len(better) < len(problems),
                                    "prompt_tokens": r.usage.prompt_tokens if r.usage else None,
                                    "completion_tokens": r.usage.completion_tokens if r.usage else None})
@@ -178,7 +243,7 @@ class Generator:
                 break
             tr.pop("sent", None)
             if reply != FALLBACK_REPLY:
-                reply = self._rewrite(messages, ctx, tr, sampling)
+                reply = self._rewrite(messages, ctx, tr, sampling, sc.name, bool(sc.facts.get("returns")))
             traces.append(tr)
             if sim.ended:                           # the closing line has had its answer
                 break
@@ -219,6 +284,26 @@ def free_path(folder: Path, label: str) -> Path:
     return path
 
 
+def wait_ready(base_url: str, limit_s: int = 1200) -> float:
+    """Poll the server's /health with short requests until it answers 200; returns the seconds waited.
+
+    One long first request is not enough on a cold start: on 24 November it never reached the server, which
+    came up, sat idle and scaled to zero while the generator waited on that request for half an hour. Short
+    polls keep waking the container until vLLM is ready, and give up after `limit_s`."""
+    import urllib.error
+    import urllib.request
+    t0 = time.perf_counter()
+    while time.perf_counter() - t0 < limit_s:
+        try:
+            with urllib.request.urlopen(base_url.rstrip("/") + "/health", timeout=20) as r:
+                if r.status == 200:
+                    return time.perf_counter() - t0
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            pass
+        time.sleep(10)
+    raise TimeoutError(f"{base_url} not ready after {limit_s}s")
+
+
 def served_model(client: OpenAI) -> str:
     """The real model behind the endpoint's served name, recorded in every run."""
     return ",".join(getattr(m, "root", None) or m.id for m in client.models.list().data)
@@ -250,6 +335,8 @@ def main() -> None:
                  api_key=os.environ.get("SIM_API_KEY") or os.environ["TEACHER_API_KEY"],
                  timeout=600) if sim_url else teacher
     print("waiting for the teacher (a cold start loads the weights)...", flush=True)
+    for url in {os.environ["TEACHER_URL"], sim_url or os.environ["TEACHER_URL"]}:
+        print(f"  ready after {wait_ready(url):.0f}s: {url}", flush=True)
     model_id = served_model(teacher)
     sim_id = served_model(sim) if sim is not teacher else model_id
     print("teacher:", model_id, "| simulator:", sim_id, flush=True)
