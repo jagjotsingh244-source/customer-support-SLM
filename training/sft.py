@@ -38,10 +38,24 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 from agent.prompts import PROMPT_VERSION, system_prompt  # noqa: E402
 from config import now  # noqa: E402
+from agent.chat_template import for_template  # noqa: E402
 from training.masking import END, IGNORE, tokenize  # noqa: E402
 
 REFERENCE_TOKENIZER = "Qwen/Qwen3.5-2B"  # the tokenizer tests/test_masking.py checks the markers against
 LOAD_SEQ_LEN = 512  # what Unsloth is told at load time: room for a probe prompt (~200 tokens) plus its reply
+# The second fine-tune's probes: conversations rendered with Nova's tools, as served. Each says what a good first
+# step is: "call" a tool or "reply" without one. "thanks!" calling list_my_orders is the failure to catch early.
+TOOL_PROBES = [
+    ("thanks!", [{"role": "user", "content": "thanks!"}], "reply"),
+    ("are you a bot?", [{"role": "user", "content": "are you a bot?"}], "reply"),
+    ("where is order 11904", [{"role": "user", "content": "where is my order 11904?"}], "call"),
+    ("refund time (policy)", [{"role": "user", "content": "how long do card refunds take?"}], "call"),
+    ("thanks after an answer", [
+        {"role": "user", "content": "where is my order 11904?"},
+        {"role": "assistant", "content": "Order 11904, your 1080p webcam, is in transit with SwiftShip (SS70001836); "
+                                          "it was last scanned at the Nagpur hub on 2026-11-18."},
+        {"role": "user", "content": "ok thanks, that's all"}], "reply"),
+]
 PROBE_CUSTOMER = "Anay Vasa"
 PROBES = [
     "hello",
@@ -113,36 +127,61 @@ def plan(cfg, n_train):
 
 # ---------------------------------------------------------------- data
 
-def load_splits(cfg):
-    from datasets import load_dataset
+def tools_for(cfg):
+    """Nova's tool schemas when the config renders with tools (the second fine-tune), else None."""
+    if not cfg.get("tools"):
+        return None
+    from agent.tools_v2 import TOOLS
+    return TOOLS
 
-    ds = load_dataset(cfg["dataset_name"], revision=cfg["dataset_revision"])
+
+def messages_of(row):
+    """A row's messages as the chat template wants them (tool-call arguments as mappings)."""
+    msgs = row["messages"]
+    return for_template(json.loads(msgs) if isinstance(msgs, str) else msgs)
+
+
+def load_splits(cfg):
+    from datasets import load_dataset, load_from_disk
+
+    if cfg.get("data_path"):                              # a dataset built locally (training/sft2_mix.py)
+        path = Path(cfg["data_path"])
+        ds = load_from_disk(str(path if path.is_absolute() else REPO / path))
+    else:
+        ds = load_dataset(cfg["dataset_name"], revision=cfg["dataset_revision"])
     if cfg["train_rows"]:
         ds["train"] = ds["train"].shuffle(seed=cfg["seed"]).select(range(cfg["train_rows"]))
     return ds
 
 
-def encode(split, tok, max_len):
+def encode(split, tok, max_len, tools=None):
     def one(row):
-        out = tokenize(row["messages"], tok)
+        out = tokenize(messages_of(row), tok, tools=tools)
         if len(out["input_ids"]) > max_len:
-            raise ValueError(f"row {row['row_id']} renders to {len(out['input_ids'])} tokens, over max_seq_length "
-                             f"{max_len}; truncating would cut the reply, so raise max_seq_length instead")
+            raise ValueError(f"row {row.get('row_id', row.get('conversation'))} renders to {len(out['input_ids'])} "
+                             f"tokens, over max_seq_length {max_len}; truncating would cut the reply, so raise "
+                             "max_seq_length instead")
         return out
 
     return split.map(one, remove_columns=split.column_names)
 
 
 def check_mask(raw, encoded, tok, n=200):
-    """The trained tokens of each row decode to exactly its reply plus <|im_end|>, and nothing else."""
+    """The trained tokens of each row are exactly its last message and <|im_end|>: the reply word for word, or for
+    a tool call the call markup with no tool result and no other turn inside it."""
     n = min(n, len(raw))
     for i in range(n):
         ids, labels = encoded[i]["input_ids"], encoded[i]["labels"]
         trained = tok.decode([t for t, lab in zip(ids, labels) if lab != IGNORE])
-        expected = raw[i]["messages"][-1]["content"] + END
-        if trained != expected:
-            raise AssertionError(f"mask check failed on row {raw[i]['row_id']}:\n"
-                                 f"trained:  {trained!r}\nexpected: {expected!r}")
+        last = messages_of(raw[i])[-1]
+        where = raw[i].get("row_id", raw[i].get("conversation"))
+        if last.get("tool_calls"):
+            ok = (trained.startswith("<tool_call>") and trained.endswith("</tool_call>" + END)
+                  and "<tool_response>" not in trained and "<|im_start|>" not in trained)
+        else:
+            ok = trained == last["content"] + END
+        if not ok:
+            raise AssertionError(f"mask check failed on row {where}:\ntrained:  {trained!r}\nlast message: {last!r}")
     return n
 
 
@@ -150,15 +189,17 @@ def render(t, messages, **kw):
     return t.apply_chat_template(messages, tokenize=False, **kw)
 
 
-def check_same_template(ref, tk, rows):
+def check_same_template(ref, tk, rows, tools=None):
     """Unsloth's tokenizer must render and encode exactly like the reference, or training and serving disagree."""
     for row in rows:
-        for msgs, kw in [(row["messages"], {}), (row["messages"][:-1], {"add_generation_prompt": True})]:
+        msgs_all = messages_of(row)
+        for msgs, kw in [(msgs_all, {"tools": tools}), (msgs_all[:-1], {"add_generation_prompt": True, "tools": tools})]:
             a, b = render(ref, msgs, **kw), render(tk, msgs, **kw)
             if a != b:
-                raise AssertionError(f"chat templates differ on row {row['row_id']}:\nreference: {a!r}\nloaded:    {b!r}")
+                raise AssertionError(f"chat templates differ on row {row.get('row_id')}:\nreference: {a!r}\n"
+                                     f"loaded:    {b!r}")
             if ref(a, add_special_tokens=False)["input_ids"] != tk(b, add_special_tokens=False)["input_ids"]:
-                raise AssertionError(f"tokenizers encode row {row['row_id']} differently")
+                raise AssertionError(f"tokenizers encode row {row.get('row_id')} differently")
 
 
 class PadCollator:
@@ -175,6 +216,7 @@ class PadCollator:
         def pad(key, value):
             return torch.tensor([f[key] + [value] * (n - len(f[key])) for f in feats])
 
+        feats = [{k: f[k] for k in ("input_ids", "attention_mask", "labels")} for f in feats]
         return {"input_ids": pad("input_ids", self.pad_id), "attention_mask": pad("attention_mask", 0),
                 "labels": pad("labels", IGNORE)}
 
@@ -182,7 +224,8 @@ class PadCollator:
 def prepare(cfg, ref):
     """Loads, encodes and checks every split. Returns (raw splits, encoded splits, stats)."""
     raw = load_splits(cfg)
-    enc = {k: encode(v, ref, cfg["max_seq_length"]) for k, v in raw.items()}
+    enc = {k: encode(v, ref, cfg["max_seq_length"], tools_for(cfg)) for k, v in raw.items()}
+    enc = {k: v.add_column("length", [len(x) for x in v["input_ids"]]) for k, v in enc.items()}  # for group_by_length
     checked = {k: check_mask(raw[k], enc[k], ref) for k in raw}
     stats = {}
     for k, v in enc.items():
@@ -195,7 +238,7 @@ def prepare(cfg, ref):
 
 # ---------------------------------------------------------------- probes
 
-def make_probe(tok, max_new_tokens, path):
+def make_probe(tok, max_new_tokens, path, tools=None):
     """A callback that generates every probe greedily at each evaluation, prints the replies and appends them to
     probes.jsonl. Built here, not at module level, so the dry run never imports Unsloth."""
     import torch
@@ -204,7 +247,13 @@ def make_probe(tok, max_new_tokens, path):
 
     tk = getattr(tok, "tokenizer", tok)  # Unsloth may hand back a multimodal processor; its tokenizer is inside
     stop = [tk.convert_tokens_to_ids("<|im_end|>"), tk.convert_tokens_to_ids("<|endoftext|>")]
-    system = system_prompt(now(), PROBE_CUSTOMER)
+    if tools:                                          # as served: prompt v2, an empty state block, the tools
+        from agent.state import State
+        system = system_prompt(now(), PROBE_CUSTOMER, "v2") + "\n\n" + State().render()
+        probes = [(name, msgs, want) for name, msgs, want in TOOL_PROBES]
+    else:
+        system = system_prompt(now(), PROBE_CUSTOMER)
+        probes = [(p, [{"role": "user", "content": p}], None) for p in PROBES]
 
     class _Probe(TrainerCallback):
         def __init__(self):
@@ -216,23 +265,27 @@ def make_probe(tok, max_new_tokens, path):
             self.done.add(state.global_step)
             FastLanguageModel.for_inference(model)
             try:
-                for prompt in PROBES:
-                    text = render(tk, [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-                                  add_generation_prompt=True)
+                for prompt, msgs, want in probes:
+                    text = render(tk, [{"role": "system", "content": system}] + msgs, add_generation_prompt=True,
+                                  tools=tools)
                     ids = tk(text, return_tensors="pt", add_special_tokens=False)["input_ids"].to(model.device)
                     with torch.no_grad():
                         out = model.generate(input_ids=ids, attention_mask=torch.ones_like(ids), do_sample=False,
                                              max_new_tokens=max_new_tokens, eos_token_id=stop,
                                              pad_token_id=tk.pad_token_id)
                     new = out[0, ids.shape[1]:].tolist()
-                    reply = tk.decode(new, skip_special_tokens=True).strip()
+                    reply = tk.decode(new, skip_special_tokens=not tools).strip()
                     row = {"step": state.global_step, "prompt": prompt, "reply": reply, "words": len(reply.split()),
                            "tokens": len(new), "stopped": bool(new) and new[-1] in stop}
+                    if want:                               # did it call a tool where it should, and only there
+                        row["first_step"] = "call" if "<tool_call>" in reply else "reply"
+                        row["as_expected"] = row["first_step"] == want
                     self.rows.append(row)
                     with open(path, "a") as f:
                         f.write(json.dumps(row) + "\n")
                     cut = "" if row["stopped"] else "  [no end-of-turn: cut off]"
-                    print(f"[step {row['step']}] {prompt!r} -> {reply}{cut}", flush=True)
+                    mark = "" if not want else ("  [ok]" if row["as_expected"] else f"  [WRONG: wanted a {want}]")
+                    print(f"[step {row['step']}] {prompt!r} -> {reply[:300]}{cut}{mark}", flush=True)
             finally:
                 FastLanguageModel.for_training(model)
             self.log_table()
@@ -251,6 +304,22 @@ def make_probe(tok, max_new_tokens, path):
 
 
 # ---------------------------------------------------------------- training
+
+def load_adapter_weights(model, adapter):
+    """Copy a saved LoRA adapter's weights into the freshly wrapped model (same rank and target modules), so
+    training continues from it. `adapter` is a folder or a Hub id. Fails if any adapter tensor is left unloaded."""
+    from huggingface_hub import snapshot_download
+    from peft import set_peft_model_state_dict
+    from safetensors.torch import load_file
+
+    path = Path(adapter) if Path(adapter).exists() else Path(snapshot_download(adapter))
+    weights = load_file(str(path / "adapter_model.safetensors"))
+    result = set_peft_model_state_dict(model, weights)
+    unexpected = getattr(result, "unexpected_keys", []) or []
+    if unexpected:
+        raise RuntimeError(f"{len(unexpected)} adapter tensors did not match the model, e.g. {unexpected[:2]}")
+    print(f"continued from {adapter}: {len(weights)} adapter tensors loaded", flush=True)
+
 
 def expected_trainable(cfg):
     """The hand count from training/lora_budget.py for this rank and these targets."""
@@ -277,6 +346,9 @@ def training_args(cfg, name, out, steps, precision, push=False, report_to="none"
         eval_strategy="steps", eval_steps=cfg["eval_steps"], eval_on_start=True,
         save_strategy="steps", save_steps=cfg["save_steps"], save_total_limit=None,
         prediction_loss_only=True, remove_unused_columns=False,
+        # transformers 5: length grouping is a sampling strategy (LengthGroupedSampler), not a flag
+        train_sampling_strategy="group_by_length" if cfg.get("group_by_length") else "random",
+        length_column_name="length",
         report_to=report_to,
         push_to_hub=push, hub_model_id=f"{cfg['hub_user']}/{name}", hub_private_repo=True,
         hub_strategy="checkpoint",  # each save also goes to <repo>/last-checkpoint, so a lost session can resume
@@ -302,15 +374,18 @@ def train(cfg, push=False, report_to="none"):
     print(f"run {name}: {json.dumps(data_stats)}\n{json.dumps(steps)}", flush=True)
 
     model, tok = FastLanguageModel.from_pretrained(
-        model_name=cfg["model_name"], max_seq_length=LOAD_SEQ_LEN,
+        model_name=cfg["model_name"], max_seq_length=max(LOAD_SEQ_LEN, cfg["max_seq_length"]),
         load_in_4bit=False, load_in_16bit=True, full_finetuning=False)
     tk = getattr(tok, "tokenizer", tok)
-    check_same_template(ref, tk, [raw["train"][i] for i in range(20)])
+    check_same_template(ref, tk, [raw["train"][i] for i in range(20)], tools_for(cfg))
     memory_after_load = torch.cuda.memory_allocated()
 
     model = FastLanguageModel.get_peft_model(
         model, r=cfg["r"], lora_alpha=cfg["lora_alpha"], lora_dropout=cfg["lora_dropout"], bias="none",
-        target_modules=cfg["target_modules"], use_gradient_checkpointing="unsloth", random_state=cfg["seed"])
+        target_modules=cfg["target_modules"],
+        use_gradient_checkpointing=cfg.get("gradient_checkpointing", "unsloth"), random_state=cfg["seed"])
+    if cfg.get("init_adapter"):                       # continue from an earlier adapter (SFT-2b from SFT-1)
+        load_adapter_weights(model, cfg["init_adapter"])
     model.print_trainable_parameters()
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     wrapped = [n for n, m in model.named_modules() if hasattr(m, "lora_A") and len(m.lora_A) > 0]
@@ -325,8 +400,8 @@ def train(cfg, push=False, report_to="none"):
     trainer = Trainer(
         model=model, args=args, data_collator=PadCollator(tk.pad_token_id),
         train_dataset=enc["train"],
-        eval_dataset={"validation": enc["validation"], "unseen": enc["test_unseen_intents"]},
-        callbacks=[make_probe(tok, cfg["probe_max_new_tokens"], probe_path)],
+        eval_dataset={k: v for k, v in enc.items() if k != "train"},
+        callbacks=[make_probe(tok, cfg["probe_max_new_tokens"], probe_path, tools_for(cfg))],
     )
 
     torch.cuda.reset_peak_memory_stats()
@@ -341,12 +416,13 @@ def train(cfg, push=False, report_to="none"):
     (out / "log_history.json").write_text(json.dumps(history, indent=1))
     merged = {}
     for h in history:
-        for k in ("eval_validation_loss", "eval_unseen_loss"):
+        for k in [x for x in h if x.startswith("eval_") and x.endswith("_loss")]:
             if k in h:
                 merged.setdefault(h["step"], {})[k] = round(h[k], 4)
     info = {
         "run_name": name, "config": cfg, "plan": steps, "data": data_stats,
-        "dataset": {"name": cfg["dataset_name"], "revision": cfg["dataset_revision"]},
+        "dataset": {"name": cfg.get("dataset_name"), "revision": cfg.get("dataset_revision"),
+                    "path": cfg.get("data_path")},
         "prompt_version": PROMPT_VERSION, "probe_customer": PROBE_CUSTOMER, "probes": PROBES,
         "git": {"commit": git("rev-parse", "HEAD"), "dirty": bool(git("status", "--porcelain"))},
         "versions": versions(), "gpu": torch.cuda.get_device_name(0), "precision": "bf16" if bf16 else "fp16",

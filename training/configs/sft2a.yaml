@@ -1,0 +1,46 @@
+# SFT-2a: Nova as an agent, from the base model. One example per model call of the kept teacher conversations,
+# plus no-tool chats and Bitext redirects (training/sft2_mix.py), all rendered with Nova's tools as served.
+#   python training/sft.py --config training/configs/sft2a.yaml
+# SFT-2b is the same run continued from the SFT-1 adapter at half the learning rate (sft2b.yaml).
+
+# Model and adapter: as SFT-1 (DESIGN.md, "Fine-tuning: adapter size and training memory")
+model_name: unsloth/Qwen3.5-2B
+r: 16
+lora_alpha: 16
+lora_dropout: 0.0
+target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+init_adapter: null      # SFT-2b: the SFT-1 adapter
+
+# Data
+dataset_name: null
+dataset_revision: null
+data_path: data/synthetic/nova-sft2-mix-v1   # built by training/sft2_mix.py; its stats in training/sft2_mix_stats.json
+data_version: traj_v1
+tools: true             # render every example with Nova's six tool schemas, as served
+max_seq_length: 2432    # p99 of the rendered mix is about 2,300 tokens; longer examples were dropped, not cut
+train_rows: null
+
+# Optimisation
+learning_rate: 2.0e-4
+num_train_epochs: 1
+per_device_train_batch_size: 8   # an A100-80GB; 8 x 2 = 16 per step, as planned for 1 x 16 on a T4
+gradient_accumulation_steps: 2
+group_by_length: true            # batches of similar lengths: examples run from about 300 to 2,400 tokens
+warmup_ratio: 0.05
+lr_scheduler_type: cosine
+optim: adamw_8bit
+gradient_checkpointing: false    # an A100-80GB has room for the activations; checkpointing would cost speed
+weight_decay: 0.0
+seed: 3407
+
+# Watching the run
+eval_steps: 100
+save_steps: 100
+logging_steps: 10
+per_device_eval_batch_size: 8
+probe_max_new_tokens: 120
+
+# Where it goes
+output_root: outputs
+hub_user: 123jagjot
+run_prefix: sft2a

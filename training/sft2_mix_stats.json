@@ -1,0 +1,53 @@
+{
+ "train": {
+  "examples": 9485,
+  "dropped_over_max_len": 55,
+  "conversations": {
+   "trajectory_prefix": 1030,
+   "trajectory": 859,
+   "no_tool": 97,
+   "bitext": 105
+  },
+  "examples_by_source": {
+   "trajectory_prefix": 4772,
+   "trajectory": 4511,
+   "no_tool": 97,
+   "bitext": 105
+  },
+  "targets": {
+   "call": 5536,
+   "reply": 3949
+  },
+  "tokens": {
+   "median": 1463,
+   "p99": 2300,
+   "max": 2432,
+   "total": 14156375
+  }
+ },
+ "validation": {
+  "examples": 266,
+  "dropped_over_max_len": 1,
+  "conversations": {
+   "trajectory": 45,
+   "no_tool": 5,
+   "bitext": 6
+  },
+  "examples_by_source": {
+   "trajectory": 255,
+   "no_tool": 5,
+   "bitext": 6
+  },
+  "targets": {
+   "reply": 150,
+   "call": 116
+  },
+  "tokens": {
+   "median": 1416,
+   "p99": 2276,
+   "max": 2413,
+   "total": 387982
+  }
+ },
+ "max_seq_length": 2432
+}

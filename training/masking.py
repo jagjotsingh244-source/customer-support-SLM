@@ -17,6 +17,13 @@ Only the last assistant turn is trained. The template drops the think block from
 turn has the shape the model actually generates. Earlier turns are context; to train them, make one example per
 turn (the conversation cut after that turn).
 
+Tool calls (the second fine-tune). Rendered with the tool schemas, a step in the middle of a turn holds the turn's
+earlier tool calls after the last customer message, and the template gives those the think block too: a step
+after two calls renders three spans that start with RESPONSE_PART. Only the last one is the step's target; the
+earlier calls are context here and each is the target of its own step. tokenize() therefore trains the last span
+only. Unsloth's train_on_responses_only would train all three, so tool-call data uses tokenize(). Tool results
+render inside a user block (<|im_start|>user\n<tool_response>...), so they are never inside a trained span.
+
 Two ways to use it, both checked by the same test:
 - Unsloth: train_on_responses_only(trainer, instruction_part=INSTRUCTION_PART, response_part=RESPONSE_PART).
   Unsloth finds the markers by their token ids, so the test also checks the marker tokenises the same way on its
@@ -43,15 +50,16 @@ def assistant_spans(text: str) -> list[tuple[int, int]]:
     return spans
 
 
-def tokenize(messages: list[dict], tok, max_length: int | None = None) -> dict:
-    """Render messages with the model's own chat template and label only the last assistant reply."""
-    text = tok.apply_chat_template(messages, tokenize=False)
-    spans = assistant_spans(text)
+def tokenize(messages: list[dict], tok, max_length: int | None = None, tools: list[dict] | None = None) -> dict:
+    """Render messages with the model's own chat template (and the tool schemas, if given) and label only the
+    last assistant message: a reply or a tool call."""
+    text = tok.apply_chat_template(messages, tools=tools, tokenize=False)
     if messages[-1]["role"] != "assistant":
         raise ValueError("the last message must be the assistant reply to train")
-    if len(spans) != 1:
-        raise ValueError(f"found {len(spans)} trainable replies in the render, expected 1: "
-                         "RESPONSE_PART does not match the chat template")
+    spans = assistant_spans(text)
+    if not spans or not text.rstrip().endswith(END):
+        raise ValueError("no trainable reply in the render: RESPONSE_PART does not match the chat template")
+    spans = spans[-1:]
     enc = tok(text, add_special_tokens=False, return_offsets_mapping=True)
     labels = []
     for tid, (a, b) in zip(enc["input_ids"], enc["offset_mapping"]):

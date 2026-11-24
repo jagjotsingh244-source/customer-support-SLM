@@ -77,3 +77,51 @@ def test_unsloth_finds_the_marker_by_token_ids(tok):
     assert any(ids[i:i + len(marker)] == marker for i in range(len(ids) - len(marker) + 1))
     user_marker = tok(INSTRUCTION_PART, add_special_tokens=False)["input_ids"]
     assert any(ids[i:i + len(user_marker)] == user_marker for i in range(len(ids) - len(user_marker) + 1))
+
+
+# Tool calls, rendered with Nova's tool schemas as the second fine-tune trains them -----------------------------
+
+def two_call_step(target):
+    """A step after two tool calls in the same turn, ending with `target`; results from the seeded world."""
+    import json
+    results = json.loads((Path(__file__).parent / "fixtures" / "long_chat_results.json").read_text())["results"]
+
+    def call(i, name, args):
+        return {"role": "assistant", "content": "", "tool_calls": [
+            {"id": f"c{i}", "type": "function", "function": {"name": name, "arguments": args}}]}
+    return [{"role": "system", "content": SYSTEM},
+            {"role": "user", "content": "where is my webcam? and did the tote bag order arrive"},
+            call(1, "get_tracking", {"order_id": 11904}),
+            {"role": "tool", "tool_call_id": "c1", "content": json.dumps(results["get_tracking:11904"])},
+            call(2, "get_order_status", {"order_id": 10689}),
+            {"role": "tool", "tool_call_id": "c2", "content": json.dumps(results["get_order_status:10689"])},
+            target]
+
+
+@pytest.fixture(scope="module")
+def tools():
+    pytest.importorskip("pydantic")
+    pytest.importorskip("psycopg")              # the tokenizer-only CI job skips these; the state job runs them
+    from agent.tools_v2 import TOOLS
+    return TOOLS
+
+
+def test_a_tool_call_target_after_two_calls_trains_only_that_call(tok, tools):
+    target = {"role": "assistant", "content": "", "tool_calls": [{"id": "c3", "type": "function", "function": {
+        "name": "escalate_to_human", "arguments": {"reason": "other", "summary": "Customer asked for a person."}}}]}
+    msgs = two_call_step(target)
+    text = tok.apply_chat_template(msgs, tools=tools, tokenize=False)
+    assert text.count(RESPONSE_PART) == 3                  # the two earlier calls render with the marker too
+    trained = trained_text(tokenize(msgs, tok, tools=tools), tok)
+    assert trained.startswith("<tool_call>\n<function=escalate_to_human>") and trained.endswith("</tool_call>" + END)
+    assert "get_tracking" not in trained and "get_order_status" not in trained          # earlier calls: context
+    assert "tool_response" not in trained and "SS70001836" not in trained                # results: never trained
+
+
+def test_a_reply_after_two_calls_trains_only_the_reply(tok, tools):
+    reply = "Order 11904, your 1080p webcam, is with SwiftShip; order 10689 was delivered."
+    msgs = two_call_step({"role": "assistant", "content": reply})
+    enc = tokenize(msgs, tok, tools=tools)
+    assert trained_text(enc, tok) == reply + END
+    # Every trained token is one the model generates: the labels equal the inputs where trained.
+    assert all(l in (IGNORE, t) for t, l in zip(enc["input_ids"], enc["labels"]))
