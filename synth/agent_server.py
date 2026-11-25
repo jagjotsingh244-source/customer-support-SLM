@@ -97,6 +97,8 @@ def tool_line(fn: dict) -> str:
     args = []
     for name, spec in (params.get("properties") or {}).items():
         kind = "|".join(map(str, spec["enum"])) if spec.get("enum") else spec.get("type", "any")
+        if "minimum" in spec or "maximum" in spec:
+            kind += f" {spec.get('minimum', '')}-{spec.get('maximum', '')}"
         args.append(f"{name}{'*' if name in req else ''}: {kind}")
     desc = (fn.get("description") or "").split(". ")[0]
     return f"- {fn['name']}({', '.join(args)}): {desc}"
