@@ -30,3 +30,4 @@ data/**/*
 
 # Unsloth writes compiled kernels next to the code it runs
 unsloth_compiled_cache/
+data/synthetic/agent-queue/

@@ -325,6 +325,8 @@ def main() -> None:
     ap.add_argument("--sim-model", default="teacher")
     ap.add_argument("--max-dollars", type=float, help="stop starting new conversations once the GPU time since "
                     "launch (cold start included) would cost more than this")
+    ap.add_argument("--stall-s", type=int, default=STALL_S, help="stop when nothing finishes for this long "
+                    "(raise it when a slow teacher, such as an agent answering by hand, writes the messages)")
     ap.add_argument("--max-hours", type=float, help="hard limit on the run's wall time: past it the run stops and "
                     "exits whatever is still in flight (default: 1.2 x max-dollars / dollars-per-hour)")
     ap.add_argument("--dollars-per-hour", type=float, default=2.50,
@@ -369,7 +371,7 @@ def main() -> None:
     while pending:
         finished, pending = wait(pending, timeout=30, return_when=FIRST_COMPLETED)
         spent = (time.perf_counter() - launched) / 3600 * a.dollars_per_hour
-        stalled = time.perf_counter() - last_done > STALL_S
+        stalled = time.perf_counter() - last_done > a.stall_s
         # A hard stop on wall time: a run stuck on conversations that never finish must not keep the GPU awake.
         if max_hours and time.perf_counter() - launched > max_hours * 3600:
             print(f"  hard stop after {max_hours:.2f} h; {len(pending)} conversations dropped", flush=True)
@@ -378,7 +380,7 @@ def main() -> None:
         if not stopped and ((a.max_dollars and spent > a.max_dollars) or stalled):
             stopped = True
             cancelled = sum(x.cancel() for x in pending)
-            why = f"${spent:.2f} > ${a.max_dollars:.2f}" if not stalled else f"nothing finished for {STALL_S}s"
+            why = f"${spent:.2f} > ${a.max_dollars:.2f}" if not stalled else f"nothing finished for {a.stall_s}s"
             print(f"  stopping ({why}); {cancelled} conversations not started", flush=True)
         if stopped and (stalled or spent > (a.max_dollars or 0) * 1.1):
             break                                   # do not wait on stuck conversations while the GPU bills
