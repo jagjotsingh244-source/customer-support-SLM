@@ -52,6 +52,10 @@ def response(req: dict, answer: dict) -> dict:
 def serve(port: int, teacher: str) -> None:
     INBOX.mkdir(parents=True, exist_ok=True)
     OUTBOX.mkdir(parents=True, exist_ok=True)
+    stale = QUEUE / "stale" / time.strftime("%Y%m%d-%H%M%S")
+    for f in [*INBOX.iterdir(), *OUTBOX.iterdir()]:     # requests from a stopped run: nobody waits for them now
+        stale.mkdir(parents=True, exist_ok=True)
+        f.rename(stale / f.name)
     info = {"id": "teacher", "object": "model", "root": teacher, "owned_by": "agent"}
 
     class Handler(BaseHTTPRequestHandler):
