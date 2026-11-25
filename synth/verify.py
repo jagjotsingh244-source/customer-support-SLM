@@ -21,7 +21,7 @@ from pathlib import Path
 from agent.grounding import CITE, grounding_issues, retrieved_ids, tool_contents_before
 from agent.loop import FALLBACK_REPLY, TOOL_MARKUP
 from agent.tools_v2 import MODELS
-from synth.style import CLOSING_OFFER, PROCESS_WORDS, TEAMMATE
+from synth.style import CLOSING_OFFER, PROCESS_WORDS, TEAMMATE, time_promise
 
 ORDER_ID = re.compile(r"\b(1[0-9]{4})\b")                 # seeded order numbers: 10001-13000
 TRACKING = re.compile(r"\b([A-Z]{2}7\d{7})\b")            # carrier prefix + 7 + seven digits
@@ -355,6 +355,8 @@ def style(conv) -> str | None:
             return "a reply with several paragraphs"
         if m := PROMISE.search(text):
             return f"promises what Nova cannot do: \"{m.group(0)}\""
+        if m := time_promise(text):
+            return f"says when a teammate will reply: \"{m[-60:]}\""
         if (m := SEND_BACK.search(text)) and "send" not in sources:
             return f"tells the customer to ship the item back (NimbusCart picks up): \"{m.group(0)}\""
         low = text.lower()

@@ -9,7 +9,7 @@ Each rule targets one failure counted in an earlier eval report, named in the co
 failure behind it would only make the teacher's prompt longer.
 """
 
-RULES_VERSION = "r5"   # recorded in every conversation; bump when a rule changes
+RULES_VERSION = "r6"   # recorded in every conversation; bump when a rule changes
 # r5: the cancel/address rule says what to do, not only what Nova cannot do (the judge failed r4 refusals).
 # r4, from the first keep-rate report on the pilot: turns that ran out of calls, citations of the example id in
 # Nova's own prompt, late parcels handed off when the customer pushed, and cancellations Nova cannot make.
@@ -105,6 +105,10 @@ RULES = [
     # First teacher run: a follow-up after a hand-off got a fresh lookup and a second ticket.
     "After a hand-off, do not call tools for the same problem again. If the customer follows up, tell them the "
     "ticket number and that a teammate will reply.",
+
+    # Fact-check judge: 454 conversations failed only for "they will reply to you shortly" after a hand-off,
+    # whose result says to tell the customer without promising a time.
+    "When you hand off, say a teammate will reply, never when: not \"shortly\", not \"soon\".",
 
     # Pilot keep-rate report: delayed parcels kept 1 of 12; when the customer pushed ("pls check with blue line"),
     # the teacher handed a parcel that was only late to a teammate.

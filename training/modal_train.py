@@ -22,7 +22,7 @@ import modal
 REPO = Path(__file__).resolve().parent.parent
 GPU = "A100-80GB"
 CODE = ["agent", "training", "rag", "db", "config.py"]          # what sft.py imports (tools_v2 needs db/roles.py)
-DATA = ["data/synthetic/nova-sft2-mix-v1", "data/adapters"]    # built or fetched locally
+DATA = ["data/synthetic/nova-sft2-mix-v1", "data/synthetic/nova-sft2-mix-v2", "data/adapters"]  # built or fetched locally
 
 # The container imports this file again, where the repo is not on disk: only read and add local files here.
 pins = [line.split("#")[0].strip() for line in (REPO / "requirements-gpu.txt").read_text().splitlines()

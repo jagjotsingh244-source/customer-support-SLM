@@ -17,6 +17,27 @@ TEAMMATE = re.compile(r"teammate|someone|a person|human|support team|agent", re.
 # Things Nova must not promise unless a tool or the help center mentioned them.
 PROCESS_WORDS = ("email", "sms", "text message", "label", "link", "login", "log in", "password", "otp",
                  "notification")
+# "A teammate will reply shortly": the hand-off tool's result says to tell the customer "without promising a time".
+# The fact-check judge failed 454 conversations for this and nothing else, so the words are removed in code
+# (drop_time_promises) and the teacher is asked to leave them out.
+TIME_WORDS = re.compile(r"\s*\b(shortly|soon|as soon as possible|right away|at the earliest)\b", re.I)
+HANDOFF_SENTENCE = re.compile(
+    r"[^.?!;]*\b(teammate|team|team member|agent|colleague|specialist|someone|they|they'll)\b[^.?!;]*"
+    r"\b(reply|replies|contact|get back|reach out|be in touch|respond|follow up|look into|review|call|update|"
+    r"assist|help|provide|share|guide|handle|resolve)\b[^.?!;]*", re.I)
+
+
+def time_promise(text: str) -> str | None:
+    """The first sentence that says when a teammate will act ("they will reply shortly"), or None."""
+    for m in HANDOFF_SENTENCE.finditer(text):
+        if TIME_WORDS.search(m.group(0)):
+            return m.group(0).strip()
+    return None
+
+
+def drop_time_promises(text: str) -> str:
+    """The same reply without the time words in sentences about a teammate acting; nothing else changes."""
+    return HANDOFF_SENTENCE.sub(lambda m: TIME_WORDS.sub("", m.group(0)), text)
 
 
 def style_problems(reply: str, sources: str) -> list[str]:
@@ -31,6 +52,9 @@ def style_problems(reply: str, sources: str) -> list[str]:
         out.append("it has several paragraphs; write one")
     if (n := len(text.split())) > MAX_WORDS:
         out.append(f"it has {n} words; use at most {MAX_WORDS}")
+    if time_promise(text):
+        out.append("it says when a teammate will reply ('shortly', 'soon'); the hand-off result says not to promise "
+                   "a time, so say a teammate will reply without saying when")
     if "**" in text or re.search(r"^\s*([-*•]|\d+\.)\s", text, re.M):
         out.append("it uses bold or a list; write plain sentences")
     low, src = text.lower(), sources.lower()

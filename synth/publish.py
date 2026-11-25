@@ -1,4 +1,4 @@
-"""Filter every generation run and build the two datasets: nova-trajectories-v1 (kept) and nova-rejects-v1.
+"""Filter every generation run and build the two datasets: nova-trajectories (kept) and nova-rejects.
 
 All runs are filtered together (synth/verify.py), with the tone and fact-check verdicts attached, so dedup works
 across runs. Each row is one conversation: its messages as recorded, its training steps (the request the student
@@ -24,9 +24,13 @@ OUT = ROOT / "data" / "synthetic"
 CARDS = ROOT / "synth" / "cards"
 REPORT = ROOT / "notes" / "trajectory-filters" / "final.md"
 HUB_USER = "123jagjot"
+# v2: hand-off time promises removed in code (synth/repair.py) and the fill-r6 run added.
+VERSION = "v2"
 # Generation runs that go into the datasets. The first pilot used older teacher rules and an older judge; the
 # test runs before it had no personas. Later pilots passed the same checks as the full run and are kept.
-RUNS = ["pilot-200-r4", "pilot-200-r5", "full-a", "full-b1", "full-b2", "full-b3", "full-b4", "full-b5", "no-tool"]
+# fill-r6: conversations for the scenario x persona cells filtering had left empty (teacher rules r6).
+RUNS = ["pilot-200-r4", "pilot-200-r5", "full-a", "full-b1", "full-b2", "full-b3", "full-b4", "full-b5", "no-tool",
+        "fill-r6"]
 TONE = {"pilot-200-r4": "judge3", "pilot-200-r5": "judge3", "full-a": "judge3"}   # newest tone verdicts per run
 
 
@@ -41,16 +45,24 @@ def verdicts(run: str, kind: str) -> dict:
 
 
 def collect() -> list[dict]:
+    """Every conversation of every run, repaired (synth/repair.py), with its verdicts. A repaired conversation
+    whose fact verdict failed for a time promise takes its verdict from the judging after the repair; without one
+    it keeps the old verdict and stays rejected. Removing the time words cannot change a tone verdict."""
+    from synth.repair import failed_for_time, repair
     convs = []
     for run in RUNS:
         tone = verdicts(run, TONE.get(run, "judge3")) or verdicts(run, "judge")
         facts = verdicts(run, "facts")
+        facts_after = verdicts(run, "facts-repaired")
         for c in load(run):
             c["meta"].setdefault("run", f"{run}.jsonl")
+            repaired = repair(c)
             if c["id"] in tone:
                 c["judge"] = tone[c["id"]]
             if c["id"] in facts:
                 c["fact_judge"] = facts[c["id"]]
+                if repaired and failed_for_time(facts[c["id"]]) and c["id"] in facts_after:
+                    c["fact_judge"] = facts_after[c["id"]]
             convs.append(c)
     return convs
 
@@ -76,7 +88,7 @@ def row(c: dict, reasons: list[str] | None = None) -> dict:
 def card(kept: list[dict], rejected: list[dict], kind: str) -> str:
     convs = kept if kind == "kept" else rejected
     steps = sum(sum(1 for s in c["steps"] if s["ok"]) for c in convs)
-    name = "nova-trajectories-v1" if kind == "kept" else "nova-rejects-v1"
+    name = f"nova-trajectories-{VERSION}" if kind == "kept" else f"nova-rejects-{VERSION}"
     lines = [f"# {name}", "",
              ("Multi-turn support conversations for NimbusCart's assistant, Nova, generated inside the real agent "
               "loop and kept only when they pass every check." if kind == "kept" else
@@ -123,8 +135,8 @@ def main() -> None:
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(report("all runs", kept, rejected))
     CARDS.mkdir(parents=True, exist_ok=True)
-    sets = {"nova-trajectories-v1": (Dataset.from_list([row(c) for c in kept]), card(kept, rejected, "kept")),
-            "nova-rejects-v1": (Dataset.from_list([row(c, c["rejected"]) for c in rejected]),
+    sets = {f"nova-trajectories-{VERSION}": (Dataset.from_list([row(c) for c in kept]), card(kept, rejected, "kept")),
+            f"nova-rejects-{VERSION}": (Dataset.from_list([row(c, c["rejected"]) for c in rejected]),
                                 card(kept, rejected, "rejected"))}
     for name, (ds, text) in sets.items():
         ds.save_to_disk(OUT / name)

@@ -68,3 +68,25 @@ replies that offer a late parcel a hand-off, call a proposed return "done", or c
 back to the teacher for a rewrite.
 
 The final keep rate, per check, scenario and persona: `final.md` in this folder.
+
+## One word, 454 conversations: "a teammate will reply shortly"
+
+Grouping the fact-check judge's reasons by scenario showed why the hardest scenarios kept 4-7%: in 454
+conversations its only objection was a hand-off reply promising a time ("they will reply to you shortly"). The
+hand-off tool's result says to tell the customer "without promising a time", and the judge sided with it over its
+own rubric, which had called "shortly" acceptable. Hand-offs cluster in exactly the thin scenarios (lost and delayed
+parcels, rejected returns, frustrated customers), so one teacher habit emptied whole rows of the coverage grid.
+
+- **Repair** (`synth/repair.py`): the time words are removed in code from every Nova message in sentences about a
+  teammate acting; nothing else changes. The 725 repaired conversations whose fact verdict had failed for a time
+  promise were judged again: 327 pass (the rest have a real slip later on, which the judge used to stop before).
+- **Prevention:** `style` now rejects a time promise after a hand-off, the generator sends such a reply back for a
+  rewrite, and the teacher's rules (r6) forbid it.
+- **Fill** (`synth/coverage.py`, `synth/generate.py --cells`): 479 conversations generated for the 27 cells still
+  below two kept; 106 pass every check.
+
+| | Kept | Empty cells (of 128) |
+|---|---|---|
+| Before (v1) | 1,006 | 28 |
+| After the repair | 1,210 | 15 |
+| After the fill (v2) | 1,264 | 3 |

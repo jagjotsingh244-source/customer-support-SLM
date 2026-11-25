@@ -2,7 +2,7 @@
 
 Three sources, mixed by conversation:
 
-- Kept trajectories (nova-trajectories-v1): tool use, grounding, returns, hand-offs, multi-turn. Every recorded
+- Kept trajectories (nova-trajectories): tool use, grounding, returns, hand-offs, multi-turn. Every recorded
   step becomes an example: the request the student would have been sent, and the teacher's message (a tool call
   or a reply) as the target.
 - No-tool chats (the no_tool scenario in the same dataset): greetings, thanks, "are you a bot?", out of scope.
@@ -20,7 +20,7 @@ Three sources, mixed by conversation:
 Validation holds out 5% of trajectory and no-tool conversations, whole conversations, so no step of a held-out
 conversation is trained on. Examples longer than max_seq_length are dropped and counted, never truncated.
 
-    uv run --group data --group local-model --group rag python -m training.sft2_mix --max-seq-length 2432
+    uv run --group data --group local-model --group rag python -m training.sft2_mix --max-seq-length 2432 --version v2
 """
 
 import argparse
@@ -39,11 +39,8 @@ from agent.state import State  # noqa: E402
 from config import now  # noqa: E402
 from synth.style import style_problems  # noqa: E402
 
-TRAJ = ROOT / "data" / "synthetic" / "nova-trajectories-v1"
-REJECTS = ROOT / "data" / "synthetic" / "nova-rejects-v1"
 BITEXT = ROOT / "data" / "processed" / "nimbus-bitext-v1"
-OUT = ROOT / "data" / "synthetic" / "nova-sft2-mix-v1"
-STATS = ROOT / "training" / "sft2_mix_stats.json"
+DATA = ROOT / "data" / "synthetic"   # nova-trajectories-<v>, nova-rejects-<v> in; nova-sft2-mix-<v> out
 BITEXT_INTENTS = ["create_account", "delete_account", "edit_account", "switch_account", "registration_problems",
                   "check_invoice", "get_invoice", "place_order", "set_up_shipping_address", "recover_password"]
 BITEXT_HABITS = re.compile(r"(do not|don't|cannot|can't) (have )?access|connect you with a teammate|would you like",
@@ -101,7 +98,11 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-seq-length", type=int, default=2432)
     ap.add_argument("--seed", type=int, default=3407)
+    ap.add_argument("--version", default="v2", help="dataset version: v1 (the first mix) or v2")
     a = ap.parse_args()
+    TRAJ, REJECTS = DATA / f"nova-trajectories-{a.version}", DATA / f"nova-rejects-{a.version}"
+    OUT = DATA / f"nova-sft2-mix-{a.version}"
+    STATS = ROOT / "training" / ("sft2_mix_stats.json" if a.version == "v1" else f"sft2_mix_{a.version}_stats.json")
     from datasets import Dataset, DatasetDict, load_from_disk
     from transformers import AutoTokenizer
 

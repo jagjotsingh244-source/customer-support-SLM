@@ -315,12 +315,16 @@ def main() -> None:
     ap.add_argument("--label", required=True, help="part of the file name, e.g. 27b-first20")
     ap.add_argument("--scenarios", nargs="*", default=SCENARIOS)
     ap.add_argument("--personas", nargs="*", default=[p.name for p in PERSONAS])
+    ap.add_argument("--cells", nargs="*", help="scenario:persona pairs, taken in turn instead of the grid (to fill "
+                    "the cells filtering left empty)")
     ap.add_argument("--workers", type=int, default=8, help="conversations in parallel")
     ap.add_argument("--seed", type=int, default=3407)
     ap.add_argument("--sim-url", help="a different server for the simulator (default: the teacher's)")
     ap.add_argument("--sim-model", default="teacher")
     ap.add_argument("--max-dollars", type=float, help="stop starting new conversations once the GPU time since "
                     "launch (cold start included) would cost more than this")
+    ap.add_argument("--max-hours", type=float, help="hard limit on the run's wall time: past it the run stops and "
+                    "exits whatever is still in flight (default: 1.2 x max-dollars / dollars-per-hour)")
     ap.add_argument("--dollars-per-hour", type=float, default=2.50,
                     help="what the running servers cost together (Modal: A100-80GB 2.50, 4xH100 15.80)")
     a = ap.parse_args()
@@ -344,8 +348,13 @@ def main() -> None:
     gen = Generator(teacher, sim, a.sim_model)
     out = RunFile(free_path(RAW, a.label))
     grid, rng = Grid(a.scenarios, [BY_NAME[p] for p in a.personas]), random.Random(a.seed)
-    jobs = [(*grid.next(rng), a.seed * 100_000 + i) for i in range(a.n)]
+    if a.cells:
+        cells = [tuple(c.split(":")) for c in a.cells]
+        jobs = [(*cells[i % len(cells)], a.seed * 100_000 + i) for i in range(a.n)]
+    else:
+        jobs = [(*grid.next(rng), a.seed * 100_000 + i) for i in range(a.n)]
     stopped = False
+    max_hours = a.max_hours or (1.2 * a.max_dollars / a.dollars_per_hour if a.max_dollars else None)
     t0, done, totals = time.perf_counter(), 0, {"prompt": 0, "completion": 0, "sim_prompt": 0, "sim_completion": 0}
     pool = ThreadPoolExecutor(a.workers)
     futures = {pool.submit(gen.one, s, seed, p): (s, seed) for s, p, seed in jobs}
@@ -354,6 +363,11 @@ def main() -> None:
         finished, pending = wait(pending, timeout=30, return_when=FIRST_COMPLETED)
         spent = (time.perf_counter() - launched) / 3600 * a.dollars_per_hour
         stalled = time.perf_counter() - last_done > STALL_S
+        # A hard stop on wall time: a run stuck on conversations that never finish must not keep the GPU awake.
+        if max_hours and time.perf_counter() - launched > max_hours * 3600:
+            print(f"  hard stop after {max_hours:.2f} h; {len(pending)} conversations dropped", flush=True)
+            stopped = True
+            break
         if not stopped and ((a.max_dollars and spent > a.max_dollars) or stalled):
             stopped = True
             cancelled = sum(x.cancel() for x in pending)

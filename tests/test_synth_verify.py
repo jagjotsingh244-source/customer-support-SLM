@@ -176,3 +176,26 @@ def test_a_near_copy_is_dropped_by_dedup():
                       "Order 11904 was last scanned at the Nagpur hub on 2026-11-18 and is still with SwiftShip."))
     kept, rejected = filter_run([a, b, different])
     assert [c["id"] for c in kept] == ["t", "t"] and len(rejected) == 1 and rejected[0]["rejected"][0].startswith("dedup")
+
+
+def test_a_time_promise_after_a_hand_off_is_rejected_and_repaired():
+    from synth.repair import repair
+    c = conv(("where is my webcam, i want to talk to a person",
+              [("escalate_to_human", {"reason": "other", "summary": "Customer asked for a person."}, TICKET)],
+              "I have handed you to a teammate. Your ticket number is 900049, and they will reply to you shortly."),
+             scenario="in_transit")
+    c["steps"] = [{"messages": c["messages"][:-1], "target": dict(c["messages"][-1]), "ok": True}]
+    assert "says when a teammate will reply" in VERIFIERS["style"](c)
+    assert repair(c)
+    assert c["messages"][-1]["content"].endswith("and they will reply to you.")
+    assert c["steps"][0]["target"]["content"] == c["messages"][-1]["content"]
+    assert VERIFIERS["style"](c) is None
+    assert not repair(c)                                   # nothing left to change
+
+
+def test_time_words_about_anything_but_a_teammate_are_left_alone():
+    from synth.style import drop_time_promises, time_promise
+    late = "It is still with the carrier and should arrive soon."
+    assert time_promise(late) is None and drop_time_promises(late) == late
+    assert drop_time_promises("A colleague will contact you shortly regarding ticket 900703.") == \
+        "A colleague will contact you regarding ticket 900703."
