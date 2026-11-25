@@ -277,7 +277,10 @@ def propose_return(session: Session, order_id: int, line_no: int, reason: str) -
 
 
 def escalate_to_human(session: Session, reason: str, summary: str) -> dict:
-    """Open a ticket for the support team. Always allowed."""
+    """Open a ticket for the support team. Always allowed. The summary is stored redacted (agent/privacy.py):
+    a teammate needs the order ids, not a phone number the customer typed."""
+    from agent.privacy import redact
+    summary = redact(summary)
     with session.write() as c:
         tid = c.execute("SELECT nextval('tickets_ticket_id_seq') AS id").fetchone()["id"]
         c.execute("""INSERT INTO tickets (ticket_id, customer_id, reason, status, created_at, summary)

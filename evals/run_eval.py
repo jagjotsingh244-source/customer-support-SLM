@@ -22,6 +22,12 @@
     # the 50 fresh cases (evals/fresh/), scored once per system: same flags as the system's golden run
     uv run python evals/run_eval.py --run 2026-11-25_fresh-sft2a --cases fresh ...
 
+    # the 40-case attack suite (evals/attacks/ + the golden adversarial cases), on the planted copy of the store,
+    # with the checks around the model on (agent/guardrails.py)
+    uv run python -m db.plant
+    DB_URL=postgresql://nimbus:nimbus@localhost:5433/nimbus_planted uv run python evals/run_eval.py \
+        --run 2026-11-25_attacks-sft2a --cases attacks --guards --prompt v3 ...
+
     # the 12 phrasing probes (evals/probes/), each next to its clean golden twin from a golden run
     uv run python evals/run_eval.py --run 2026-11-23_floor-probes --cases probes --paired-run 2026-11-23_floor ...
 
@@ -98,7 +104,7 @@ from agent.loop import run_turn  # noqa: E402
 from agent.grounding import check_conversation  # noqa: E402
 from agent.prompts import PROMPT_VERSION, PROMPTS, system_prompt  # noqa: E402
 from config import now  # noqa: E402
-from evals.validate import FRESH, PHRASING_QUOTAS, QUOTAS, load, load_probes, normalize  # noqa: E402
+from evals.validate import FAMILY_QUOTAS, FRESH, PHRASING_QUOTAS, QUOTAS, load, load_attacks, load_probes, normalize  # noqa: E402
 
 RUNS = ROOT / "evals" / "runs"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
@@ -149,6 +155,14 @@ def run_case(case, client, a, conn) -> dict:
     turns = []
     dispatch = getattr(tools, "DISPATCH", tools.REGISTRY)   # typed tools validate; the first ones run as they are
     context = None
+    guard = None
+    if a.guards:                                    # the checks around the model (agent/guardrails.py)
+        from agent.guardrails import Guard
+        guard = Guard(messages[0]["content"])
+    rules = None
+    if a.handoff_rules:                             # certain hand-offs made in code (agent/escalation.py)
+        from agent.escalation import HandoffRules
+        rules = HandoffRules()
     if a.state:                                     # a fresh state per case; history trimmed to the budget
         from agent.state import Context, token_counter
         context = Context(token_counter(tools.TOOLS))
@@ -157,7 +171,7 @@ def run_case(case, client, a, conn) -> dict:
         t0 = time.perf_counter()
         reply, tr = run_turn(client, a.model, messages, tools.TOOLS, dispatch, session, max_steps=a.max_calls,
                              temperature=a.temperature, sampling=SAMPLING[a.sampling], trace_id=f"{case.id}-{n}",
-                             context=context)
+                             context=context, guard=guard, rules=rules)
         tr["turn_s"] = round(time.perf_counter() - t0, 3)
         tr["reply"] = reply
         turns.append(tr)
@@ -174,7 +188,8 @@ def run_case(case, client, a, conn) -> dict:
 
 def git_commit() -> str:
     head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
-    dirty = subprocess.run(["git", "status", "--porcelain", "--", "agent", "evals/golden", "evals/probes", "evals/fresh"],
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", "agent", "evals/golden", "evals/probes", "evals/fresh",
+                                   "evals/attacks"],
                            capture_output=True, text=True, cwd=ROOT).stdout.strip()
     return head + ("+uncommitted changes" if dirty else "")
 
@@ -182,10 +197,14 @@ def git_commit() -> str:
 def load_cases(case_set: str):
     if case_set == "probes":
         return load_probes()
+    if case_set == "attacks":
+        return load_attacks()
     return load(FRESH) if case_set == "fresh" else load()
 
 
 def run(a) -> Path:
+    if a.cases == "attacks" and not DB_URL.endswith("/nimbus_planted"):
+        sys.exit("the attack suite runs against nimbus_planted (uv run python -m db.plant); set DB_URL to it")
     out = RUNS / a.run
     out.mkdir(parents=True, exist_ok=True)
     cases, errors = load_cases(a.cases)
@@ -206,6 +225,7 @@ def run(a) -> Path:
 
     config = {"run": a.run, "system": a.system, "provider": a.provider, "model": a.model, "adapter": a.adapter,
               "base_url": a.base_url, "prompt_version": a.prompt, "tools_version": a.tools, "state": a.state,
+              "guards": a.guards, "handoff_rules": a.handoff_rules,
               "temperature": a.temperature,
               "sampling": a.sampling, "sampling_settings": SAMPLING[a.sampling], "max_model_calls_per_turn": a.max_calls,
               "case_set": a.cases, "paired_run": a.paired_run, "cases": len(cases), "commit": git_commit(), "db_host": DB_URL.split("@")[-1].split("/")[0],
@@ -345,9 +365,11 @@ def report(out: Path) -> str:
     by_cat = defaultdict(list)
     group = (lambda t: cases[t["id"]].phrasing) if case_set == "probes" else (lambda t: t["category"])
     order = PHRASING_QUOTAS if case_set == "probes" else QUOTAS
+    if case_set == "attacks":
+        group, order = (lambda t: cases[t["id"]].attack.family), FAMILY_QUOTAS
     for t in traces:
         by_cat[group(t)].append(scores[t["id"]])
-    rows = [f"| {'Phrasing' if case_set == 'probes' else 'Category'} | n | " + " | ".join(METRICS) + " |",
+    rows = [f"| {'Phrasing' if case_set == 'probes' else 'Family' if case_set == 'attacks' else 'Category'} | n | " + " | ".join(METRICS) + " |",
             "|---|---|" + "---|" * len(METRICS)]
     for cat in [c for c in order if c in by_cat]:
         ss = by_cat[cat]
@@ -373,7 +395,8 @@ def report(out: Path) -> str:
               and cases[t["id"]].expect.should_escalate and not t["escalated"] and offered_handoff(t["final_reply"])]
     lines = [
         f"## {config['run']} · {config['system']} · `{config['model']}` · prompt {config['prompt_version']} · "
-        f"tools {config.get('tools_version', 'v0')} · "
+        f"tools {config.get('tools_version', 'v0')} · " + ("guards on · " if config.get("guards") else "") +
+        ("hand-off rules on · " if config.get("handoff_rules") else "") +
         f"temperature {config['temperature']} · sampling {config['sampling']} · scorer {SCORER_VERSION}",
         "",
         f"Provider `{config['provider']}`; served by {', '.join(f'`{m}`' for m in config.get('served_models', [])) or 'n/a'}; "
@@ -398,6 +421,9 @@ def report(out: Path) -> str:
         "Failed cases: " + ", ".join(i for i, s in sorted(scores.items()) if not s["all"]),
         *(["", "Grounding issues:", *issue_lines] if issue_lines else []),
     ]
+    if case_set == "attacks":                       # did every attack end safely, and which layer held
+        from evals.safety import safety_section
+        lines += ["", *safety_section(cases, traces, DB_URL)]
     from evals.scorecard import run_layers          # here, not at the top: scorecard imports this module
     lines += ["", *run_layers(cases, traces)]
     text = "\n".join(lines) + "\n"
@@ -424,8 +450,15 @@ def main() -> None:
     ap.add_argument("--prompt", choices=list(PROMPTS), default=PROMPT_VERSION, help="system prompt version")
     ap.add_argument("--state", action="store_true",
                     help="send the conversation state and only the history that fits the token budget (agent/state.py)")
-    ap.add_argument("--cases", choices=["golden", "probes", "fresh"], default="golden",
-                    help="the golden set (107 cases), the phrasing probes, or the 50 fresh cases (each reported apart)")
+    ap.add_argument("--cases", choices=["golden", "probes", "fresh", "attacks"], default="golden",
+                    help="the golden set (107 cases), the phrasing probes, the 50 fresh cases, or the 40-case attack "
+                         "suite (needs DB_URL at nimbus_planted); each reported apart")
+    ap.add_argument("--guards", action="store_true",
+                    help="run the checks around the model: input flags, result scrub and labels, reply guard "
+                         "(agent/guardrails.py); use with --prompt v3")
+    ap.add_argument("--handoff-rules", action="store_true",
+                    help="make the certain hand-offs in code: a person asked for, a high-risk topic, no progress, "
+                         "no scan for 7+ days; ticket summaries from the state (agent/escalation.py)")
     ap.add_argument("--paired-run", help="for --cases probes: a golden run of the same system, to show each "
                     "probe next to its clean twin")
     ap.add_argument("--notes", default="", help="free text stored in config.json")

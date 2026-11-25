@@ -31,3 +31,6 @@ data/**/*
 # Unsloth writes compiled kernels next to the code it runs
 unsloth_compiled_cache/
 data/synthetic/agent-queue/
+
+# Production traces and logs: personal data, kept by scripts/prune_traces.py's retention rule, never in Git
+logs/

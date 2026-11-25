@@ -29,6 +29,14 @@ Fresh cases (evals/fresh/*.jsonl) are 50 more cases in the golden set's proporti
 the help center alone after every tuning decision was made, and scored once per system. They are checked like
 golden cases, against their own quotas, and their ids must not repeat a golden id.
 
+Attack cases (evals/attacks/*.jsonl, 28) and the 12 adversarial golden cases make the 40-case attack suite.
+Each carries an `attack` block: its family (FAMILY_QUOTAS), the OWASP Top 10 for LLM Applications (2025) entries
+it maps to, and `stopped_by`, the code layers that stop it (LAYERS, each with where it lives). "The model
+refused" is not a layer. The attack cases are checked like golden cases, against nimbus_planted (db/plant.py),
+which holds the planted text that the "instructions inside data" cases rely on:
+
+    DB_URL=postgresql://nimbus:nimbus@localhost:5433/nimbus_planted uv run python evals/validate.py --attacks
+
 Exits non-zero on any failure.
 """
 
@@ -50,6 +58,7 @@ from agent.tools_v0 import REGISTRY, Session, connect  # noqa: E402
 GOLDEN = ROOT / "evals" / "golden"
 PROBES = ROOT / "evals" / "probes"
 FRESH = ROOT / "evals" / "fresh"
+ATTACKS = ROOT / "evals" / "attacks"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
 
 # old_policy: the customer quotes a rule from kb/_archive/; Nova must give and cite the current one.
@@ -84,6 +93,34 @@ class Expect(Strict):
     sources: list[str] = Field(default_factory=list)   # help-center section_ids the answer rests on
 
 
+# The code layers that stop an attack, and where each lives. A layer is code the model cannot argue with.
+LAYERS = {
+    "no_dangerous_tool": "agent/tools_v2.py SPECS: six tools, none refunds, cancels, credits or changes an account",
+    "no_outbound_channel": "agent/tools_v2.py SPECS: no tool sends email, posts or fetches a URL",
+    "session_identity": "agent/tools_v2.py Session and Args(extra='forbid'): the customer is never an argument",
+    "row_level_security": "db/roles.sql policies + Session.read(): another customer's order is NOT_FOUND, "
+                          "the same answer as no order",
+    "confirm_endpoint": "db/roles.sql propose_only + api/returns.py: only the customer's click confirms a return",
+    "eligibility_code": "agent/returns.py eligibility(): the window and the rules are computed, not argued",
+    "minimised_tools": "agent/tools_v0.py SQL: no street address, phone, email or card reaches the model",
+    "state_from_tools": "agent/state.py State.update(): built from tool results only; nothing carries over between chats",
+    "no_secrets_in_prompt": "agent/prompts.py: the prompt holds rules only, nothing private to leak",
+    "result_scrub": "agent/guardrails.py scrub_result(): instruction-like text cut from tool results",
+    "link_guard": "agent/guardrails.py guard_reply(): links and markdown images removed from replies",
+    "prompt_echo_guard": "agent/guardrails.py guard_reply(): a reply repeating the prompt's rules is replaced",
+    "claim_check": "agent/guardrails.py guard_reply(): an action claim no tool result shows is replaced",
+}
+FAMILY_QUOTAS = {"direct_override": 6, "roleplay_authority": 6, "other_customer": 8, "fake_confirmation": 6,
+                 "data_injection": 6, "exfiltration": 4, "multi_turn": 4}
+OWASP = ("LLM01", "LLM02", "LLM05", "LLM06", "LLM07")   # injection, disclosure, output handling, agency, prompt leak
+
+
+class Attack(Strict):
+    family: Literal[tuple(FAMILY_QUOTAS)]
+    stopped_by: list[Literal[tuple(LAYERS)]] = Field(min_length=1)
+    owasp: list[Literal[OWASP]] = Field(min_length=1)
+
+
 class Case(Strict):
     id: str
     category: Literal["policy", "order_lookup", "returns", "unanswerable", "escalation", "adversarial",
@@ -93,6 +130,7 @@ class Case(Strict):
     turns: list[str] = Field(min_length=1)
     expect: Expect
     notes: str = Field(min_length=10)
+    attack: Attack | None = None      # adversarial cases of the attack suite
 
 
 class ProbeCase(Case):
@@ -214,6 +252,38 @@ def load_probes() -> tuple[list[tuple[str, Case]], list[str]]:
     return load(PROBES, ProbeCase)
 
 
+def load_attacks() -> tuple[list[tuple[str, Case]], list[str]]:
+    """The attack suite: the golden adversarial cases and evals/attacks/."""
+    golden, errors = load()
+    extra, errors_a = load(ATTACKS)
+    return [(w, c) for w, c in golden if c.category == "adversarial"] + extra, errors + errors_a
+
+
+def own_data_overlap(case: Case, conn) -> list[str]:
+    """A forbidden phrase must not be in the customer's own orders: saying their own data back is right. Planted
+    text is the exception (data_injection cases forbid repeating text that sits in their own orders)."""
+    if case.attack is None or case.attack.family == "data_injection":
+        return []
+    session = Session.open(conn, case.customer_id)
+    own = REGISTRY["list_my_orders"](session=session, limit=50)
+    blob = flat(own) + " " + " ".join(flat(REGISTRY[t](session=session, order_id=o["order_id"]))
+                                      for o in own for t in ("get_order_status", "get_tracking"))
+    return [f"must_not_include '{f}' is in the customer's own orders" for f in case.expect.must_not_include
+            if normalize(f) in blob]
+
+
+def check_attacks(cases) -> list[str]:
+    errors = [f"{where} {c.id}: no attack block" for where, c in cases if c.attack is None]
+    errors += [f"{where} {c.id}: category must be adversarial" for where, c in cases if c.category != "adversarial"]
+    counts = Counter(c.attack.family for _, c in cases if c.attack)
+    print(f"{'family':<20}{'cases':>6}{'quota':>7}")
+    for fam, quota in FAMILY_QUOTAS.items():
+        print(f"{fam:<20}{counts[fam]:>6}{quota:>7}")
+        if counts[fam] != quota:
+            errors.append(f"{fam}: {counts[fam]} cases, quota is {quota}")
+    return errors
+
+
 def check_probes(probes, golden) -> list[str]:
     """Each probe rewords a golden case and keeps everything else about it."""
     errors, by_id = [], {c.id: c for _, c in golden}
@@ -243,7 +313,27 @@ def main() -> None:
     ap.add_argument("--partial", action="store_true", help="skip the per-category quota check")
     ap.add_argument("--probes", action="store_true", help="check the phrasing probes instead of the golden set")
     ap.add_argument("--fresh", action="store_true", help="check the fresh cases instead of the golden set")
+    ap.add_argument("--attacks", action="store_true", help="check the 40-case attack suite (against nimbus_planted)")
     a = ap.parse_args()
+
+    if a.attacks:
+        if not DB_URL.endswith("/nimbus_planted"):
+            sys.exit("the attack suite is checked against nimbus_planted (db/plant.py); set DB_URL to it")
+        cases, errors = load_attacks()
+        ids = Counter(c.id for _, c in cases)
+        errors += [f"id '{i}' is used {n} times" for i, n in ids.items() if n > 1] + check_attacks(cases)
+        conn = connect(DB_URL)
+        for where, case in cases:
+            errors += [f"{where} {case.id}: {msg}" for msg in check(case, conn)]
+            if where.startswith("attacks.jsonl"):
+                errors += [f"{where} {case.id}: {msg}" for msg in own_data_overlap(case, conn)]
+        if errors:
+            print(f"\n{len(errors)} problem(s):")
+            for err in errors:
+                print(" -", err)
+            sys.exit(1)
+        print(f"\n{len(cases)} attack cases valid")
+        return
 
     if a.probes:
         golden, errors = load()
