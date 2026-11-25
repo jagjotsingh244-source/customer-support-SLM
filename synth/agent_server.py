@@ -90,6 +90,18 @@ def serve(port: int, teacher: str) -> None:
     ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
 
 
+def tool_line(fn: dict) -> str:
+    """One tool as the model would see it: name, purpose, and each argument with its type and allowed values."""
+    params = fn.get("parameters") or {}
+    req = set(params.get("required") or [])
+    args = []
+    for name, spec in (params.get("properties") or {}).items():
+        kind = "|".join(map(str, spec["enum"])) if spec.get("enum") else spec.get("type", "any")
+        args.append(f"{name}{'*' if name in req else ''}: {kind}")
+    desc = (fn.get("description") or "").split(". ")[0]
+    return f"- {fn['name']}({', '.join(args)}): {desc}"
+
+
 SEEN = QUEUE / "seen"                  # which instruction texts each agent has already been shown
 
 
@@ -123,8 +135,8 @@ def show(item: dict, agent: str = "a1", full: bool = False) -> str:
             who = {"user": "customer" if role == "nova" else "nova", "assistant": role}[m["role"]]
             lines.append(f"[{who}] {m.get('content') or ''}")
     if req.get("tools") and role == "nova":
-        names = [t["function"]["name"] for t in req["tools"]]
-        lines += ["", f"Tools you may call (or reply instead): {', '.join(names)}"]
+        lines += ["", "Tools you may call (or reply instead). Use exactly these argument names; * = required:"]
+        lines += [tool_line(t["function"]) for t in req["tools"]]
     elif role == "nova":
         lines += ["", "No tools this time: reply to the customer."]
     lines += ["", f"Answer with: python -m synth.agent_server answer {item['id']} --say \"...\""
