@@ -14,6 +14,7 @@
 
     # ceiling: Gemini on Vertex AI (VERTEX_API_KEY and VERTEX_PROJECT set)
     uv run python evals/run_eval.py --run 2026-11-23_ceiling --provider gemini --model gemini-4-hydrogen
+    # or with a Gemini Developer API (AI Studio) key: --provider gemini-studio (GEMINI_API_KEY set)
 
     # re-score saved traces with the current metrics, without calling any model
     uv run python evals/run_eval.py --rescore evals/runs/2026-11-23_floor
@@ -120,6 +121,9 @@ def make_client(a):
         from agent.gemini_adapter import GeminiChatClient
         return GeminiChatClient(api_key=os.environ["VERTEX_API_KEY"], project=os.environ["VERTEX_PROJECT"],
                                 location=os.environ.get("VERTEX_LOCATION", "global"))
+    if a.provider == "gemini-studio":
+        from agent.gemini_adapter import GeminiChatClient
+        return GeminiChatClient(api_key=os.environ["GEMINI_API_KEY"], vertexai=False)
     from openai import OpenAI
     return OpenAI(base_url=a.base_url, api_key=os.environ.get("OPENAI_API_KEY", "EMPTY"))
 
@@ -400,7 +404,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--run", help="run name, e.g. 2026-11-23_floor (folder under evals/runs)")
     ap.add_argument("--system", choices=["floor", "ceiling", "candidate", "diagnostic"], help="what the run measures")
-    ap.add_argument("--provider", choices=["openai", "gemini", "local"], default="openai")
+    ap.add_argument("--provider", choices=["openai", "gemini", "gemini-studio", "local"], default="openai")
     ap.add_argument("--base-url", help="OpenAI-compatible server, for --provider openai")
     ap.add_argument("--model")
     ap.add_argument("--adapter", help="for --provider local: a LoRA adapter (Hub id or folder) merged into --model")

@@ -1,0 +1,24 @@
+{
+  "run": "2026-11-25_ceiling-old-policy",
+  "system": "ceiling",
+  "provider": "gemini",
+  "model": "gemini-4-hydrogen",
+  "adapter": null,
+  "base_url": null,
+  "prompt_version": "v1",
+  "tools_version": "v1",
+  "state": false,
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 5,
+  "commit": "2d81805+uncommitted changes",
+  "db_host": "localhost:5433",
+  "notes": "Vertex AI global, project nova-evals (the first project's key was blocked during a policy review); local database copy; help-center retrieval tools and citation prompt",
+  "served_models": [
+    "gemini-4-hydrogen"
+  ]
+}

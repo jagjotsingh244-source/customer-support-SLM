@@ -212,9 +212,25 @@ temperature 0.2, scorer `eval-v2`.
 
 Old-policy cases alone: the 2B model gave the current rule in 0/5 with the first tools and **3/5** with the new ones
 ("No, that's not correct. Electronics have a 7-day return window, not 30 days."). No case passes `all`: the strict
-tool checks fail on extra order lookups, and the model never cites. The ship gate also asks for these five to pass
-on the ceiling model; that run could not happen, because Vertex AI refused every request on 2026-11-23 (an account
-review, not a request error). It stays open.
+tool checks fail on extra order lookups, and the model never cites.
+
+The ship gate also asks for these five to pass on the ceiling model. Vertex AI refused every request from 2026-11-23
+during an account review, so the run waited until 2026-11-25 (`2026-11-25_ceiling-old-policy`: `gemini-4-hydrogen`,
+same tools v1 and prompt v1, scorer `eval-v3`, run from a second Cloud project on the same billing account).
+
+| Case | Customer's claim | Gemini's answer | Searched | Cites | Strict tools |
+|---|---|---|---|---|---|
+| old-001 | 30 days for everything | 15 days for home items | 2 searches | yes | fail: second search |
+| old-002 | electronics 30 days | 7 days, unopened only | 1 search | yes | pass |
+| old-003 | opened, in the box, is fine | opened electronics only if faulty | 1 search + 2 order lookups | yes | fail: order lookups |
+| old-004 | pickup in 3–5 days | 1–2 days | 1 search | yes | pass |
+| old-005 | refund within 7 days of pickup | inspected within 2 days, then sent | 2 searches | yes | fail: second search |
+
+The ceiling gives the current rule in **5/5**, corrects the customer every time and cites the right section in all
+five; `all_required` passes 5/5. The three strict-tool failures are extra calls (a second search, an order lookup
+to check for headphones), not wrong ones. The one grounding flag (old-001, "rather than 30 days") is the checker
+counting the customer's own number, the same false positive as SFT-1 on old-002. So the gate holds: the cases are
+answerable with the help center as indexed, and the 2B model's 3/5 is a model gap, not a data gap.
 
 ### Where the facts were lost
 
@@ -272,4 +288,6 @@ uv run --group rag python evals/retrieval_eval.py --model BAAI/bge-small-en-v1.5
 uv run --group rag python evals/retrieval_threshold.py
 uv run --group local-model --group rag python evals/run_eval.py --run 2026-11-23_floor-policy-v1 --system floor \
     --provider local --model Qwen/Qwen3.5-2B --tools v1 --prompt v1 --category policy old_policy
+uv run --env-file .env --group rag python evals/run_eval.py --run 2026-11-25_ceiling-old-policy --system ceiling \
+    --provider gemini --model gemini-4-hydrogen --tools v1 --prompt v1 --category old_policy
 ```

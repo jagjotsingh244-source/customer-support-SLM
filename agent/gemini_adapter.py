@@ -12,6 +12,9 @@ the same system prompt, the same six tool schemas and the same loop.
 The key is tied to one Google Cloud project; without project and location the
 SDK sends requests to the project's home region, where Gemini is not served.
 
+A Gemini Developer API key (AI Studio) works too, with vertexai=False: the
+same models, reached without a Cloud project.
+
 What it translates, and the differences that remain:
 - system message -> system_instruction; user turns -> user contents;
   assistant tool calls -> functionCall parts; tool results -> functionResponse parts.
@@ -102,9 +105,12 @@ class GeminiChatClient:
     """Exposes client.chat.completions.create(...), the one call agent/loop.py makes."""
 
     def __init__(self, api_key: str | None = None, project: str | None = None,
-                 location: str = "global", genai_client=None):
-        self._genai = genai_client or genai.Client(vertexai=True, api_key=api_key,
-                                                   project=project, location=location)
+                 location: str = "global", genai_client=None, vertexai: bool = True):
+        """vertexai=False uses a Gemini Developer API (AI Studio) key: no project or location."""
+        if genai_client is None:
+            genai_client = (genai.Client(vertexai=True, api_key=api_key, project=project, location=location)
+                            if vertexai else genai.Client(api_key=api_key))
+        self._genai = genai_client
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create))
 
     def create(self, *, model, messages, tools, temperature, max_tokens, **_):
