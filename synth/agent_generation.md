@@ -31,11 +31,12 @@ Terminal 1, the mailbox:
 uv run python -m synth.agent_server serve --teacher "antigravity / gemini-4-hydrogen (low)"
 ```
 
-Terminal 2, the generator (one conversation at a time; it waits as long as the agent needs):
+Terminal 2, the generator. `--workers` is how many conversations run at once: use one per agent (4 agents, 4
+workers); it waits as long as the agents need:
 
 ```bash
 TEACHER_URL=http://127.0.0.1:8765 TEACHER_API_KEY=local uv run --group rag --group local-model --group data \
-  python -m synth.generate --cells-file synth/agent_plan.json --label agent-r1 --workers 1 --stall-s 3600
+  python -m synth.generate --cells-file synth/agent_plan.json --label agent-r1 --workers 4 --stall-s 3600
 ```
 
 `synth/agent_plan.json` lists the scenario x persona cells that still have fewer than three kept conversations,
@@ -43,10 +44,12 @@ and how many to make for each (76 in all).
 
 ## The agent's loop
 
-Repeat until the generator in terminal 2 prints its summary:
+Run several agents in parallel, each with its own name (`a1`, `a2`, ...). `next` claims a request, so two agents
+never answer the same one. Each agent repeats until the generator in terminal 2 prints its summary:
 
-1. `uv run python -m synth.agent_server next`. It shows who to play (NOVA or CUSTOMER), the full instructions
-   for that role and the conversation so far, including every tool result.
+1. `uv run python -m synth.agent_server next --agent a1`. It shows who to play (NOVA or CUSTOMER), the
+   instructions for that role (in full the first time, then only the lines that changed; `--full` shows all again)
+   and the conversation so far, including every tool result.
 2. Write the next message as that role, following the instructions exactly:
    - as **NOVA**: call a tool when the answer needs order or policy facts,
      `uv run python -m synth.agent_server answer <id> --call get_tracking '{"order_id": 11904}'`,

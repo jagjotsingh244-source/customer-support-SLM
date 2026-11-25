@@ -79,7 +79,8 @@ def serve(port: int, teacher: str) -> None:
                 time.sleep(0.5)
             answer = json.loads(out.read_text())
             out.unlink()
-            (INBOX / f"{rid}.json").unlink(missing_ok=True)
+            for f in [INBOX / f"{rid}.json", *INBOX.glob(f"{rid}.*.claimed")]:
+                f.unlink(missing_ok=True)
             self._send(200, response(req, answer))
 
         def log_message(self, *a):
@@ -89,13 +90,30 @@ def serve(port: int, teacher: str) -> None:
     ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
 
 
-def show(item: dict) -> str:
-    """The waiting request, written for the agent: who to play, the instructions, the conversation so far."""
+SEEN = QUEUE / "seen"                  # which instruction texts each agent has already been shown
+
+
+def show(item: dict, agent: str = "a1", full: bool = False) -> str:
+    """The waiting request, written for the agent: who to play, the instructions, the conversation so far.
+    Instructions are printed in full the first time an agent sees them (per role and conversation); after that a
+    one-line reminder, so the agent reads mostly what is new."""
+    import hashlib
     req, role = item["request"], item["role"]
     lines = [f"REQUEST {item['id']}  -  you are writing the next message as: {role.upper()}"]
     for m in req["messages"]:
         if m["role"] == "system":
-            lines += ["", "=== INSTRUCTIONS (follow them exactly) ===", m["content"], "=== END INSTRUCTIONS ==="]
+            text = m["content"]
+            key = hashlib.sha1(text[:300].encode()).hexdigest()[:16]     # the start is fixed per conversation and role
+            mark = SEEN / agent / key
+            if full or not mark.exists():
+                lines += ["", f"=== INSTRUCTIONS {key} (follow them exactly) ===", text, "=== END INSTRUCTIONS ==="]
+            else:
+                before = set(mark.read_text().splitlines())
+                changed = [ln for ln in text.splitlines() if ln.strip() and ln not in before]
+                lines += ["", f"(instructions {key}: as shown before" + (", with these lines new or changed:" if changed
+                              else ", unchanged") + ")", *changed]
+            mark.parent.mkdir(parents=True, exist_ok=True)
+            mark.write_text(text)
         elif m.get("tool_calls"):
             for c in m["tool_calls"]:
                 lines.append(f"[nova calls] {c['function']['name']} {c['function']['arguments']}")
@@ -120,7 +138,9 @@ def main() -> None:
     s = sub.add_parser("serve")
     s.add_argument("--port", type=int, default=8765)
     s.add_argument("--teacher", required=True, help="who answers, recorded in every conversation")
-    sub.add_parser("next", help="show the oldest waiting request")
+    n = sub.add_parser("next", help="claim and show the oldest waiting request")
+    n.add_argument("--agent", default="a1", help="a name per agent when several run in parallel")
+    n.add_argument("--full", action="store_true", help="always show the full instructions")
     sub.add_parser("status", help="how many requests are waiting")
     a = sub.add_parser("answer")
     a.add_argument("id")
@@ -132,10 +152,17 @@ def main() -> None:
         return serve(x.port, x.teacher)
     waiting = sorted(INBOX.glob("*.json")) if INBOX.exists() else []
     if x.cmd == "status":
-        return print(f"{len(waiting)} waiting")
+        return print(f"{len(waiting)} waiting, {len(list(INBOX.glob('*.claimed')))} being answered")
     if x.cmd == "next":
-        return print(show(json.loads(waiting[0].read_text())) if waiting else "nothing waiting")
-    path = INBOX / f"{x.id}.json"
+        for path in waiting:                       # claim atomically: parallel agents never get the same one
+            claimed = path.with_name(f"{path.stem}.{x.agent}.claimed")
+            try:
+                path.rename(claimed)
+            except FileNotFoundError:
+                continue
+            return print(show(json.loads(claimed.read_text()), x.agent, x.full))
+        return print("nothing waiting")
+    path = next(iter(INBOX.glob(f"{x.id}.*.claimed")), INBOX / f"{x.id}.json")
     if not path.exists():
         sys.exit(f"no waiting request {x.id}")
     if x.call:
