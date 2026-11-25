@@ -91,6 +91,15 @@ SFT-1 bought nothing, since SFT-1's habits had to be unlearned first. What still
 hand-offs for parcels stuck far past their estimate (the filters taught "late is not lost" too well), out-of-scope
 requests declined without offering a teammate, and help-center sections misread.
 
+## The second round (v2)
+
+Repair of the time promises in hand-off replies, fill runs for the thin cells, and 12 conversations written by a
+coding agent through a mailbox server (`synth/agent_server.py`) when the GPU credit ran out: 1,267 kept, 2 empty
+cells, a 10,446-example mix. SFT-2a retrained on it on one L4 (Google Compute Engine, 84 minutes) scored 61%
+pass@1 on golden against v1's 64%, and 60% against 66% on fresh: inside the noise, but no gain, so v1 stays.
+Cost: the rest of the Modal credit (about $10) for the repair judging and fill runs, and about ₹500 of Google
+Cloud credit for the VM.
+
 ## Mishaps worth keeping
 
 - One database connection shared by 16 threads tangled transactions and hung a run while the GPU billed: cleanup now
@@ -102,3 +111,7 @@ requests declined without offering a teammate, and help-center sections misread.
   copy (`CREATE DATABASE ... TEMPLATE nimbus`).
 - After a redeploy no container started for about ten minutes (no L4 free): the eval server now falls back to an
   A10G or an L40S.
+- A fill run kept generating after it was told to stop and used up the Modal credit: `synth/generate.py` now has a
+  hard wall-clock stop (`--max-hours`).
+- An eval script on the VM did not load the database role passwords, and all eight runs failed on their first
+  database connection; the earlier scripts had loaded `.env`, this one did not.

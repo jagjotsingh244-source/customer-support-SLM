@@ -89,4 +89,15 @@ parcels, rejected returns, frustrated customers), so one teacher habit emptied w
 |---|---|---|
 | Before (v1) | 1,006 | 28 |
 | After the repair | 1,210 | 15 |
-| After the fill (v2) | 1,264 | 3 |
+| After the fill | 1,264 | 3 |
+| After the agent-written conversations (v2) | 1,267 | 2 |
+
+The last row is 12 conversations written by a coding agent through `synth/agent_server.py`: 7 passed the code
+checks and were judged by hand (tone and facts, the same rubrics), 3 were kept. Two of the rejects told the
+customer "your return is all set" for a return that was only proposed; `RETURN_DONE` in `verify.py` now matches
+"all set" and "sorted" too.
+
+Retraining SFT-2a on the v2 mix did not move the golden or the fresh score (`evals/reports/03_sft2.md`, "Second
+round"). v2's hand-off replies came out shorter and sometimes without the facts the cases check, a possible side
+effect of the repair: a wording fix in the data should be followed by a check of what the fixed replies still
+say.

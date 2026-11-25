@@ -1,0 +1,138 @@
+{
+ "run_name": "sft2a-r16-lr2e-4-traj_v2",
+ "config": {
+  "model_name": "unsloth/Qwen3.5-2B",
+  "r": 16,
+  "lora_alpha": 16,
+  "lora_dropout": 0.0,
+  "target_modules": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "init_adapter": null,
+  "dataset_name": null,
+  "dataset_revision": null,
+  "data_path": "data/synthetic/nova-sft2-mix-v2",
+  "data_version": "traj_v2",
+  "tools": true,
+  "max_seq_length": 2432,
+  "train_rows": null,
+  "learning_rate": 0.0002,
+  "num_train_epochs": 1,
+  "per_device_train_batch_size": 4,
+  "gradient_accumulation_steps": 4,
+  "group_by_length": true,
+  "warmup_ratio": 0.05,
+  "lr_scheduler_type": "cosine",
+  "optim": "adamw_8bit",
+  "gradient_checkpointing": "unsloth",
+  "weight_decay": 0.0,
+  "seed": 3407,
+  "eval_steps": 100,
+  "save_steps": 100,
+  "logging_steps": 10,
+  "per_device_eval_batch_size": 4,
+  "probe_max_new_tokens": 120,
+  "output_root": "outputs",
+  "hub_user": "123jagjot",
+  "run_prefix": "sft2a"
+ },
+ "plan": {
+  "examples_per_step": 16,
+  "steps": 653,
+  "warmup_steps": 33,
+  "evaluations": 7
+ },
+ "data": {
+  "train": {
+   "rows": 10446,
+   "max_tokens": 2432,
+   "mean_tokens": 1492.1,
+   "mean_trained_tokens": 43.6,
+   "mask_checked_rows": 200
+  },
+  "validation": {
+   "rows": 359,
+   "max_tokens": 2374,
+   "mean_tokens": 1514.3,
+   "mean_trained_tokens": 43.1,
+   "mask_checked_rows": 200
+  }
+ },
+ "dataset": {
+  "name": null,
+  "revision": null,
+  "path": "data/synthetic/nova-sft2-mix-v2"
+ },
+ "prompt_version": "v1",
+ "probe_customer": "Anay Vasa",
+ "probes": [
+  "hello",
+  "thanks, bye",
+  "i want to cancel my order",
+  "where is my refund??",
+  "where is my order?",
+  "your service is terrible",
+  "can you change my address",
+  "i want to talk to a real person"
+ ],
+ "git": {
+  "commit": "c45f85aef7f0743548a5eb9e4d4026a1ab4c9f43",
+  "dirty": false
+ },
+ "versions": {
+  "torch": "2.11.0",
+  "transformers": "5.17.0",
+  "peft": "0.21.2",
+  "unsloth": "2026.11.7",
+  "unsloth_zoo": "2026.11.7",
+  "accelerate": "1.15.0",
+  "datasets": "4.8.5",
+  "bitsandbytes": "0.50.2",
+  "triton": "3.6.0"
+ },
+ "gpu": "NVIDIA L4",
+ "precision": "bf16",
+ "trainable_params": 10911744,
+ "hand_count": 10911744,
+ "wrapped_layers": 96,
+ "memory_gb": {
+  "after_load": 4.44,
+  "peak_allocated": 5.9,
+  "peak_reserved": 6.47
+ },
+ "train_seconds": 5049,
+ "total_seconds": 5121,
+ "train_loss": 0.2605,
+ "eval_losses": {
+  "0": {
+   "eval_validation_loss": 0.5139
+  },
+  "100": {
+   "eval_validation_loss": 0.3252
+  },
+  "200": {
+   "eval_validation_loss": 0.3003
+  },
+  "300": {
+   "eval_validation_loss": 0.264
+  },
+  "400": {
+   "eval_validation_loss": 0.2392
+  },
+  "500": {
+   "eval_validation_loss": 0.223
+  },
+  "600": {
+   "eval_validation_loss": 0.2171
+  },
+  "653": {
+   "eval_validation_loss": 0.2171
+  }
+ }
+}

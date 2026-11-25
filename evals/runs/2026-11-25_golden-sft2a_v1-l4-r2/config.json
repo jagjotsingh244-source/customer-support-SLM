@@ -1,0 +1,24 @@
+{
+  "run": "2026-11-25_golden-sft2a_v1-l4-r2",
+  "system": "candidate",
+  "provider": "openai",
+  "model": "sft2a_v1",
+  "adapter": null,
+  "base_url": "http://localhost:8001/v1",
+  "prompt_version": "v2",
+  "tools_version": "v2",
+  "state": true,
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 107,
+  "commit": "c45f85a",
+  "db_host": "localhost:5433",
+  "notes": "GCP L4, vLLM 0.34.0, bf16, both adapters as LoRA modules on one server; v2 trained on nova-sft2-mix-v2",
+  "served_models": [
+    "sft2a_v1"
+  ]
+}
