@@ -12,9 +12,16 @@ conversations go through the same checks (`synth/verify.py`). Only who writes ea
 ## Which model may be the teacher
 
 The conversations become training data for another model, so the teacher must be a model whose terms allow
-that. Use an **open-weights model** (for example Qwen or gpt-oss under Apache-2.0) if the agent offers one. Do not
-use a model whose provider forbids training other models on its output. Record the agent and model in `--teacher`;
-it is stored in every conversation.
+that. Use an **open-weights model** (for example Qwen or gpt-oss under Apache-2.0) if the agent offers one: its
+output can be trained on freely. A provider's model may come with terms that limit training other models on its
+output, and heavy automated use can get an account restricted. To keep that risk low:
+
+- keep runs small (the plan here is 60 conversations) and use two or three agents, not more;
+- the adversarial customers (prompt injection, pretending to be staff, asking for the system prompt) are left out
+  of this plan (`synth/agent_plan_adversarial.json`): they are generated with the open-weights teacher instead;
+- stop at the first warning, rate limit or policy message, and do not retry around it.
+
+Record the agent and model in `--teacher`; it is stored in every conversation, so these can be told apart later.
 
 ## Setup (once)
 
@@ -31,16 +38,16 @@ Terminal 1, the mailbox:
 uv run python -m synth.agent_server serve --teacher "antigravity / gemini-4-hydrogen (low)"
 ```
 
-Terminal 2, the generator. `--workers` is how many conversations run at once: use one per agent (4 agents, 4
+Terminal 2, the generator. `--workers` is how many conversations run at once: use one per agent (2-3 agents, 2-3
 workers); it waits as long as the agents need:
 
 ```bash
 TEACHER_URL=http://127.0.0.1:8765 TEACHER_API_KEY=local uv run --group rag --group local-model --group data \
-  python -m synth.generate --cells-file synth/agent_plan.json --label agent-r1 --workers 4 --stall-s 3600
+  python -m synth.generate --cells-file synth/agent_plan.json --label agent-r1 --workers 3 --stall-s 3600
 ```
 
 `synth/agent_plan.json` lists the scenario x persona cells that still have fewer than three kept conversations,
-and how many to make for each (76 in all).
+and how many to make for each (60 in all; the adversarial cells are in a separate plan).
 
 ## The agent's loop
 
