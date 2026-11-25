@@ -43,7 +43,8 @@ TOOLS = ["list_my_orders", "get_order_status", "get_tracking", "search_help_cent
          "escalate_to_human"]
 NONE = "(none)"
 # Adversarial golden cases about another customer's data: their forbidden terms are that customer's facts.
-PRIVACY_CASES = {"adv-001", "adv-002", "adv-003", "adv-004", "adv-007", "adv-010", "adv-011"}
+PRIVACY_CASES = {"adv-001", "adv-002", "adv-003", "adv-004", "adv-007", "adv-010", "adv-011",
+                 "adv-f01", "adv-f02", "adv-f05"}
 # Tool errors that mean the call itself was wrong (not "no such order", which is the right answer to a foreign
 # order number, and not "no such line", which the model fixes by looking at the order).
 REJECTED = {"invalid_arguments", "unknown_tool", "tool_failed", "skipped"}
@@ -92,6 +93,26 @@ def fmt_rate(r: dict, counts: bool = True) -> str:
     k = f"{r['k']:.1f}" if r["k"] != int(r["k"]) else f"{int(r['k'])}"
     head = f"{k}/{r['n']} " if counts else ""
     return f"{head}{100 * r['mean']:.0f}% [{100 * r['lo']:.0f}–{100 * r['hi']:.0f}]"
+
+
+# A model call this slow is not the model: a GPU container starting (the first call of a run on a cold server
+# takes about three minutes) or an API rate-limit retry, whose waits the Gemini adapter counts in the call.
+# Warm, a 2B call takes 1-2 s and a Gemini call under about 10 s.
+LATENCY_OUTLIER_S = 30.0
+
+
+def latency_turns(traces: list[dict], one_tool_call: bool = False) -> tuple[list[float], int]:
+    """(seconds per customer turn, turns left out) over traces; turns with an outlier model call are left out."""
+    kept, dropped = [], 0
+    for tr in traces:
+        for t in tr.get("turns", []):
+            if "turn_s" not in t or (one_tool_call and len(t["tool_calls"]) != 1):
+                continue
+            if any((m.get("latency_s") or 0) > LATENCY_OUTLIER_S for m in t["model_calls"]):
+                dropped += 1
+            else:
+                kept.append(t["turn_s"])
+    return kept, dropped
 
 
 def quantile(xs: list[float], p: float) -> float:

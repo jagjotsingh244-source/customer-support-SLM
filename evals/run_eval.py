@@ -19,6 +19,9 @@
     # re-score saved traces with the current metrics, without calling any model
     uv run python evals/run_eval.py --rescore evals/runs/2026-11-23_floor
 
+    # the 50 fresh cases (evals/fresh/), scored once per system: same flags as the system's golden run
+    uv run python evals/run_eval.py --run 2026-11-25_fresh-sft2a --cases fresh ...
+
     # the 12 phrasing probes (evals/probes/), each next to its clean golden twin from a golden run
     uv run python evals/run_eval.py --run 2026-11-23_floor-probes --cases probes --paired-run 2026-11-23_floor ...
 
@@ -95,7 +98,7 @@ from agent.loop import run_turn  # noqa: E402
 from agent.grounding import check_conversation  # noqa: E402
 from agent.prompts import PROMPT_VERSION, PROMPTS, system_prompt  # noqa: E402
 from config import now  # noqa: E402
-from evals.validate import PHRASING_QUOTAS, QUOTAS, load, load_probes, normalize  # noqa: E402
+from evals.validate import FRESH, PHRASING_QUOTAS, QUOTAS, load, load_probes, normalize  # noqa: E402
 
 RUNS = ROOT / "evals" / "runs"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
@@ -171,13 +174,15 @@ def run_case(case, client, a, conn) -> dict:
 
 def git_commit() -> str:
     head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
-    dirty = subprocess.run(["git", "status", "--porcelain", "--", "agent", "evals/golden", "evals/probes"],
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", "agent", "evals/golden", "evals/probes", "evals/fresh"],
                            capture_output=True, text=True, cwd=ROOT).stdout.strip()
     return head + ("+uncommitted changes" if dirty else "")
 
 
 def load_cases(case_set: str):
-    return load_probes() if case_set == "probes" else load()
+    if case_set == "probes":
+        return load_probes()
+    return load(FRESH) if case_set == "fresh" else load()
 
 
 def run(a) -> Path:
@@ -419,8 +424,8 @@ def main() -> None:
     ap.add_argument("--prompt", choices=list(PROMPTS), default=PROMPT_VERSION, help="system prompt version")
     ap.add_argument("--state", action="store_true",
                     help="send the conversation state and only the history that fits the token budget (agent/state.py)")
-    ap.add_argument("--cases", choices=["golden", "probes"], default="golden",
-                    help="the golden set (107 cases), or the phrasing probes (reported apart)")
+    ap.add_argument("--cases", choices=["golden", "probes", "fresh"], default="golden",
+                    help="the golden set (107 cases), the phrasing probes, or the 50 fresh cases (each reported apart)")
     ap.add_argument("--paired-run", help="for --cases probes: a golden run of the same system, to show each "
                     "probe next to its clean twin")
     ap.add_argument("--notes", default="", help="free text stored in config.json")

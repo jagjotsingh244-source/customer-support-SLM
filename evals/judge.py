@@ -4,10 +4,14 @@
     uv run python evals/judge.py agree --split tune --prompt v1
     # every reply of some runs; verdicts go to evals/runs/<run>/judge-<prompt>.jsonl
     uv run python evals/judge.py run --prompt v2 2026-11-25_golden-sft2a 2026-11-25_sim-sft2a-r1
+    # the same prompt with Gemini as the judge (Vertex AI: VERTEX_API_KEY, VERTEX_PROJECT); all 75 labels at once
+    uv run python evals/judge.py agree --judge gemini --split all --prompt v5
 
 The judge is gpt-oss-120b (serving/modal_judge.py): not the model that wrote the training conversations
 (Qwen3.5-27B), so it does not simply prefer the style it taught. JUDGE_URL is the server, without /v1; the key
-is TEACHER_API_KEY. Temperature 0.
+is TEACHER_API_KEY. Temperature 0. With --judge gemini the judge is gemini-4-hydrogen instead, a different family
+from both the teacher and the student; it did rewrite the Bitext replies SFT-1 was trained on, so its verdicts on
+SFT-1 replies may lean towards that style.
 
 One question per criterion, each a separate call with a yes/no answer, never a score: a 1-10 scale has no
 threshold that means anything. The judge sees the evidence Nova had (every tool result so far, today's date,
@@ -251,10 +255,41 @@ PROMPTS["v5"] = {k: v.replace("\n\nEARLIER IN THE CHAT:", _DATES + "\n\nEARLIER 
                  for k, v in PROMPTS["v3"].items()}
 
 
-def client() -> OpenAI:
+GEMINI_JUDGE = "gemini-4-hydrogen"
+
+
+def client(judge: str = "gpt-oss"):
+    if judge == "gemini":
+        env_from_dotenv("VERTEX_API_KEY", "VERTEX_PROJECT")
+        from google import genai
+        return genai.Client(vertexai=True, api_key=os.environ["VERTEX_API_KEY"], project=os.environ["VERTEX_PROJECT"],
+                            location="global")
     env_from_dotenv("TEACHER_API_KEY", "JUDGE_URL")
     return OpenAI(base_url=os.environ["JUDGE_URL"].rstrip("/") + "/v1", api_key=os.environ["TEACHER_API_KEY"],
                   timeout=300, max_retries=3)
+
+
+def ask_gemini(c, prompt: str) -> dict:
+    """One verdict from Gemini. Its thinking is not returned in full, only counted; the answer text is kept."""
+    from google.genai import errors, types
+    t0 = time.perf_counter()
+    m, text, u = None, "", None
+    for attempt in range(5):
+        try:
+            r = c.models.generate_content(model=GEMINI_JUDGE, contents=prompt,
+                                          config=types.GenerateContentConfig(temperature=0, max_output_tokens=8192))
+        except errors.APIError as e:
+            if getattr(e, "code", None) in (429, 500, 503) and attempt < 4:
+                time.sleep(10 * (attempt + 1))
+                continue
+            raise
+        text, u = r.text or "", r.usage_metadata
+        if m := VERDICT.findall(text):
+            break
+    return {"verdict": m[-1].upper() if m else None, "text": text, "reasoning": None,
+            "prompt_tokens": u.prompt_token_count if u else None,
+            "completion_tokens": ((u.candidates_token_count or 0) + (u.thoughts_token_count or 0)) if u else None,
+            "seconds": round(time.perf_counter() - t0, 1)}
 
 
 def render(prompt: str, unit) -> str:
@@ -278,13 +313,14 @@ def ask(c: OpenAI, prompt: str, effort: str) -> dict:
             "seconds": round(time.perf_counter() - t0, 1)}
 
 
-def judge_units(units: list, version: str, effort: str, workers: int) -> list[dict]:
-    c = client()
+def judge_units(units: list, version: str, effort: str, workers: int, judge: str = "gpt-oss") -> list[dict]:
+    c = client(judge)
     jobs = [(u, k) for u in units for k in CRITERIA]
 
     def one(job):
         u, k = job
-        return {"id": u.id, "criterion": k, **ask(c, render(PROMPTS[version][k], u), effort)}
+        prompt = render(PROMPTS[version][k], u)
+        return {"id": u.id, "criterion": k, **(ask_gemini(c, prompt) if judge == "gemini" else ask(c, prompt, effort))}
     with ThreadPoolExecutor(workers) as pool:
         return list(pool.map(one, jobs))
 
@@ -298,14 +334,20 @@ def agreement(human: list[bool], judge: list[bool]) -> dict:
 
 
 def agree(a) -> None:
-    labels = [r for r in load_labels() if r["split"] == a.split]
+    labels = [r for r in load_labels() if a.split == "all" or r["split"] == a.split]
     units = [get_unit(r["id"]) for r in labels]
-    out = judge_units(units, a.prompt, a.effort, a.workers)
-    path = OUT / "agreement" / f"{a.prompt}-{a.split}.jsonl"
+    out = judge_units(units, a.prompt, a.effort, a.workers, a.judge)
+    name = f"{a.prompt}-{a.split}" if a.judge == "gpt-oss" else f"{a.judge}-{a.prompt}-{a.split}"
+    path = OUT / "agreement" / f"{name}.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in out))
     by = {(x["id"], x["criterion"]): x for x in out}
-    print(f"prompt {a.prompt}, {a.split} half ({len(labels)} replies), judge {JUDGE_MODEL}, effort {a.effort}")
+    model = GEMINI_JUDGE if a.judge == "gemini" else f"{JUDGE_MODEL}, effort {a.effort}"
+    print(f"prompt {a.prompt}, {a.split} ({len(labels)} replies), judge {model}")
+    report_agreement(labels, by)
+
+
+def report_agreement(labels: list[dict], by: dict) -> None:
     for k in CRITERIA:
         human = [r[k] == "PASS" for r in labels]
         judge = [by[(r["id"], k)]["verdict"] == "PASS" for r in labels]
@@ -337,7 +379,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     g = sub.add_parser("agree")
-    g.add_argument("--split", choices=["tune", "test", "fresh"], required=True)
+    g.add_argument("--split", choices=["tune", "test", "fresh", "all"], required=True)
+    g.add_argument("--judge", choices=["gpt-oss", "gemini"], default="gpt-oss")
     r = sub.add_parser("run")
     r.add_argument("runs", nargs="+")
     for p in (g, r):

@@ -32,7 +32,7 @@ from evals.build_simulated import load_cases as load_sim  # noqa: E402
 from evals.metrics import (HAD_RETURN, METRICS_VERSION, PRIVACY_CASES, confusion, confusion_rows,  # noqa: E402
                            fmt_rate, layer_metrics, pass_hat_k, quantile, rate)
 from evals.run_eval import RUNS, SCORER_VERSION, read_traces, score  # noqa: E402
-from evals.validate import QUOTAS, load, normalize  # noqa: E402
+from evals.validate import FRESH, QUOTAS, load, normalize  # noqa: E402
 
 SIM_ORDER = ["order_lookup", "returns", "escalation", "policy", "unanswerable", "adversarial"]
 
@@ -107,7 +107,7 @@ def score_run(run: str) -> tuple[str, dict[str, dict]]:
     if case_set == "simulated":
         cases = {c.id: c for c in load_sim()}
         return case_set, {t["id"]: sim_case_metrics(cases[t["id"]], t) for t in traces if t["id"] in cases}
-    cases = {c.id: c for _, c in load()[0]}
+    cases = {c.id: c for _, c in (load(FRESH) if case_set == "fresh" else load())[0]}
     return case_set, {t["id"]: golden_case_metrics(cases[t["id"]], t) for t in traces if t["id"] in cases}
 
 

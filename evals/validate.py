@@ -3,6 +3,7 @@
     uv run python evals/validate.py             # every category must be at its quota
     uv run python evals/validate.py --partial   # while writing: skip the quota check
     uv run python evals/validate.py --probes    # the phrasing probes in evals/probes/
+    uv run python evals/validate.py --fresh     # the 50 fresh cases in evals/fresh/
 
 A golden case states what is true, so every expectation must be traceable to the
 database or the help center. For each case in evals/golden/*.jsonl this checks:
@@ -24,6 +25,10 @@ keyword-only versions of a clean message. Each names the golden case it rephrase
 customer, scenario, category and expectations exactly, so a score difference between the two comes from the
 phrasing alone. They are checked like golden cases, kept out of the 100-case golden set, and reported apart.
 
+Fresh cases (evals/fresh/*.jsonl) are 50 more cases in the golden set's proportions, written from the store and
+the help center alone after every tuning decision was made, and scored once per system. They are checked like
+golden cases, against their own quotas, and their ids must not repeat a golden id.
+
 Exits non-zero on any failure.
 """
 
@@ -44,11 +49,14 @@ from agent.tools_v0 import REGISTRY, Session, connect  # noqa: E402
 
 GOLDEN = ROOT / "evals" / "golden"
 PROBES = ROOT / "evals" / "probes"
+FRESH = ROOT / "evals" / "fresh"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
 
 # old_policy: the customer quotes a rule from kb/_archive/; Nova must give and cite the current one.
 QUOTAS = {"policy": 25, "order_lookup": 25, "returns": 15,
           "unanswerable": 15, "escalation": 10, "adversarial": 12, "old_policy": 5}
+FRESH_QUOTAS = {"policy": 12, "order_lookup": 12, "returns": 7,
+                "unanswerable": 7, "escalation": 5, "adversarial": 5, "old_policy": 2}
 PREFIX = {"policy": "pol", "order_lookup": "ord", "returns": "ret",
           "unanswerable": "una", "escalation": "esc", "adversarial": "adv", "old_policy": "old"}
 ORDER_TOOLS = {"get_order_status", "get_tracking", "propose_return"}
@@ -234,6 +242,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--partial", action="store_true", help="skip the per-category quota check")
     ap.add_argument("--probes", action="store_true", help="check the phrasing probes instead of the golden set")
+    ap.add_argument("--fresh", action="store_true", help="check the fresh cases instead of the golden set")
     a = ap.parse_args()
 
     if a.probes:
@@ -251,9 +260,13 @@ def main() -> None:
         print(f"\n{len(probes)} phrasing probes valid")
         return
 
-    cases, errors = load()
+    cases, errors = load(FRESH if a.fresh else GOLDEN)
     ids = Counter(c.id for _, c in cases)
     errors += [f"id '{i}' is used {n} times" for i, n in ids.items() if n > 1]
+    if a.fresh:
+        golden_ids = {c.id for _, c in load()[0]}
+        errors += [f"{c.id}: also a golden id" for _, c in cases if c.id in golden_ids]
+    quotas = FRESH_QUOTAS if a.fresh else QUOTAS
 
     conn = connect(DB_URL)
     for where, case in cases:
@@ -261,19 +274,19 @@ def main() -> None:
 
     counts = Counter(c.category for _, c in cases)
     print(f"{'category':<14}{'cases':>6}{'quota':>7}")
-    for cat, quota in QUOTAS.items():
+    for cat, quota in quotas.items():
         print(f"{cat:<14}{counts[cat]:>6}{quota:>7}")
         if counts[cat] > quota or (not a.partial and counts[cat] != quota):
             errors.append(f"{cat}: {counts[cat]} cases, quota is {quota}")
     compound = sum(1 for _, c in cases if "compound" in c.notes.lower())
-    print(f"{'total':<14}{len(cases):>6}{sum(QUOTAS.values()):>7}   compound: {compound}")
+    print(f"{'total':<14}{len(cases):>6}{sum(quotas.values()):>7}   compound: {compound}")
 
     if errors:
         print(f"\n{len(errors)} problem(s):")
         for err in errors:
             print(" -", err)
         sys.exit(1)
-    print("\ngolden set valid")
+    print("\nfresh set valid" if a.fresh else "\ngolden set valid")
 
 
 if __name__ == "__main__":

@@ -131,3 +131,48 @@ def test_label_sheet_round_trip_keeps_verdicts_and_reads_edits(tmp_path):
     changes = jl.read_sheet(rows, path)
     assert changes == ["2026-11-25_golden-sft2a/ord-014/1: resolved PASS -> FAIL"]
     assert rows[0]["resolved"] == "FAIL" and rows[0]["resolved_draft"] == "PASS" and rows[0]["grounded"] == "PASS"
+
+
+def _side(**kw):
+    base = {"cats": {"policy": {"n": 25, "k": 20, "mean": 0.8, "lo": 0.64, "hi": 0.96}},
+            "adversarial": {"n": 12, "k": 12, "mean": 1.0, "lo": 1.0, "hi": 1.0}, "privacy": 0, "claimed": 0,
+            "issues": 4, "replies": 100, "p95": 2.5, "n_one_call": 40, "served": ['["sft2a"]']}
+    return {**base, **kw}
+
+
+def test_gate_blocks_on_hard_rules_and_separated_drops_only():
+    import yaml
+    from evals.gate import GATE, gate
+    rules = yaml.safe_load(GATE.read_text())
+    block, warn, ok = gate(_side(), _side(), rules)
+    assert not block and not warn
+    # a 20-point fall with overlapping intervals warns; with separated intervals it blocks
+    overlap = {"policy": {"n": 25, "k": 15, "mean": 0.6, "lo": 0.42, "hi": 0.78}}
+    apart = {"policy": {"n": 25, "k": 10, "mean": 0.4, "lo": 0.2, "hi": 0.6}}
+    assert gate(_side(cats=overlap), _side(), rules)[1] and not gate(_side(cats=overlap), _side(), rules)[0]
+    assert gate(_side(cats=apart), _side(), rules)[0]
+    block, _, _ = gate(_side(privacy=1, issues=7, p95=3.4), _side(), rules)
+    assert len(block) == 3          # privacy, grounding +3 per 100 (allowed +2), latency over 3 s
+
+
+def test_cost_per_1000_uses_tokens_for_the_api_and_gpu_time_for_the_2b():
+    from evals.compare_systems import cost_per_1000
+    api, _ = cost_per_1000({"model": "gemini-4-hydrogen", "prompt_per_conv": 4000, "compl_per_conv": 1000})
+    assert abs(api - 1000 * (4000 * 1.5 + 1000 * 7.5) / 1e6) < 1e-9
+    gpu, how = cost_per_1000({"model": "sft2a", "conv_s": 10.0})
+    assert abs(gpu - 1000 * 0.000222 * 3600 / 360) < 1e-9 and how.startswith("estimate")
+
+
+def test_smoke_entropy_prefers_cases_that_vary():
+    from evals.smoke import entropy
+    assert entropy(0.0) == entropy(1.0) == 0.0 and entropy(0.5) == 1.0 and entropy(0.25) < 1.0
+
+
+def test_latency_leaves_out_cold_starts_and_retries_and_counts_them():
+    from evals.metrics import latency_turns
+    warm = {"turn_s": 2.0, "tool_calls": [{}], "model_calls": [{"latency_s": 1.0}, {"latency_s": 0.9}]}
+    cold = {"turn_s": 188.0, "tool_calls": [{}], "model_calls": [{"latency_s": 186.0}, {"latency_s": 1.0}]}
+    none = {"turn_s": 1.0, "tool_calls": [], "model_calls": [{"latency_s": 1.0}]}
+    kept, dropped = latency_turns([{"turns": [cold, warm, none]}])
+    assert kept == [2.0, 1.0] and dropped == 1
+    assert latency_turns([{"turns": [cold, warm, none]}], one_tool_call=True) == ([2.0], 1)

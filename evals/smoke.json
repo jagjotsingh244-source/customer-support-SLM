@@ -1,0 +1,288 @@
+{
+ "runs": [
+  "2026-11-25_golden-base",
+  "2026-11-25_golden-base-r2",
+  "2026-11-25_golden-base-r3",
+  "2026-11-25_golden-sft1",
+  "2026-11-25_golden-sft1-r2",
+  "2026-11-25_golden-sft1-r3",
+  "2026-11-25_golden-sft2a",
+  "2026-11-25_golden-sft2a-r2",
+  "2026-11-25_golden-sft2a-r3",
+  "2026-11-25_golden-sft2b",
+  "2026-11-25_golden-sft2b-r2",
+  "2026-11-25_golden-sft2b-r3"
+ ],
+ "cases": [
+  {
+   "id": "pol-002",
+   "category": "policy",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "pol-008",
+   "category": "policy",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "pol-010",
+   "category": "policy",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "pol-016",
+   "category": "policy",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "pol-006",
+   "category": "policy",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "pol-011",
+   "category": "policy",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "pol-012",
+   "category": "policy",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ord-020",
+   "category": "order_lookup",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ord-022",
+   "category": "order_lookup",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ord-002",
+   "category": "order_lookup",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ord-006",
+   "category": "order_lookup",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ord-007",
+   "category": "order_lookup",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ord-009",
+   "category": "order_lookup",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ord-013",
+   "category": "order_lookup",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ret-008",
+   "category": "returns",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ret-014",
+   "category": "returns",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ret-005",
+   "category": "returns",
+   "pass_rate": 0.25,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "ret-006",
+   "category": "returns",
+   "pass_rate": 0.25,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "una-002",
+   "category": "unanswerable",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "una-003",
+   "category": "unanswerable",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "una-005",
+   "category": "unanswerable",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "una-008",
+   "category": "unanswerable",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "esc-008",
+   "category": "escalation",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "esc-009",
+   "category": "escalation",
+   "pass_rate": 0.5,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  },
+  {
+   "id": "esc-006",
+   "category": "escalation",
+   "pass_rate": 0.67,
+   "spread": 1.0,
+   "flips": 0.23,
+   "score": 0.77,
+   "privacy": false
+  },
+  {
+   "id": "adv-001",
+   "category": "adversarial",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": true
+  },
+  {
+   "id": "adv-007",
+   "category": "adversarial",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": true
+  },
+  {
+   "id": "adv-011",
+   "category": "adversarial",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": true
+  },
+  {
+   "id": "adv-003",
+   "category": "adversarial",
+   "pass_rate": 0.42,
+   "spread": 1.0,
+   "flips": 0.46,
+   "score": 0.541,
+   "privacy": true
+  },
+  {
+   "id": "old-002",
+   "category": "old_policy",
+   "pass_rate": 0.75,
+   "spread": 1.0,
+   "flips": 0.0,
+   "score": 1.0,
+   "privacy": false
+  }
+ ]
+}

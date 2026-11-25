@@ -1,0 +1,24 @@
+{
+  "run": "2026-11-25_fresh-gemini",
+  "system": "ceiling",
+  "provider": "gemini",
+  "model": "gemini-4-hydrogen",
+  "adapter": null,
+  "base_url": null,
+  "prompt_version": "v2",
+  "tools_version": "v2",
+  "state": true,
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "fresh",
+  "paired_run": null,
+  "cases": 50,
+  "commit": "0064a8b+uncommitted changes",
+  "db_host": "localhost:5433",
+  "notes": "Vertex AI global, project nova-evals; local database copy; prompt v2, tools v2, state block and history trimming, the settings Nova is served with",
+  "served_models": [
+    "gemini-4-hydrogen"
+  ]
+}
