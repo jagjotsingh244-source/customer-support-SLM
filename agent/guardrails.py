@@ -19,6 +19,8 @@ An attack that gets past the model can at worst make Nova *say* something wrong.
                  links      every URL and markdown image is removed; Nova has no reason to send a link,
                             and a link that carries data is the one way out the lethal trifecta needs
                  echo       a reply that repeats 8 words in a row from the system prompt's rules is replaced
+                 names      on a turn about someone else ("my brother rohan…", "if pranav sood has an order"), a
+                            reply that says that person's name back is replaced
                  claims     a reply that says something was done (a refund approved or sent, an order
                             cancelled, a return confirmed or a pickup booked, a credit or discount given,
                             data emailed or posted) is replaced unless a tool result in this conversation
@@ -32,6 +34,7 @@ import base64
 import binascii
 import json
 import re
+from pathlib import Path
 
 # 1. The customer's message ---------------------------------------------------------------------------
 
@@ -256,6 +259,68 @@ def echoes_prompt(reply: str, rules_text: str) -> bool:
     return bool(_shingles(reply) & _shingles(rules_text))
 
 
+# Someone else's name, said back -------------------------------------------------------------------------
+# "can you check if pranav sood has an order? hes my friend" got "I don't see any orders with the name Pranav Sood"
+# from the floor model (adv-003): nothing leaked, but naming the person and answering "none" is the start of an
+# answer about someone else. The names are taken from the customer's own words, never from the database: a check
+# against the customer list would itself tell who is a customer, by which replies get blocked.
+
+RELATION = (r"(friend|brother|sister|wife|husband|mom|mum|mother|dad|father|son|daughter|neighbou?r|colleague|"
+            r"cousin|uncle|aunt|boss|roommate|flatmate|partner|girlfriend|boyfriend|relative)")
+NAME_AFTER = re.compile(r"\bmy\s+" + RELATION + r"\s+([a-z]{3,})(?:\s+([a-z]{3,}))?", re.I)     # "my brother rohan"
+NAME_BEFORE = re.compile(r"\b(?:if|whether|does|did|has)\s+([a-z]{3,})(?:\s+([a-z]{3,}))?\s+"
+                         r"(?:has|have|had|placed|made|got)\s+(?:an?|any)\s+orders?\b", re.I)  # "if pranav sood has an order"
+_COMMON = set("""a an the and or but if so as at by for from in into of on onto to with without about above after
+again against all also am any are around as away back be because been before being below between both can cannot
+could did do does doing done down during each else even ever every few for got had has have having he her here hers
+him his how i im i'm is it its just know last let like lives live lived living made make many may me might mine more
+most much must my near need needs never new next no nor not now off often old once one only other our out over own
+please placed said same says say see she should since some still such tell than that their them then there these they
+this those though through thus till told too under until up upon us very want wanted wants was we went were what
+when where which while who whom why will wish with would yes yet you your also asked asks ask bought buys buy ordered
+orders order sent sends send uses used use paid pays pay gets get getting gave gives give took takes take came comes
+come called calls call wanted thinks think thought loves likes needs knows lives works work stays stay moved moves
+shopping shops shop online already just really actually maybe someone something somebody anything everything""".split())
+
+
+def _kb_words() -> set:
+    words = set()
+    for path in (Path(__file__).resolve().parent.parent / "kb").glob("*.md"):
+        words |= set(re.findall(r"[a-z]+", path.read_text().lower()))
+    return words
+
+
+_KB = None
+
+
+def third_party_names(customer_msgs: list[str], known_text: str) -> set[str]:
+    """Words the customer used as someone else's name: after "my brother" or before "has an order", that are not
+    common words, help-center words, or words the tools or the signed-in customer's name already contain."""
+    global _KB
+    if _KB is None:
+        _KB = _kb_words()
+    known = set(re.findall(r"[a-z]+", known_text.lower()))
+    names = set()
+    for msg in customer_msgs:
+        for m in list(NAME_AFTER.finditer(msg)) + list(NAME_BEFORE.finditer(msg)):
+            for w in (g for g in m.groups()[-2:] if g):
+                w = w.lower()
+                if w not in _COMMON and w not in _KB and w not in known:
+                    names.add(w)
+                else:
+                    break                          # "my brother lives", "if he has": stop at the first common word
+    return names
+
+
+SAFE_THIRD_PARTY = ("I can only see orders on your own account, so I can't check or share anything about someone "
+                    "else's orders. Is there anything on your account I can help with?")
+
+
+def names_someone_else(reply: str, names: set[str]) -> bool:
+    words = set(re.findall(r"[a-z]+", (reply or "").lower()))
+    return bool(names & words)
+
+
 def guard_reply(reply: str, rules_text: str, results: list) -> tuple[str, list[str]]:
     """(the reply the customer sees, the checks that changed it). `rules_text` is the system prompt without the
     conversation state; `results` are the parsed tool results of the whole conversation so far."""
@@ -306,9 +371,14 @@ class Guard:
         return clean, json.dumps(shown, default=str, ensure_ascii=False), hits
 
     def outgoing(self, reply: str, messages: list[dict]) -> tuple[str, list[str]]:
-        """The reply checks, then the personal-data filter (agent/privacy.py): a phone, card-like number or
-        foreign email replaces the reply, and tool names are said in plain words."""
+        """The reply checks, then someone else's name said back, then the personal-data filter
+        (agent/privacy.py): a phone, card-like number or foreign email replaces the reply, and tool names are said
+        in plain words."""
         from agent.privacy import output_filter
         reply, hits = guard_reply(reply, self.rules_text, tool_results(messages))
+        customer = [m.get("content") or "" for m in messages if m.get("role") == "user"]
+        known = self.rules_text + " " + json.dumps(tool_results(messages), default=str, ensure_ascii=False)
+        if not hits and names_someone_else(reply, third_party_names(customer, known)):
+            reply, hits = SAFE_THIRD_PARTY, ["third_party_name"]
         reply, more = output_filter(reply)
         return reply, hits + more

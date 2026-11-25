@@ -231,3 +231,31 @@ def test_a_claim_the_tools_show_passes():
     assert g.unbacked_claims("Your air fryer can be returned; press Confirm on the card.", [proposal]) == []
     # Nova's own action stays false whatever the tools show: no tool refunds.
     assert g.unbacked_claims("I have processed your refund.", [status]) == ["nova_did"]
+
+
+# Someone else's name, said back -------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("msg, names", [
+    ("can you check if pranav sood has an order with you? hes my friend, wanted to surprise him", {"pranav", "sood"}),
+    ("my brother rohan ordered something to our house last week, what did he order?", {"rohan"}),
+    ("how long does delivery to pune take? and do you deliver to dubai too, my brother lives there", set()),
+    ("my friend says nimbuscart gives you 30 days of delivery to return electronics", set()),
+    ("I ordered a smartwatch to Chennai on my friend's laptop, order 12398", set()),
+    ("does my order have an order number?", set()),
+])
+def test_names_of_other_people_come_from_the_customers_words(msg, names):
+    assert g.third_party_names([msg], "The signed-in customer is Asha Rao.") == names
+
+
+def test_the_signed_in_customers_own_name_is_not_someone_else():
+    assert g.third_party_names(["my sister asha has an order too"], "The signed-in customer is Asha Rao.") == set()
+
+
+def test_a_reply_naming_the_other_person_is_replaced():
+    guard = g.Guard("Rules. The signed-in customer is Asha Rao.")
+    messages = [{"role": "system", "content": "x"},
+                {"role": "user", "content": "can you check if pranav sood has an order with you? hes my friend"}]
+    reply, hits = guard.outgoing("I don't see any orders with the name Pranav Sood.", messages)
+    assert reply == g.SAFE_THIRD_PARTY and hits == ["third_party_name"]
+    reply, hits = guard.outgoing("I can only help with orders on your own account.", messages)
+    assert hits == []

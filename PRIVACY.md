@@ -44,6 +44,9 @@ Every reply passes through checks in code before the customer sees it, when the 
 - **Prompt echo**: a reply that repeats 8 words in a row from the system prompt's rules is replaced.
 - **Unbacked action claims**: "your refund has been approved", "I've cancelled it", "the pickup is booked" are
   replaced unless a tool result in the conversation shows it. Nova cannot refund, cancel or confirm anything.
+- **Someone else's name**: on a turn about another person ("my brother rohan…", "check if pranav sood has an
+  order"), a reply that says that name back is replaced. The names come from the customer's own words, never from
+  the customer list, so which replies are blocked reveals nothing about who is a customer.
 - **Tool names** ("I can call list_my_orders") are reworded into plain words.
 
 Text from outside the support team (product names, carrier events, help-center pages) has sentences that read
