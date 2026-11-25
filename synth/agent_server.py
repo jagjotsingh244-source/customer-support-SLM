@@ -99,7 +99,8 @@ def tool_line(fn: dict) -> str:
         kind = "|".join(map(str, spec["enum"])) if spec.get("enum") else spec.get("type", "any")
         if "minimum" in spec or "maximum" in spec:
             kind += f" {spec.get('minimum', '')}-{spec.get('maximum', '')}"
-        args.append(f"{name}{'*' if name in req else ''}: {kind}")
+        note = f" ({spec['description']})" if spec.get("description") and not spec.get("enum") else ""
+        args.append(f"{name}{'*' if name in req else ''}: {kind}{note}")
     desc = (fn.get("description") or "").split(". ")[0]
     return f"- {fn['name']}({', '.join(args)}): {desc}"
 
