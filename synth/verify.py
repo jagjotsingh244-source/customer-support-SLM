@@ -39,7 +39,7 @@ CLAIMED_HANDOFF = re.compile(r"\b(i(?:'ve| have) (escalated|handed|connected|pas
 HANDOFF_OFFER = re.compile(r"(connect you|escalat\w+|hand (this|it|you) (over|to)|pass (this|it) to|teammate)", re.I)
 RETURN_DONE = re.compile(
     r"\b(return(?! proposal)|refund request)\b[^.?!]{0,70}\b(is|has been|was)\s+(now\s+)?(done|complete|completed|processed|"
-    r"confirmed|booked|created|initiated|submitted|approved|scheduled)\b"
+    r"confirmed|booked|created|initiated|submitted|approved|scheduled|all set|sorted)\b"
     r"|\bi(?:'ve| have)\s+(processed|initiated|confirmed|booked|approved|submitted)\s+(your|the)\s+return", re.I)
 CONFIRM_CARD = re.compile(r"\b(press|click|tap|select)\w*\s+(the\s+)?[\"']?confirm|card that appears", re.I)
 CANCEL_DONE = re.compile(r"\b(i(?:'ve| have)\s+cancel+ed|(order|it)\s+(is|has been)\s+(now\s+)?cancel+ed|"

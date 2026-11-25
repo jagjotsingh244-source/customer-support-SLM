@@ -10,13 +10,13 @@ The conversations the checks rejected, each with every reason it failed.
 
 ## Contents
 
-- 2485 conversations, 18218 training steps (one model call each: the request as the student sees it, and the teacher's message as the target).
+- 2494 conversations, 18291 training steps (one model call each: the request as the student sees it, and the teacher's message as the target).
 - Columns: id, scenario, persona, customer_id, run, teacher, teacher_rules, outcome, customer_turns, messages (JSON), steps (JSON), meta (JSON), reasons (JSON), first_reason.
 
 | Scenario | Conversations |
 |---|---|
 | cancelled_before_ship | 60 |
-| delayed | 234 |
+| delayed | 236 |
 | delivered_not_received | 140 |
 | delivered_on_time | 45 |
 | in_transit | 40 |
@@ -26,34 +26,34 @@ The conversations the checks rejected, each with every reason it failed.
 | opened_electronics | 190 |
 | policy_question | 80 |
 | refunded | 120 |
-| return_eligible | 276 |
+| return_eligible | 281 |
 | return_in_progress | 142 |
 | return_rejected | 174 |
 | ship_then_cancel_request | 155 |
 | split_shipment | 108 |
-| window_just_expired | 231 |
+| window_just_expired | 233 |
 
 | Persona | Conversations |
 |---|---|
 | adversarial | 255 |
 | direct | 295 |
-| frustrated | 406 |
+| frustrated | 408 |
 | keyword | 267 |
-| polite_long | 205 |
+| polite_long | 207 |
 | seed | 41 |
-| two_in_one | 332 |
+| two_in_one | 336 |
 | typo | 331 |
-| vague | 353 |
+| vague | 354 |
 
 | First reason | Conversations |
 |---|---|
-| judge_facts | 966 |
+| judge_facts | 963 |
 | escalation | 439 |
-| judge_tone | 436 |
+| judge_tone | 438 |
 | grounded_numbers | 217 |
-| end_state | 145 |
-| style | 86 |
-| schema | 52 |
+| end_state | 151 |
+| style | 85 |
+| schema | 57 |
 | right_order | 48 |
 | needless_tool | 36 |
 | dedup | 31 |

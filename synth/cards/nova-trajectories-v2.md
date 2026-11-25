@@ -10,17 +10,17 @@ Multi-turn support conversations for NimbusCart's assistant, Nova, generated ins
 
 ## Contents
 
-- 1264 conversations, 6582 training steps (one model call each: the request as the student sees it, and the teacher's message as the target).
+- 1267 conversations, 6598 training steps (one model call each: the request as the student sees it, and the teacher's message as the target).
 - Columns: id, scenario, persona, customer_id, run, teacher, teacher_rules, outcome, customer_turns, messages (JSON), steps (JSON), meta (JSON).
 
 | Scenario | Conversations |
 |---|---|
 | cancelled_before_ship | 133 |
-| delayed | 24 |
+| delayed | 25 |
 | delivered_not_received | 87 |
 | delivered_on_time | 148 |
 | in_transit | 152 |
-| lost | 48 |
+| lost | 49 |
 | no_tool | 102 |
 | not_yet_shipped | 49 |
 | opened_electronics | 38 |
@@ -31,17 +31,17 @@ Multi-turn support conversations for NimbusCart's assistant, Nova, generated ins
 | return_rejected | 49 |
 | ship_then_cancel_request | 37 |
 | split_shipment | 102 |
-| window_just_expired | 29 |
+| window_just_expired | 30 |
 
 | Persona | Conversations |
 |---|---|
 | adversarial | 55 |
 | direct | 352 |
 | frustrated | 125 |
-| keyword | 134 |
+| keyword | 135 |
 | polite_long | 144 |
 | seed | 19 |
-| two_in_one | 76 |
+| two_in_one | 78 |
 | typo | 189 |
 | vague | 170 |
 

@@ -29,9 +29,10 @@ VERSION = "v2"
 # Generation runs that go into the datasets. The first pilot used older teacher rules and an older judge; the
 # test runs before it had no personas. Later pilots passed the same checks as the full run and are kept.
 # fill-r6: conversations for the scenario x persona cells filtering had left empty (teacher rules r6).
+# agent-r1: a coding agent as the teacher through synth/agent_server.py; judged by reading each one (no GPU).
 # fill-r7: every cell brought to at least five kept, then well-keeping scenarios topped up (Vertex AI teacher).
 RUNS = ["pilot-200-r4", "pilot-200-r5", "full-a", "full-b1", "full-b2", "full-b3", "full-b4", "full-b5", "no-tool",
-        "fill-r6", "fill-r7"]
+        "fill-r6", "fill-r7", "agent-r1"]
 TONE = {"pilot-200-r4": "judge3", "pilot-200-r5": "judge3", "full-a": "judge3"}   # newest tone verdicts per run
 
 
