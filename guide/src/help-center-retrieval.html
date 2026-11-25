@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nova: help-center retrieval</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 18mm 17mm;
+          @bottom-center { content: "Nova · help-center retrieval · " counter(page); font: 8pt -apple-system, Helvetica, sans-serif; color: #8a8f98; } }
+  @page :first { @bottom-center { content: none; } }
+  :root { --ink: #1d2330; --muted: #5b6270; --line: #dfe3ea; --soft: #f4f6f9; --accent: #2457c5; --accent-soft: #eaf0fc; --warn: #a1520d; --warn-soft: #fdf3e7; --ok: #1d7a46; --ok-soft: #e8f5ee; }
+  * { box-sizing: border-box; }
+  body { font: 10.2pt/1.5 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); margin: 0; background: #fff; }
+  h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 8pt; letter-spacing: -0.4pt; }
+  h2 { font-size: 15pt; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 2px solid var(--ink); letter-spacing: -0.2pt; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  code { font: 8.8pt/1.4 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); padding: 0.5pt 3pt; border-radius: 3px; }
+  pre { font: 8.4pt/1.45 "SF Mono", Menlo, Consolas, monospace; background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 7pt 9pt; margin: 4pt 0 9pt; white-space: pre-wrap; break-inside: avoid; }
+  pre code { background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 10pt; font-size: 8.9pt; line-height: 1.38; break-inside: auto; }
+  th { text-align: left; background: var(--soft); font-weight: 600; }
+  th, td { border: 1px solid var(--line); padding: 4pt 6pt; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .section { margin-top: 22pt; }
+  .section.first, .section.page { break-before: page; margin-top: 0; }
+  h2, h3 { break-after: avoid; }
+  svg { break-inside: avoid; }
+  .fig { break-inside: avoid; margin: 6pt 0 10pt; }
+  .fig .cap { font-size: 8.6pt; color: var(--muted); margin-top: 3pt; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.8pt; }
+  .say { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .say b:first-child { color: var(--accent); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .warn { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 6pt 10pt; margin: 8pt 0 10pt; border-radius: 0 5px 5px 0; break-inside: avoid; }
+  .warn b:first-child { color: var(--warn); display: block; font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.6pt; margin-bottom: 2pt; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 6pt 0 10pt; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9pt; margin: 6pt 0 10pt; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 8pt 10pt; break-inside: avoid; }
+  .card h4 { margin: 0 0 3pt; font-size: 10pt; }
+  .card p { margin: 0; font-size: 9pt; }
+  .num { font-size: 18pt; font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .pass { color: var(--ok); font-weight: 700; }
+  .fail { color: #b42318; font-weight: 700; }
+  .cover { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover .kicker { font-size: 9pt; font-weight: 600; letter-spacing: 1.2pt; text-transform: uppercase; color: var(--accent); margin-bottom: 10pt; }
+  .cover .lede { font-size: 12pt; color: var(--muted); max-width: 140mm; }
+  .toc { border-top: 1px solid var(--line); padding-top: 10pt; columns: 2; column-gap: 14pt; font-size: 9.6pt; }
+  .toc div { break-inside: avoid; margin-bottom: 4pt; }
+  .toc span { color: var(--accent); font-weight: 700; display: inline-block; width: 16pt; }
+  .qa h3 { margin-top: 11pt; }
+  .qa p { margin-bottom: 4pt; }
+  svg text { font-family: -apple-system, Helvetica, Arial, sans-serif; }
+  svg .mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+  .seq { display: flex; flex-wrap: wrap; gap: 4pt; align-items: center; margin: 3pt 0 6pt; }
+  .seq span { font: 8.4pt "SF Mono", Menlo, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 2pt 5pt; background: #fff; }
+  .seq span.req { background: var(--ok-soft); border-color: #bfe3cd; }
+  .seq span.extra { background: var(--soft); color: var(--muted); }
+  .seq i { color: var(--muted); font-style: normal; }
+  .chat { border: 1px solid var(--line); border-radius: 6px; padding: 7pt 10pt; margin: 4pt 0 10pt; font-size: 9.2pt; break-inside: avoid; }
+  .chat p { margin: 0 0 4pt; display: grid; grid-template-columns: 58pt 1fr; }
+  .chat p.small { display: block; padding-left: 58pt; }
+  .chat .who { font-weight: 700; color: var(--muted); font-size: 8.2pt; text-transform: uppercase; letter-spacing: 0.4pt; }
+  .chat .tool { font: 8.4pt "SF Mono", Menlo, monospace; color: var(--muted); }
+  .mask { font: 8.2pt/1.55 "SF Mono", Menlo, Consolas, monospace; border: 1px solid var(--line); border-radius: 6px; padding: 8pt 10pt; margin: 6pt 0 0; break-inside: avoid; word-break: break-word; }
+  .mask .mk { color: #8a8f98; background: #f4f6f9; }
+  .mask .tr { color: #0f4d2b; background: #d6f0e0; font-weight: 600; }
+  .mask .sp { color: #a1520d; }
+  .mask .nl { color: #b8bec8; font-size: 7pt; }
+
+  .lora td { text-align: right; } .lora td:first-child, .lora td:nth-child(2) { text-align: left; }
+  .tight td, .tight th { padding: 3pt 5pt; }
+  .kpi { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8pt; }
+  .kpi .num { font-size: 15pt; }
+
+  .kpi { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8pt; }
+  .kpi .num { font-size: 15pt; }
+  .tight td, .tight th { padding: 3pt 5pt; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="kicker">Project guide · Part 6</div>
+    <h1>Retrieval: finding the right<br>help-center section, and proving Nova used it</h1>
+    <p class="lede">Nova's policy answers must come from NimbusCart's help center, never from memory, because policies change. This part
+      explains how the help center became 104 searchable chunks in Postgres, how retrieval was measured on its own before any answer was
+      generated, why plain vector search beat hybrid search here, how a cutoff lets the tool say "nothing matches", and how every reply is
+      checked against what the tools returned. It ends with what the measurements showed: retrieval now works, and the bottleneck moved to
+      whether the small model searches at all.</p>
+  </div>
+  <div class="kpi">
+    <div class="card"><div class="num">104</div><p>chunks, one per help-center section; median 40 tokens, none split</p></div>
+    <div class="card"><div class="num">0.95</div><p>recall@3 on the queries the models actually write (0.83 on raw customer messages)</p></div>
+    <div class="card"><div class="num">0.68</div><p>score cutoff: all 12 unanswerable queries return nothing, no answerable one lost</p></div>
+    <div class="card"><div class="num">1 → 8</div><p>of 11 searches that returned the answering section, first tool against new</p></div>
+    <div class="card"><div class="num">5 / 5</div><p>old-policy cases answered with the current rule and cited, on the ceiling model</p></div>
+  </div>
+  <div class="toc">
+    <div><span>1</span>What this part was for, and the result</div><div><span>2</span>The pipeline in one picture</div><div><span>3</span>Chunking: one rule per section</div><div><span>4</span>Where the chunks live: pgvector in Postgres</div><div><span>5</span>Measuring retrieval before any answer</div><div><span>6</span>Vector, full-text or hybrid</div><div><span>7</span>Choosing the embedding model</div><div><span>8</span>Fixing the pages, not the model</div><div><span>9</span>The cutoff: when to return nothing</div><div><span>10</span>The new tool and prompt v1</div><div><span>11</span>Grounding checks on every reply</div><div><span>12</span>Old policies: archive and versions</div><div><span>13</span>Answers end to end: what changed</div><div><span>14</span>What went wrong, and what it taught</div><div><span>15</span>Defending the design: interview questions</div><div><span>16</span>Limits, what comes next, glossary</div>
+  </div>
+  <p class="small muted">Repository: github.com/jagjotsingh244-source/customer-support-SLM · Evidence: <code>evals/reports/02a_rag.md</code> (every
+    number in this guide), <code>rag/chunks.py</code>, <code>rag/index.py</code>, <code>rag/chunk_ids.txt</code>, <code>rag/embeddings.py</code>,
+    <code>rag/search.py</code>, <code>db/kb_chunks.sql</code>, <code>evals/retrieval_eval.py</code>, <code>evals/retrieval_threshold.py</code>,
+    <code>evals/retrieval/</code>, <code>agent/tools_v1.py</code>, <code>agent/prompts.py</code>, <code>agent/grounding.py</code>,
+    <code>evals/golden/old_policy.jsonl</code>, <code>evals/runs/2026-11-23_floor-policy-v0</code>, <code>…_floor-policy-v1</code>,
+    <code>…_sft1-policy-v1</code>, <code>evals/runs/2026-11-25_ceiling-old-policy</code>, <code>LEARNING_LOG.md</code>.</p>
+</div>
+
+
+<!-- 1 -->
+<div class="section first">
+<h2>1 · What this part was for, and the result</h2>
+
+<p>The baseline (Part 3) gave Nova a deliberately rough help-center tool: Postgres full-text search where <b>every word</b> of the query had to
+  match. It came back empty in 9 of the 11 policy cases where the 2B model searched, so the model answered refund and return questions from
+  what it remembered, which is the internet's usual numbers, not NimbusCart's. This part replaced that tool with real retrieval, and measured
+  each piece separately so a bad answer could be traced to the layer that caused it.</p>
+<div class="fig"><svg viewBox="0 0 700 96" width="100%" role="img" aria-label="The order of work"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><rect x="4.0" y="18.0" width="104.0" height="62.0" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="56.0" y="39.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Chunk</text><text x="56.0" y="52.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">one rule per</text><text x="56.0" y="65.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">## section</text><path d="M110.0,49.0 L120.0,49.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="121.0" y="18.0" width="104.0" height="62.0" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="173.0" y="39.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Measure</text><text x="173.0" y="52.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">recall@3 on</text><text x="173.0" y="65.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">97 labelled queries</text><path d="M227.0,49.0 L237.0,49.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="238.0" y="18.0" width="104.0" height="62.0" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="290.0" y="39.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Choose</text><text x="290.0" y="52.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">search method</text><text x="290.0" y="65.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">+ embedding model</text><path d="M344.0,49.0 L354.0,49.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="355.0" y="18.0" width="104.0" height="62.0" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="407.0" y="39.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Fix pages</text><text x="407.0" y="52.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">read every miss,</text><text x="407.0" y="65.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">edit the text</text><path d="M461.0,49.0 L471.0,49.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="472.0" y="18.0" width="104.0" height="62.0" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/><text x="524.0" y="39.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Cut off</text><text x="524.0" y="52.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">return nothing</text><text x="524.0" y="65.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">below 0.68</text><path d="M578.0,49.0 L588.0,49.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="589.0" y="18.0" width="104.0" height="62.0" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/><text x="641.0" y="39.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Answer</text><text x="641.0" y="52.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">cite, check every</text><text x="641.0" y="65.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">number</text></svg><div class="cap">The order of work. Retrieval was scored on its own before any answer was generated, and the answer step was scored after, on the same golden cases as the baseline.</div></div>
+<table>
+  <tr><th style="width:30%">Question</th><th style="width:16%">Answer</th><th>Evidence</th></tr>
+  <tr><td>Does search find the answering section?</td><td class="pass">Yes, mostly</td><td>recall@3 0.95 on 37 model-written queries, 0.83 on 60 raw customer messages</td></tr>
+  <tr><td>Is hybrid search worth it here?</td><td class="fail">No</td><td>Never beat vector on recall@3; the any-word variant lost 10 customer messages and fixed 1</td></tr>
+  <tr><td>Can the tool say "nothing matches"?</td><td class="pass">Yes</td><td>Cutoff 0.68 empties 12/12 unanswerable queries and keeps 0.95 recall</td></tr>
+  <tr><td>Does the model use what it gets?</td><td class="pass">Yes</td><td>Right section returned in 8 searches; right facts stated in 7 of those 8</td></tr>
+  <tr><td>Does the model search when it should?</td><td class="fail">No</td><td>Only 11 of 30 policy cases; always lists orders first; never cites</td></tr>
+  <tr><td>Can the cases be answered from the help center?</td><td class="pass">Yes</td><td>The ceiling model gives and cites the current rule in 5/5 old-policy cases</td></tr>
+</table>
+<div class="say"><b>How I'd say it in an interview</b>"I treated retrieval as its own system with its own test set: 97 labelled queries, scored by recall@3 before any answer was generated. That is how I found that hybrid search, the default for support bots, lost to plain vector search on this help center, and that editing six sections helped more than a model four times larger. End to end, the new tool returns the right section 8 times out of 11 instead of once, and when it does the small model gets the facts right. The remaining failure is that the model searches in only a third of policy questions, and that is a behaviour problem for training, not a retrieval problem."</div>
+
+</div>
+
+<!-- 2 -->
+<div class="section page">
+<h2>2 · The pipeline in one picture</h2>
+
+<p>Two paths share one table. Offline, whenever a page changes, the pages are cut into chunks, checked, embedded and loaded. Online, the model
+  decides to search, writes its own query, and gets back at most three labelled sections it can cite. Nothing in the online path touches the
+  customer's raw message: <b>the model writes the query</b>, which turned out to matter for how retrieval should be measured (section 5).</p>
+<div class="fig"><svg viewBox="0 0 700 192" width="100%" role="img" aria-label="The retrieval pipeline, offline and online"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><text x="8.0" y="14.0" font-size="9" text-anchor="start" fill="#5b6270" font-weight="700">Offline: when the help center changes</text><rect x="8.0" y="22.0" width="118.0" height="58.0" rx="7" fill="#f4f6f9" stroke="#c9ced8"/><text x="67.0" y="41.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">kb/*.md</text><text x="67.0" y="54.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">18 pages, front matter:</text><text x="67.0" y="67.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">version, effective date</text><path d="M128.0,51.0 L146.0,51.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="148.0" y="22.0" width="118.0" height="58.0" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="207.0" y="41.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">rag/chunks.py</text><text x="207.0" y="54.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">one chunk per ## section</text><text x="207.0" y="67.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">path + body, token count</text><path d="M268.0,51.0 L286.0,51.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="288.0" y="22.0" width="118.0" height="58.0" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="347.0" y="41.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">rag/index.py</text><text x="347.0" y="54.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">IDs checked against</text><text x="347.0" y="67.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">chunk_ids.txt, embed</text><path d="M408.0,51.0 L426.0,51.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="428.0" y="22.0" width="130.0" height="58.0" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="493.0" y="41.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">kb_chunks (Postgres)</text><text x="493.0" y="54.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">104 rows: vector, model</text><text x="493.0" y="67.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">name, tsvector, dates</text><rect x="574.0" y="22.0" width="118.0" height="58.0" rx="7" fill="#fbeaea" stroke="#f0c9c9"/><text x="633.0" y="41.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">kb/_archive/</text><text x="633.0" y="54.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">old policies: never</text><text x="633.0" y="67.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">indexed (path + guard)</text><text x="8.0" y="112.0" font-size="9" text-anchor="start" fill="#5b6270" font-weight="700">Online: every customer turn</text><rect x="8.0" y="120.0" width="104.0" height="62.0" rx="7" fill="#f4f6f9" stroke="#c9ced8"/><text x="60.0" y="141.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Customer</text><text x="60.0" y="154.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">“how long do I have</text><text x="60.0" y="167.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">to return a kettle?”</text><path d="M114.0,151.0 L128.0,151.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="130.0" y="120.0" width="104.0" height="62.0" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/><text x="182.0" y="141.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">2B model</text><text x="182.0" y="154.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">writes a keyword</text><text x="182.0" y="167.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">query, calls the tool</text><path d="M236.0,151.0 L250.0,151.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="252.0" y="120.0" width="110.0" height="62.0" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="307.0" y="141.5" font-size="8.8" text-anchor="middle" fill="#1d2330" font-weight="700">search_help_center</text><text x="307.0" y="154.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">bge-small, cosine,</text><text x="307.0" y="167.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">top 3</text><path d="M364.0,151.0 L378.0,151.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="380.0" y="120.0" width="100.0" height="62.0" rx="7" fill="#eaf0fc" stroke="#c7d6f3"/><text x="430.0" y="141.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Cutoff 0.68</text><text x="430.0" y="154.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">drop weak hits;</text><text x="430.0" y="167.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">none left: say so</text><path d="M482.0,151.0 L496.0,151.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="498.0" y="120.0" width="92.0" height="62.0" rx="7" fill="#fdf3e7" stroke="#f2d6b3"/><text x="544.0" y="141.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Reply</text><text x="544.0" y="154.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">facts with</text><text x="544.0" y="167.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">[kb:&lt;id&gt;]</text><path d="M592.0,151.0 L604.0,151.0" stroke="#5b6270" stroke-width="1.4" marker-end="url(#ar)"/><rect x="606.0" y="120.0" width="86.0" height="62.0" rx="7" fill="#e8f5ee" stroke="#bfe3cd"/><text x="649.0" y="141.5" font-size="9.4" text-anchor="middle" fill="#1d2330" font-weight="700">Grounding</text><text x="649.0" y="154.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">numbers + ids</text><text x="649.0" y="167.5" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">traced, logged</text><path d="M493,80 C493,100 307,100 307,118" fill="none" stroke="#5b6270" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar)"/><text x="500.0" y="104.0" font-size="8.2" text-anchor="start" fill="#5b6270" font-weight="normal">queries embedded by the model the index records</text></svg><div class="cap">The whole path. Offline, pages become checked, embedded chunks; online, the model writes a query, the tool returns up to three sections above the cutoff, and every reply is checked against what the tools returned.</div></div>
+<table class="small">
+  <tr><th style="width:24%">Piece</th><th style="width:40%">What it does</th><th>Why it is built that way</th></tr>
+  <tr><td><code>rag/chunks.py</code></td><td>Splits each page at <code>##</code>, prefixes the path, counts Qwen tokens; refuses duplicate IDs, chunks over 400 tokens and pages marked <code>superseded_by</code></td><td>Errors at load time instead of silently bad search results</td></tr>
+  <tr><td><code>rag/index.py</code></td><td>Loads all chunks in one transaction; fails if IDs differ from <code>rag/chunk_ids.txt</code> unless run with <code>--update-ids</code>; embeds with <code>--model</code></td><td>Golden cases and citations name chunk IDs; a renamed heading must be a deliberate change</td></tr>
+  <tr><td><code>rag/embeddings.py</code></td><td>One <code>Embedder</code> for chunks and queries; <code>check_index</code> refuses to search an index built by another model</td><td>Vectors from two models are not comparable, and nothing else would notice</td></tr>
+  <tr><td><code>rag/search.py</code></td><td>Vector, full-text (all words / any word) and hybrid (RRF) search, all in SQL</td><td>Every method runs against the same table, so the comparison is fair</td></tr>
+  <tr><td><code>agent/tools_v1.py</code></td><td>The new <code>search_help_center</code>: vector, top 3, cutoff 0.68, IDs to cite</td><td>The only part the model sees; the order tools are unchanged</td></tr>
+  <tr><td><code>agent/grounding.py</code></td><td>Traces every number and citation in a reply to earlier tool results</td><td>Measures hallucination directly instead of hoping the prompt prevents it</td></tr>
+</table>
+
+</div>
+
+<!-- 3 -->
+<div class="section page">
+<h2>3 · Chunking: one rule per section</h2>
+
+<p>The help center was written for this moment (Part 2): 18 pages, <b>one rule per <code>##</code> section</b>, one term per idea, a version and an
+  effective date in each page's front matter. So the chunking decision was mostly already made: a section is the unit a customer question is
+  about, small enough for a 2B model to read the one rule it needs and big enough to keep an exception next to the rule it changes.</p>
+<div class="fig"><svg viewBox="0 0 700 144" width="100%" role="img" aria-label="Anatomy of one chunk"><rect x="8.0" y="8.0" width="684.0" height="128.0" rx="7" fill="#fff" stroke="#dfe3ea"/><text x="20.0" y="28.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">chunk_id</text><text x="120.0" y="28.0" font-size="9" text-anchor="start" fill="#2a78d6" font-weight="700" class="mono">returns-electronics#opened-electronics</text><text x="470.0" y="28.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">page slug # heading slug: stable, citable</text><text x="20.0" y="50.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">embedded text</text><rect x="118.0" y="38.0" width="340.0" height="18.0" rx="3" fill="#eaf0fc" stroke="none"/><text x="124.0" y="51.0" font-size="8.8" text-anchor="start" fill="#1d2330" font-weight="700" class="mono">Returning electronics › Opened electronics</text><text x="470.0" y="51.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">line 1: the path (page title › heading)</text><rect x="118.0" y="60.0" width="340.0" height="34.0" rx="3" fill="#f4f6f9" stroke="none"/><text x="124.0" y="73.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">Opened electronics can be returned only if they</text><text x="124.0" y="87.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">are faulty, within 7 days of delivery. …</text><text x="470.0" y="80.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">the section body, unchanged</text><text x="20.0" y="116.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal">metadata</text><text x="118.0" y="116.0" font-size="8.2" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">policy_version: 2</text><text x="238.0" y="116.0" font-size="8.2" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">effective_date: 2026-10-01</text><text x="400.0" y="116.0" font-size="8.2" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">tokens: Qwen count</text><text x="512.0" y="116.0" font-size="8.2" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">embedding_model: bge-small-en-v1.5</text></svg><div class="cap">One chunk. The path line is embedded with the body, so a one-line rule still says what it is about; the ID is what Nova cites and what the golden cases name. (Body abridged.)</div></div>
+<div class="grid2">
+  <div class="card"><h4>Why not fixed-size windows</h4><p>A 256-token window would cut "Opened electronics can be returned only if faulty" away from
+    "within 7 days", or glue a refund rule to an unrelated shipping rule. Overlapping windows patch the first problem by duplicating text, and
+    produce IDs that mean nothing to a reader. Sections give clean boundaries and citable IDs for free.</p></div>
+  <div class="card"><h4>Why the path line goes into the embedding</h4><p>Many sections are one sentence. "You can return unopened electronics
+    within 7 days of delivery" never says "return window"; its path, <i>Returning electronics › Return window</i>, does. Embedding the path with
+    the body gives every chunk its topic words without editing the text.</p></div>
+</div>
+<div class="fig"><svg viewBox="0 0 700 186" width="100%" role="img" aria-label="Chunk sizes in Qwen tokens"><rect x="60.0" y="106.4" width="88.0" height="43.6" rx="3" fill="#2a78d6" stroke="none"/><text x="104.0" y="101.4" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">20</text><text x="104.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">≤30</text><rect x="162.0" y="30.0" width="88.0" height="120.0" rx="3" fill="#2a78d6" stroke="none"/><text x="206.0" y="25.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">55</text><text x="206.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">31–45</text><rect x="264.0" y="106.4" width="88.0" height="43.6" rx="3" fill="#2a78d6" stroke="none"/><text x="308.0" y="101.4" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">20</text><text x="308.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">46–60</text><rect x="366.0" y="141.3" width="88.0" height="8.7" rx="3" fill="#2a78d6" stroke="none"/><text x="410.0" y="136.3" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">4</text><text x="410.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">61–80</text><rect x="468.0" y="141.3" width="88.0" height="8.7" rx="3" fill="#2a78d6" stroke="none"/><text x="512.0" y="136.3" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">4</text><text x="512.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">81–100</text><rect x="570.0" y="147.8" width="88.0" height="2.2" rx="3" fill="#2a78d6" stroke="none"/><text x="614.0" y="142.8" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">1</text><text x="614.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">101–130</text><line x1="54.0" y1="150.0" x2="690.0" y2="150.0" stroke="#dfe3ea" stroke-width="1"/><text x="54.0" y="180.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">Qwen tokens per chunk (path line + body).  Min 19, median 40, 90th percentile 59, max 120.  Split threshold: 400.</text></svg><div class="cap">All 104 chunks. Counted with the 2B model's own tokenizer, because these tokens are what the chunks spend of its context. No section came near the 400-token split threshold.</div></div>
+<h3>Two decisions about short chunks</h3>
+<ul>
+  <li><b>Twelve one-line chunks were kept.</b> Each is a single sharp rule, the best possible unit for retrieval and citation. Merging them by
+    length would have blurred the rule and broken the IDs the golden cases cite. Length alone does not say whether a chunk is useful.</li>
+  <li><b>Two pointer-only chunks were rewritten.</b> Sections that said only <code>See "Split shipments".</code> would fill a top-3 slot with
+    nothing; they now state their rule and keep the reference.</li>
+</ul>
+<p>A section over 400 tokens would be split at paragraph boundaries, with the first part keeping the section's ID so old citations still
+  resolve. None needed it; the largest chunk is 120 tokens.</p>
+<div class="say"><b>How I'd say it in an interview</b>"The pages were written one rule per section, so I chunked by section: the boundaries are semantic, the IDs are human-readable, and a citation points at exactly one rule. I put the page title and heading on the first line of each chunk, because many rules are one sentence and never repeat the words a customer uses for their topic."</div>
+
+</div>
+
+<!-- 4 -->
+<div class="section">
+<h2>4 · Where the chunks live: pgvector in Postgres</h2>
+
+<p>The chunks sit in a <code>kb_chunks</code> table in the same Postgres database as the orders (local Docker for development, Neon in the
+  cloud), with the <code>pgvector</code> extension for embeddings and a generated <code>tsvector</code> column for full-text search.</p>
+<table class="small">
+  <tr><th style="width:26%">Decision</th><th style="width:34%">Choice</th><th>Reason</th></tr>
+  <tr><td>Vector store</td><td>pgvector in the existing Postgres</td><td>104 rows. A separate vector database would add a service, a second copy of the data and a sync job, for no measured gain. Full-text and vector search also run side by side in one SQL query</td></tr>
+  <tr><td>Index</td><td>None: exact scan</td><td>An approximate index (HNSW) trades accuracy for speed on millions of rows. At 104 rows an exact scan is instant and returns the true nearest neighbours, so evaluation measures the embedding model, not the index</td></tr>
+  <tr><td>Embedding column</td><td>Untyped <code>vector</code> plus <code>embedding_model</code></td><td>Lets models with 384 and 768 dimensions be compared in one table; the model name makes a mismatch detectable</td></tr>
+  <tr><td>Model check</td><td><code>Embedder.check_index</code> at connect</td><td>Querying bge-small vectors with a MiniLM query returns confident nonsense with no error; the check turns that into a refusal</td></tr>
+  <tr><td>Load</td><td>One transaction, IDs checked against a committed snapshot</td><td>A half-loaded index never serves; CI runs the ID check on every push</td></tr>
+</table>
+<div class="say"><b>How I'd say it in an interview</b>"I kept vectors in the Postgres database the agent already uses. At about a hundred chunks an approximate index buys nothing and costs accuracy, so search is an exact scan. The one thing I guard hard is the embedding model: the table records which model wrote the vectors, and the tool refuses to search with a different one, because that failure is silent otherwise."</div>
+
+</div>
+
+<!-- 5 -->
+<div class="section page">
+<h2>5 · Measuring retrieval before any answer</h2>
+
+<p>An end-to-end answer can fail for many reasons: the model did not search, searched badly, got the wrong section, or got the right one and
+  misread it. To separate them, retrieval got its own test set and its own score before any answer was generated.</p>
+<table class="small">
+  <tr><th style="width:30%">Set</th><th style="width:10%">Size</th><th>Where it comes from</th></tr>
+  <tr><td><code>questions.jsonl</code></td><td>60</td><td>The first turn of the 25 golden policy cases; 20 rewritten in customers' own phrasing (<code>kb/_customer_words.md</code>); 15 verbatim Bitext questions with typos or slang</td></tr>
+  <tr><td><code>model_queries.jsonl</code></td><td>37</td><td>The first query each model actually wrote for a golden policy case in the baseline runs (12 from the 2B model, 25 from Gemini)</td></tr>
+  <tr><td><code>unanswerable*.jsonl</code></td><td>10 + 12</td><td>Questions the help center cannot answer (gift wrap, EMI, price match…), used only for the cutoff (section 9)</td></tr>
+</table>
+<h3>How the labels work</h3>
+<p>Labels were written from the chunk text <b>before any search ran</b>, so they could not be fitted to a method. Each question has one or more
+  <b>answer groups</b>: a group lists every chunk that answers that part on its own (the cash-on-delivery refund rule appears on three pages, so its
+  group has three), and any one of them counts. A two-part question needs a hit from each group.</p>
+<h3>The two numbers</h3>
+<div class="grid2">
+  <div class="card"><h4>recall@3: the deciding number</h4><p>The share of questions with an answering chunk in the top 3. Nova reads exactly
+    three results, so a right answer at rank 4 is as useless as no answer. This is the number every choice was made on.</p></div>
+  <div class="card"><h4>MRR: the tie-breaker</h4><p>Mean of 1 / rank of the first answering chunk (top 10). It rewards putting the answer first,
+    which matters when the model reads the first result most carefully.</p></div>
+</div>
+<div class="warn"><b>Why two sets, and why the second matters more</b>The tool never sees the customer's message. The model rewrites it into keywords: "return pickup time", "awaiting bank details refund". Raw customer messages, typos included, are the harder test; the 37 model-written queries are what the tool actually receives in production. A method that is good on one and bad on the other would be a trap.</div>
+<p class="small muted">Noise floor: with 60 and 37 questions, one question is 1.7 and 2.7 points. Differences of one or two questions are not
+  findings.</p>
+<div class="say"><b>How I'd say it in an interview</b>"I scored retrieval on its own with recall@3, because the model reads three results and nothing else matters. And I scored it twice: on customer messages, and on the queries the models actually wrote in earlier runs, because in a tool-calling agent the model writes the query. The labels were written from the page text before any search ran, so I could not tune the labels to the method."</div>
+
+</div>
+
+<!-- 6 -->
+<div class="section page">
+<h2>6 · Vector, full-text or hybrid</h2>
+
+<p>Five methods, one table, one embedding model. Hybrid search (vector and keyword results merged with reciprocal rank fusion, k = 60, top 20 of
+  each) is the usual recommendation for support search, so it was the expected winner.</p>
+<div class="fig"><svg viewBox="0 0 700 218" width="100%" role="img" aria-label="recall@3 by search method"><rect x="170.0" y="4.0" width="10.0" height="10.0" rx="3" fill="#2a78d6" stroke="none"/><text x="184.0" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">60 customer messages</text><rect x="320.0" y="4.0" width="10.0" height="10.0" rx="3" fill="#eb6834" stroke="none"/><text x="334.0" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">37 queries the models wrote</text><text x="162.0" y="35.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="700">vector</text><rect x="170.0" y="22.0" width="365.2" height="11.0" rx="3" fill="#2a78d6" stroke="none"/><text x="540.2" y="31.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.83</text><rect x="170.0" y="35.0" width="418.0" height="11.0" rx="3" fill="#eb6834" stroke="none"/><text x="593.0" y="44.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.95</text><text x="162.0" y="69.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">full-text, every word</text><rect x="170.0" y="56.0" width="22.0" height="11.0" rx="3" fill="#2a78d6" stroke="none"/><text x="197.0" y="65.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.05</text><rect x="170.0" y="69.0" width="132.0" height="11.0" rx="3" fill="#eb6834" stroke="none"/><text x="307.0" y="78.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.30</text><text x="162.0" y="103.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">full-text, any word</text><rect x="170.0" y="90.0" width="233.2" height="11.0" rx="3" fill="#2a78d6" stroke="none"/><text x="408.2" y="99.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.53</text><rect x="170.0" y="103.0" width="321.2" height="11.0" rx="3" fill="#eb6834" stroke="none"/><text x="496.2" y="112.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.73</text><text x="162.0" y="137.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">hybrid (every word)</text><rect x="170.0" y="124.0" width="365.2" height="11.0" rx="3" fill="#2a78d6" stroke="none"/><text x="540.2" y="133.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.83</text><rect x="170.0" y="137.0" width="418.0" height="11.0" rx="3" fill="#eb6834" stroke="none"/><text x="593.0" y="146.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.95</text><text x="162.0" y="171.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">hybrid (any word)</text><rect x="170.0" y="158.0" width="299.2" height="11.0" rx="3" fill="#2a78d6" stroke="none"/><text x="474.2" y="167.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.68</text><rect x="170.0" y="171.0" width="418.0" height="11.0" rx="3" fill="#eb6834" stroke="none"/><text x="593.0" y="180.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.95</text><line x1="170.0" y1="20.0" x2="170.0" y2="188.0" stroke="#dfe3ea" stroke-width="1" stroke-dasharray="2 3"/><text x="170.0" y="198.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">0.0</text><line x1="390.0" y1="20.0" x2="390.0" y2="188.0" stroke="#dfe3ea" stroke-width="1" stroke-dasharray="2 3"/><text x="390.0" y="198.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">0.5</text><line x1="610.0" y1="20.0" x2="610.0" y2="188.0" stroke="#dfe3ea" stroke-width="1" stroke-dasharray="2 3"/><text x="610.0" y="198.0" font-size="8" text-anchor="middle" fill="#5b6270" font-weight="normal">1.0</text><text x="390.0" y="210.0" font-size="8.4" text-anchor="middle" fill="#5b6270" font-weight="normal">recall@3: share of questions with an answering chunk in the top 3</text></svg><div class="cap">Same table, same embedding model (bge-small), five ways to search. Hybrid never beat plain vector search, and the any-word version lost 10 customer messages to filler words.</div></div>
+<h3>What the misses showed</h3>
+<ul>
+  <li><b>Full-text needing every word almost never matches:</b> it returned anything for 3 of 60 customer messages. That is exactly why the
+    first tool kept returning <code>[]</code> in the baseline.</li>
+  <li><b>Full-text matching any word matches the filler.</b> "used the bluetooth speaker once… want to give it <b>back</b>" ranked <i>Coming back
+    to a resolved ticket</i> first; "i cant <b>track</b> my reimbursement" returned three shipment-tracking chunks. Fused into hybrid, that noise
+    pushed right answers out of the top 3 on 10 messages and fixed 1 ("why was i charged <b>49</b> extra", where the exact number matters).</li>
+</ul>
+<h3>Why hybrid does not pay here</h3>
+<p>Hybrid's strength is exact tokens: order numbers, product names, model numbers, rare words that embeddings blur. In Nova, order numbers go to
+  the order tools and never to the help center, the help center names no products, and the pages use one term per idea. Keyword search has
+  nothing rare to catch. The hybrid code and its evaluation stay in the repo, to rerun if the help center ever gains product names or model numbers.</p>
+<div class="say"><b>How I'd say it in an interview</b>"Hybrid is usually right for support search, so I tested it rather than assumed it. Here it never beat plain vector search, and the any-word version lost ten messages to filler words like ‘back’ and ‘track’. The reason is the content: order numbers go to the order tools and the help center has no product names, so keyword search has no rare tokens to find. If that changes, the comparison is one command."</div>
+
+</div>
+
+<!-- 7 -->
+<div class="section">
+<h2>7 · Choosing the embedding model</h2>
+
+<div class="fig"><svg viewBox="0 0 700 130" width="100%" role="img" aria-label="Embedding models compared"><text x="190.0" y="12.0" font-size="8.6" text-anchor="start" fill="#5b6270" font-weight="normal">recall@3: messages / model queries</text><text x="520.0" y="12.0" font-size="8.6" text-anchor="start" fill="#5b6270" font-weight="normal">CPU per query (median)</text><text x="182.0" y="35.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="700">bge-small-en-v1.5 (33M)</text><rect x="190.0" y="22.0" width="215.8" height="11.0" rx="3" fill="#2a78d6" stroke="none"/><text x="410.8" y="31.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.83</text><rect x="190.0" y="35.0" width="247.0" height="11.0" rx="3" fill="#eb6834" stroke="none"/><text x="442.0" y="44.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.95</text><rect x="520.0" y="28.0" width="49.6" height="12.0" rx="3" fill="#1d7a46" stroke="none"/><text x="574.6" y="38.0" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">6.2 ms</text><text x="182.0" y="71.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">all-MiniLM-L6-v2 (23M)</text><rect x="190.0" y="58.0" width="187.2" height="11.0" rx="3" fill="#2a78d6" stroke="none"/><text x="382.2" y="67.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.72</text><rect x="190.0" y="71.0" width="231.4" height="11.0" rx="3" fill="#eb6834" stroke="none"/><text x="426.4" y="80.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.89</text><rect x="520.0" y="64.0" width="28.0" height="12.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="553.0" y="74.0" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">3.5 ms</text><text x="182.0" y="107.0" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">bge-base-en-v1.5 (109M)</text><rect x="190.0" y="94.0" width="202.8" height="11.0" rx="3" fill="#2a78d6" stroke="none"/><text x="397.8" y="103.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.78</text><rect x="190.0" y="107.0" width="247.0" height="11.0" rx="3" fill="#eb6834" stroke="none"/><text x="442.0" y="116.5" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">0.95</text><rect x="520.0" y="100.0" width="116.0" height="12.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="641.0" y="110.0" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="600">14.5 ms</text></svg><div class="cap">Three embedding models, vector search, no query prefix. Blue: 60 customer messages; orange: 37 model-written queries. The model four times larger was worse on customer messages and 2.3 times slower.</div></div>
+<ul>
+  <li><b>bge-small-en-v1.5</b> leads on customer messages (0.83), ties on model queries (0.95), and costs about 6 ms a query on a laptop CPU.
+    Embedding all 104 chunks takes 0.4 s.</li>
+  <li><b>MiniLM</b> is faster but misses more paraphrases: 0.40 against 0.53 on the Bitext questions.</li>
+  <li><b>bge-base</b> ranks model queries better (MRR 0.92 against 0.85) but is worse on customer messages and 2.3 times slower. At this size the
+    embedding model is not the bottleneck.</li>
+</ul>
+<h3>The query prefix: off</h3>
+<p>bge's model card suggests prefixing short queries with an instruction (<i>Represent this sentence for searching relevant passages:</i>) and
+  calls it optional for v1.5. It reordered 33 of the 60 top-3 lists, so it does something; it just did not help: the same 0.83 on questions and one
+  query worse on model queries (0.92). <code>Embedder</code> defaults to no prefix, and <code>--prefix</code> reruns the comparison.</p>
+<div class="say"><b>How I'd say it in an interview</b>"I compared three embedding models on my own labelled set rather than a public leaderboard. The small bge model won on customer messages and tied on model queries at a third of the latency of the base model. I also tested the query instruction the model card recommends: it changed rankings but did not improve recall, so it is off and the comparison is reproducible with a flag."</div>
+
+</div>
+
+<!-- 8 -->
+<div class="section page">
+<h2>8 · Fixing the pages, not the model</h2>
+
+<p>Every miss of the first run was read. Most were not search failures; the page did not say the thing in words a search could find, or did not
+  say it at all. Five edits followed, and a policy decision added a sixth section.</p>
+<table class="small tight">
+  <tr><th style="width:27%">Section</th><th style="width:30%">Edit</th><th style="width:30%">Miss it targeted</th><th>Fixed?</th></tr>
+  <tr><td>payment-failures › Money debited but no order</td><td>Adds that the money comes back in 5–7 business days</td><td>"payment deducted order not placed refund"</td><td class="pass">Yes</td></tr>
+  <tr><td>returns-electronics › Earbuds, earphones and trimmers</td><td>Adds the faulty-on-arrival rule</td><td>"trimmer arrives broken"</td><td class="pass">Yes</td></tr>
+  <tr><td>returns-general › Pickup</td><td>"We collect" → "We pick up", the help center's own term</td><td>"return pickup time" (was rank 5)</td><td class="pass">Yes</td></tr>
+  <tr><td>cancellations › Before the order ships</td><td>Adds "There is no cancellation fee."</td><td>"need help checking trhe early exit charge"</td><td class="fail">No</td></tr>
+  <tr><td>shipping-times › Estimated delivery date</td><td>Adds "the day the order should arrive"</td><td>"when my parcel is gonna arrive"</td><td class="fail">No</td></tr>
+  <tr><td>returns-general › Exchanges (new)</td><td>"We do not offer exchanges": return it and order again</td><td>"can i exchange this lamp": no page mentioned exchanges</td><td class="pass">Yes, rank 1</td></tr>
+</table>
+<div class="fig"><svg viewBox="0 0 700 170" width="100%" role="img" aria-label="recall@3 after editing the pages"><rect x="470.0" y="6.0" width="10.0" height="10.0" rx="3" fill="#2a78d6" stroke="none"/><text x="484.0" y="15.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">60 customer messages</text><rect x="470.0" y="22.0" width="10.0" height="10.0" rx="3" fill="#eb6834" stroke="none"/><text x="484.0" y="31.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">37 model queries</text><rect x="120.0" y="118.0" width="27.0" height="32.0" rx="3" fill="#2a78d6" stroke="none"/><text x="133.5" y="114.0" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">0.78</text><rect x="151.0" y="86.0" width="27.0" height="64.0" rx="3" fill="#eb6834" stroke="none"/><text x="164.5" y="82.0" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">0.86</text><text x="147.0" y="164.0" font-size="8.4" text-anchor="middle" fill="#5b6270" font-weight="normal">First run</text><rect x="240.0" y="102.0" width="27.0" height="48.0" rx="3" fill="#2a78d6" stroke="none"/><text x="253.5" y="98.0" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">0.82</text><rect x="271.0" y="62.0" width="27.0" height="88.0" rx="3" fill="#eb6834" stroke="none"/><text x="284.5" y="58.0" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">0.92</text><text x="267.0" y="164.0" font-size="8.4" text-anchor="middle" fill="#5b6270" font-weight="normal">After five page edits</text><rect x="360.0" y="98.0" width="27.0" height="52.0" rx="3" fill="#2a78d6" stroke="none"/><text x="373.5" y="94.0" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">0.83</text><rect x="391.0" y="50.0" width="27.0" height="100.0" rx="3" fill="#eb6834" stroke="none"/><text x="404.5" y="46.0" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">0.95</text><text x="387.0" y="164.0" font-size="8.4" text-anchor="middle" fill="#5b6270" font-weight="normal">Prefix off + exchanges page</text><line x1="110.0" y1="150.0" x2="440.0" y2="150.0" stroke="#dfe3ea" stroke-width="1"/><text x="106.0" y="154.0" font-size="8" text-anchor="end" fill="#5b6270" font-weight="normal">0.70</text></svg><div class="cap">recall@3 over three states of the help center (bge-small). The y-axis starts at 0.70 to show the steps; the whole gain came from text edits and one setting, with the same model throughout.</div></div>
+<p>The two edits that did not fix their miss stayed, because the sentences are true and customers ask them. Labels for two questions gained a
+  chunk because an edited chunk now answers them; labels were judged from the new page text, never from what search returned.</p>
+<h3>Every remaining miss, and why it was accepted</h3>
+<table class="small tight">
+  <tr><th style="width:40%">Question</th><th style="width:8%">Rank</th><th>Decision</th></tr>
+  <tr><td>why was i charged 49 extra on my order</td><td>5</td><td>Exact numbers are vector search's known weak spot; the three chunks above are all about the shipping charge. Hybrid fixes this one and breaks ten others</td></tr>
+  <tr><td>how many days to return a bedsheet and how long does upi refund take</td><td>1</td><td>Two questions in one; the top 3 cover one part. The model can search twice, as Gemini did</td></tr>
+  <tr><td>my parcel is stuck for days, still not here</td><td>4</td><td>The top 3 are the other delay sections; a near miss</td></tr>
+  <tr><td>Seven verbatim Bitext messages with typos ("asj for a rebate", "cance order")</td><td>6+ or none</td><td>The model rewrites these into clean keywords before searching: none of the 37 model queries has a typo, and 95% of them hit</td></tr>
+</table>
+<div class="say"><b>How I'd say it in an interview</b>"When retrieval missed, I read the miss before touching the retriever. Usually the page did not use the words customers use, or did not answer at all: nothing said whether exchanges exist. Six text edits moved recall more than a model four times bigger. I accepted the remaining misses with a reason for each, mostly raw typos that the agent never actually sends to the tool."</div>
+
+</div>
+
+<!-- 9 -->
+<div class="section">
+<h2>9 · The cutoff: when to return nothing</h2>
+
+<p>Vector search always returns its three nearest chunks, even for "can you gift wrap my order". Handing a 2B model three unrelated sections
+  invites it to answer from them. So the tool drops every chunk below a similarity cutoff and, when none is left, says
+  <i>No help-center page matches. Offer to connect a teammate.</i></p>
+<div class="fig"><svg viewBox="0 0 700 178" width="100%" role="img" aria-label="How often a chunk answers, by score"><rect x="460.0" y="6.0" width="10.0" height="10.0" rx="3" fill="#2a78d6" stroke="none"/><text x="474.0" y="15.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">customer messages</text><rect x="460.0" y="22.0" width="10.0" height="10.0" rx="3" fill="#eb6834" stroke="none"/><text x="474.0" y="31.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">model queries</text><rect x="70.0" y="114.7" width="38.0" height="25.3" rx="3" fill="#2a78d6" stroke="none"/><text x="89.0" y="110.7" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">23%</text><text x="131.0" y="136.0" font-size="9" text-anchor="middle" fill="#5b6270" font-weight="normal">–</text><text x="110.0" y="154.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">0.50–0.65</text><rect x="180.0" y="108.1" width="38.0" height="31.9" rx="3" fill="#2a78d6" stroke="none"/><text x="199.0" y="104.1" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">29%</text><rect x="222.0" y="108.1" width="38.0" height="31.9" rx="3" fill="#eb6834" stroke="none"/><text x="241.0" y="104.1" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">29%</text><text x="220.0" y="154.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">0.65–0.70</text><rect x="290.0" y="111.4" width="38.0" height="28.6" rx="3" fill="#2a78d6" stroke="none"/><text x="309.0" y="107.4" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">26%</text><rect x="332.0" y="108.1" width="38.0" height="31.9" rx="3" fill="#eb6834" stroke="none"/><text x="351.0" y="104.1" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">29%</text><text x="330.0" y="154.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">0.70–0.75</text><rect x="400.0" y="82.8" width="38.0" height="57.2" rx="3" fill="#2a78d6" stroke="none"/><text x="419.0" y="78.8" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">52%</text><rect x="442.0" y="88.3" width="38.0" height="51.7" rx="3" fill="#eb6834" stroke="none"/><text x="461.0" y="84.3" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">47%</text><text x="440.0" y="154.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">0.75–0.80</text><rect x="510.0" y="57.5" width="38.0" height="82.5" rx="3" fill="#2a78d6" stroke="none"/><text x="529.0" y="53.5" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">75%</text><rect x="552.0" y="53.1" width="38.0" height="86.9" rx="3" fill="#eb6834" stroke="none"/><text x="571.0" y="49.1" font-size="8.2" text-anchor="middle" fill="#1d2330" font-weight="600">79%</text><text x="550.0" y="154.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">0.80–1.00</text><line x1="264.0" y1="30.0" x2="264.0" y2="144.0" stroke="#a1520d" stroke-width="1.5" stroke-dasharray="4 3"/><text x="268.0" y="40.0" font-size="8.4" text-anchor="start" fill="#a1520d" font-weight="600">cutoff 0.68 falls in this band</text><line x1="64.0" y1="140.0" x2="690.0" y2="140.0" stroke="#dfe3ea" stroke-width="1"/><text x="64.0" y="170.0" font-size="8.4" text-anchor="start" fill="#1d2330" font-weight="normal">Share of retrieved chunks (answerable questions, top 3) that actually answer the question, by similarity score.</text></svg><div class="cap">Below 0.70 a retrieved chunk answers the question less than a third of the time; above 0.80, three times in four. Scores on their own cannot separate right from wrong: answering and non-answering top chunks overlap from 0.64 to 0.87.</div></div>
+<p>The overlap is the hard part: on the 60 questions, the top chunk scores 0.60–0.93 when it answers and 0.64–0.87 when it does not. A cutoff
+  cannot be read off the answerable questions; it has to come from questions that have no answer. Two sets were built for that: 10 unanswerable
+  customer messages and 12 queries the models wrote for unanswerable golden cases.</p>
+<div class="fig"><svg viewBox="0 0 700 170" width="100%" role="img" aria-label="Cutoff sweep"><rect x="60.0" y="4.0" width="10.0" height="10.0" rx="3" fill="#2a78d6" stroke="none"/><text x="74.0" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">recall@3, model queries</text><rect x="260.0" y="4.0" width="10.0" height="10.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="274.0" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">recall@3, customer messages</text><rect x="460.0" y="4.0" width="10.0" height="10.0" rx="3" fill="#1d7a46" stroke="none"/><text x="474.0" y="13.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">unanswerable queries left empty</text><rect x="60.0" y="39.8" width="26.0" height="110.2" rx="3" fill="#2a78d6" stroke="none"/><text x="73.0" y="35.8" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.95</text><rect x="90.0" y="53.7" width="26.0" height="96.3" rx="3" fill="#9aa3b2" stroke="none"/><text x="103.0" y="49.7" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.83</text><rect x="120.0" y="140.3" width="26.0" height="9.7" rx="3" fill="#1d7a46" stroke="none"/><text x="133.0" y="136.3" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.08</text><text x="101.0" y="164.0" font-size="8.8" text-anchor="middle" fill="#5b6270" font-weight="normal">none</text><rect x="178.0" y="39.8" width="26.0" height="110.2" rx="3" fill="#2a78d6" stroke="none"/><text x="191.0" y="35.8" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.95</text><rect x="208.0" y="57.2" width="26.0" height="92.8" rx="3" fill="#9aa3b2" stroke="none"/><text x="221.0" y="53.2" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.80</text><rect x="238.0" y="72.7" width="26.0" height="77.3" rx="3" fill="#1d7a46" stroke="none"/><text x="251.0" y="68.7" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.67</text><text x="219.0" y="164.0" font-size="8.8" text-anchor="middle" fill="#5b6270" font-weight="normal">0.64</text><rect x="296.0" y="39.8" width="26.0" height="110.2" rx="3" fill="#2a78d6" stroke="none"/><text x="309.0" y="35.8" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.95</text><rect x="326.0" y="65.3" width="26.0" height="84.7" rx="3" fill="#9aa3b2" stroke="none"/><text x="339.0" y="61.3" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.73</text><rect x="356.0" y="43.7" width="26.0" height="106.3" rx="3" fill="#1d7a46" stroke="none"/><text x="369.0" y="39.7" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.92</text><text x="337.0" y="164.0" font-size="8.8" text-anchor="middle" fill="#5b6270" font-weight="normal">0.66</text><rect x="414.0" y="39.8" width="26.0" height="110.2" rx="3" fill="#2a78d6" stroke="none"/><text x="427.0" y="35.8" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.95</text><rect x="444.0" y="66.5" width="26.0" height="83.5" rx="3" fill="#9aa3b2" stroke="none"/><text x="457.0" y="62.5" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.72</text><rect x="474.0" y="34.0" width="26.0" height="116.0" rx="3" fill="#1d7a46" stroke="none"/><text x="487.0" y="30.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">1.00</text><text x="455.0" y="164.0" font-size="8.8" text-anchor="middle" fill="#a1520d" font-weight="700">0.68</text><rect x="408.0" y="24.0" width="98.0" height="134.0" rx="5" fill="none" stroke="#a1520d"/><rect x="532.0" y="46.8" width="26.0" height="103.2" rx="3" fill="#2a78d6" stroke="none"/><text x="545.0" y="42.8" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.89</text><rect x="562.0" y="78.1" width="26.0" height="71.9" rx="3" fill="#9aa3b2" stroke="none"/><text x="575.0" y="74.1" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">0.62</text><rect x="592.0" y="34.0" width="26.0" height="116.0" rx="3" fill="#1d7a46" stroke="none"/><text x="605.0" y="30.0" font-size="7.6" text-anchor="middle" fill="#1d2330" font-weight="600">1.00</text><text x="573.0" y="164.0" font-size="8.8" text-anchor="middle" fill="#5b6270" font-weight="normal">0.70</text><line x1="54.0" y1="150.0" x2="690.0" y2="150.0" stroke="#dfe3ea" stroke-width="1"/></svg><div class="cap">Raising the cutoff empties more unanswerable queries and, past 0.68, starts losing answerable ones. 0.68 is the highest value that keeps every answerable model query (0.95) and empties all 12 unanswerable ones.</div></div>
+<p><b>Cutoff 0.68</b> (<code>MIN_SCORE</code> in <code>agent/tools_v1.py</code>) is the highest value that keeps every answerable model query and
+  empties every unanswerable one. It was chosen on model queries because that is what the tool receives; on raw customer messages the same cutoff
+  would cost 11 points of recall, which is why the cutoff lives in the tool and not in the retrieval evaluation.</p>
+<div class="warn"><b>The margin is thin</b>The highest-scoring unanswerable query ("out of stock restock availability") scored 0.668, just under the cutoff. The constant carries a comment saying so: recheck it whenever the help center, the embedding model or the query style changes.</div>
+<div class="say"><b>How I'd say it in an interview</b>"Similarity scores do not separate right from wrong chunks here; the ranges overlap almost completely. So I chose the cutoff on questions with no answer: 0.68 is the highest value that keeps every answerable model query and returns nothing for all twelve unanswerable ones. I know the margin is thin and wrote that next to the constant, because it is a number that silently goes stale."</div>
+
+</div>
+
+<!-- 10 -->
+<div class="section">
+<h2>10 · The new tool and prompt v1</h2>
+
+<p>The model sees one change: <code>search_help_center</code> now returns up to three labelled sections, each with an ID to cite and the policy's
+  effective date, plus a short instruction. An empty result says what to do instead of returning nothing.</p>
+<pre><code>{"results": [{"id": "returns-electronics#return-window",
+              "title": "Returning electronics › Return window",
+              "text": "You can return unopened electronics within 7 days of delivery.",
+              "effective_date": "2026-10-01"}],
+ "note": "Cite results as [kb:&lt;id&gt;]. If none answer the question, say so."}
+
+{"results": [], "note": "No help-center page matches. Offer to connect a teammate."}</code></pre>
+<ul>
+  <li><b>Compact on purpose.</b> A whole result costs 256 Qwen tokens at the median and 342 at most, so the budget for retrieved text dropped from
+    2,000 tokens to 1,000: room for three searches in one turn.</li>
+  <li><b>Effective dates travel with the text,</b> so an answer can say "since 1 October" when a customer quotes an older rule.</li>
+  <li><b>The order tools did not change.</b> One variable at a time: any change in answers comes from search.</li>
+</ul>
+<p><b>Prompt v1</b> adds one rule to v0: cite every policy fact as <code>[kb:&lt;id&gt;]</code>, for example
+  <code>[kb:returns-electronics#opened-electronics]</code>, and when the search returns nothing, say the help center does not cover it and offer a
+  teammate. Prompts and tools are versioned (<code>--prompt v0|v1</code>, <code>--tools v0|v1</code>) and every run records both.</p>
+<div class="say"><b>How I'd say it in an interview</b>"The tool returns three short sections with IDs and effective dates, about 250 tokens, so the small model reads exactly what it needs and can cite it. When nothing clears the cutoff, the tool tells the model what to do instead of handing it an empty list. I changed only the search tool and one prompt rule, so the results compare cleanly with the baseline."</div>
+
+</div>
+
+<!-- 11 -->
+<div class="section page">
+<h2>11 · Grounding checks on every reply</h2>
+
+<p>"Grounded" was made measurable instead of hoped for. <code>agent/grounding.py</code> runs on every final reply inside the agent loop and
+  logs its findings in the trace; the scorer recomputes them from saved messages, so every earlier run was rescored too (no older metric changed).</p>
+<div class="fig"><svg viewBox="0 0 700 136" width="100%" role="img" aria-label="How the grounding check works"><rect x="8.0" y="8.0" width="330.0" height="120.0" rx="7" fill="#f4f6f9" stroke="#dfe3ea"/><text x="20.0" y="26.0" font-size="8.8" text-anchor="start" fill="#1d2330" font-weight="700">Tool results earlier in the conversation</text><text x="20.0" y="46.0" font-size="8.4" text-anchor="start" fill="#5b6270" font-weight="normal" class="mono">search → refunds-timing#how-long-until-…</text><text x="20.0" y="62.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">“UPI: 1–3 business days”</text><text x="20.0" y="78.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">“Card: 5–7 business days”</text><text x="20.0" y="100.0" font-size="8.6" text-anchor="start" fill="#1d7a46" font-weight="700" class="mono">numbers found: {1, 3, 5, 7}</text><text x="20.0" y="116.0" font-size="8.6" text-anchor="start" fill="#1d7a46" font-weight="700" class="mono">ids found: {refunds-timing#how-long-…}</text><rect x="362.0" y="8.0" width="330.0" height="120.0" rx="7" fill="#fff" stroke="#dfe3ea"/><text x="374.0" y="26.0" font-size="8.8" text-anchor="start" fill="#1d2330" font-weight="700">Nova&#x27;s reply</text><text x="374.0" y="46.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">A UPI refund reaches you in 1–3</text><text x="374.0" y="62.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal" class="mono">business days [kb:refunds-timing#…].</text><text x="374.0" y="84.0" font-size="8.8" text-anchor="start" fill="#1d7a46" font-weight="700">1 ✓   3 ✓   cited id ✓</text><text x="374.0" y="104.0" font-size="8.6" text-anchor="start" fill="#b42318" font-weight="normal" class="mono">“takes 7–10 business days”</text><text x="374.0" y="120.0" font-size="8.6" text-anchor="start" fill="#b42318" font-weight="700">10 ✗  not in any tool result → logged</text></svg><div class="cap">Every number in a reply must appear in a tool result from earlier in the same conversation, and every [kb:id] must be a section a search returned. The red line is adapted from a real reply (pol-010) where the 2B model never searched; there both 7 and 10 were flagged. Here 7 passes only because the card line mentions it: numbers are matched one at a time.</div></div>
+<ul>
+  <li><b>Numbers.</b> Each number in the reply must appear among the numbers of tool results Nova was given earlier in the same conversation
+    (order lookups and help-center results alike). "1,299" and "1299.00" normalise to the same value. A number that is true, or that sits
+    elsewhere in the help center, or that the customer typed, does not count.</li>
+  <li><b>Citations.</b> Each <code>[kb:id]</code> must be the ID of a section a search actually returned. Digits inside a citation are not claims.</li>
+  <li><b>Logged, never fixed silently.</b> The check measures; it does not rewrite replies. Blocking belongs to the guardrails, later.</li>
+</ul>
+<h3>What it found on day one</h3>
+<p>The agent loop had been writing tool results with <code>json.dumps</code> defaults since the first baseline, so the 2B model read
+  <code>"1\u20133 business days"</code> and <code>"\u20b949"</code> instead of "1–3 business days" and "₹49". Gemini receives tool results as
+  parsed JSON and never saw the escapes, so part of the baseline gap between the two models was formatting. One argument fixed it
+  (<code>ensure_ascii=False</code>), and old traces are decoded before checking.</p>
+<h3>What it cannot see</h3>
+<ul>
+  <li><b>Dates are checked one number at a time.</b> "Your return window ends on October 7, 2026" passed, because 7 and 2026 each appear in
+    some tool result. Dates need to be matched whole; that is a guardrail task.</li>
+  <li><b>Customer numbers are flagged on purpose.</b> "rather than 30 days" repeats the customer's own claim and is flagged, because the
+    customer's words are not evidence. That costs a few false positives, each one easy to read in the report.</li>
+</ul>
+<div class="say"><b>How I'd say it in an interview</b>"I made grounding a number. Every reply is checked: each number must appear in a tool result from that conversation, and each citation must be a section the search actually returned. It runs in the loop and in the scorer. On its first day it found that the small model had been reading escaped JSON since the baseline, which the stronger model never saw. I also know its gap: dates are matched digit by digit."</div>
+
+</div>
+
+<!-- 12 -->
+<div class="section">
+<h2>12 · Old policies: archive and versions</h2>
+
+<p>The hardest grounding test is a customer quoting a rule that used to be true. NimbusCart's returns policy changed on 1 October 2026 (electronics
+  30 → 7 days, pickup 3–5 → 1–2 days); the old page lives in <code>kb/_archive/</code> with <code>superseded_by</code> in its front matter.</p>
+<div class="grid2">
+  <div class="card"><h4>Kept out of the index twice</h4><p><code>kb/_archive/</code> is skipped by path, and the chunker also refuses any page whose
+    front matter has <code>superseded_by</code>. An archived page copied back into <code>kb/</code> stops the load instead of competing with the
+    current rule at search time.</p></div>
+  <div class="card"><h4>Five old-policy golden cases</h4><p>The customer quotes the archived rule ("30 days to return anything", "pickup in 3–5
+    days", "refund within 7 days of pickup") and Nova must give and cite the current one. They test retrieval, reading and the nerve to correct
+    the customer.</p></div>
+</div>
+<div class="fig"><svg viewBox="0 0 700 98" width="100%" role="img" aria-label="Old-policy cases: current rule given"><text x="212.0" y="16.8" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">2B model, first tool + prompt</text><rect x="220.0" y="6.0" width="1.5" height="15.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="226.0" y="16.8" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">0 / 5</text><text x="212.0" y="38.8" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">2B model, new tool + prompt v1</text><rect x="220.0" y="28.0" width="216.0" height="15.0" rx="3" fill="#2a78d6" stroke="none"/><text x="442.0" y="38.8" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">3 / 5</text><text x="212.0" y="60.8" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">SFT-1, new tool + prompt v1</text><rect x="220.0" y="50.0" width="1.5" height="15.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="226.0" y="60.8" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">0 / 5</text><text x="212.0" y="82.8" font-size="8.8" text-anchor="end" fill="#1d2330" font-weight="normal">Gemini (ceiling), new tool + v1</text><rect x="220.0" y="72.0" width="360.0" height="15.0" rx="3" fill="#1d7a46" stroke="none"/><text x="586.0" y="82.8" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="600">5 / 5, all cited</text></svg><div class="cap">The five cases where the customer quotes an archived rule (“30 days for everything”, “pickup in 3–5 days”). Same tools and prompt for the last three rows; only the model differs.</div></div>
+<p>The ceiling run (<code>2026-11-25_ceiling-old-policy</code>) corrected the customer in all five and cited the right section each time. Three of
+  its five fail the strict tool-sequence check, all for extra calls (a second search, an order lookup for the headphones), not wrong ones. Its one
+  grounding flag is the customer's "30 days" quoted back. The ship gate asked for these five to pass on the ceiling model: they do, so the 2B model's
+  3/5 is a model gap, not missing content.</p>
+<div class="say"><b>How I'd say it in an interview</b>"Policies change, so every result carries its effective date and the old page lives in an archive the index refuses to load, checked twice. I wrote five cases where the customer quotes the old rule. The strong model corrects all five with a citation; the small model corrects three. Same tools, same pages, so that gap belongs to the model."</div>
+
+</div>
+
+<!-- 13 -->
+<div class="section page">
+<h2>13 · Answers end to end: what changed</h2>
+
+<p>The 25 golden policy cases plus the 5 old-policy cases, Qwen3.5-2B in-process on an Apple M4, temperature 0.2, same scorer for all three runs:</p>
+<table>
+  <tr><th>Run</th><th>Tools · prompt</th><th>Right facts</th><th>Cites</th><th>Replies with a grounding issue</th></tr>
+  <tr><td><code>floor-policy-v0</code></td><td>first · v0</td><td>1 / 30</td><td>0 / 30</td><td>2 of 30</td></tr>
+  <tr><td><code>floor-policy-v1</code></td><td><b>new · v1</b></td><td><b>7 / 30</b></td><td>0 / 30</td><td>2 of 30</td></tr>
+  <tr><td><code>sft1-policy-v1</code></td><td>new · v1</td><td>1 / 30</td><td>0 / 30</td><td>1 of 30</td></tr>
+</table>
+<div class="fig"><svg viewBox="0 0 700 186" width="100%" role="img" aria-label="Where the facts were lost"><rect x="440.0" y="6.0" width="10.0" height="10.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="454.0" y="15.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">first tool (full-text, every word)</text><rect x="440.0" y="22.0" width="10.0" height="10.0" rx="3" fill="#2a78d6" stroke="none"/><text x="454.0" y="31.0" font-size="8.6" text-anchor="start" fill="#1d2330" font-weight="normal">new tool (vector, cutoff)</text><rect x="40.0" y="30.0" width="35.0" height="120.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="57.5" y="26.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">30</text><rect x="81.0" y="30.0" width="35.0" height="120.0" rx="3" fill="#2a78d6" stroke="none"/><text x="98.5" y="26.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">30</text><text x="78.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">Policy cases</text><rect x="200.0" y="106.0" width="35.0" height="44.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="217.5" y="102.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">11</text><rect x="241.0" y="106.0" width="35.0" height="44.0" rx="3" fill="#2a78d6" stroke="none"/><text x="258.5" y="102.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">11</text><text x="238.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">Model searched</text><rect x="360.0" y="146.0" width="35.0" height="4.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="377.5" y="142.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">1</text><rect x="401.0" y="118.0" width="35.0" height="32.0" rx="3" fill="#2a78d6" stroke="none"/><text x="418.5" y="114.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">8</text><text x="398.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">Search returned an</text><text x="398.0" y="176.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">answering section</text><rect x="520.0" y="146.0" width="35.0" height="4.0" rx="3" fill="#9aa3b2" stroke="none"/><text x="537.5" y="142.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">1</text><rect x="561.0" y="122.0" width="35.0" height="28.0" rx="3" fill="#2a78d6" stroke="none"/><text x="578.5" y="118.0" font-size="9" text-anchor="middle" fill="#1d2330" font-weight="700">7</text><text x="558.0" y="164.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">Reply had the</text><text x="558.0" y="176.0" font-size="8.6" text-anchor="middle" fill="#5b6270" font-weight="normal">right facts</text><line x1="34.0" y1="150.0" x2="690.0" y2="150.0" stroke="#dfe3ea" stroke-width="1"/></svg><div class="cap">The 30 golden policy cases, Qwen3.5-2B on the Mac. With the new tool, retrieval stopped being the wall (1 → 8) and the model used what it got (7 of 8). The wall moved to the first bar: the model searched in only 11 of 30.</div></div>
+<table class="small">
+  <tr><th style="width:50%"></th><th>First tool</th><th>New tool</th></tr>
+  <tr><td>Searches that came back empty</td><td>9 cases</td><td>0</td></tr>
+  <tr><td>First call was <code>list_my_orders</code></td><td>25 of 30</td><td>30 of 30</td></tr>
+  <tr><td>Ran out of model calls (fixed hand-off reply)</td><td>13</td><td>9</td></tr>
+</table>
+<p>Retrieval stopped being the wall. What is left is the model's behaviour: it lists orders first on every policy question (the prompt says to when
+  no order is named), searches in barely a third of cases, often spends its four calls on order lookups, and never writes a citation despite the
+  rule. SFT-1, trained on replies that never call tools, makes no tool call at all, so better retrieval cannot reach it. All three invented numbers
+  in these runs came from cases where the model did not search: a remembered "7–10 business days" for a UPI refund the help center says takes 1–3.</p>
+<div class="say"><b>How I'd say it in an interview</b>"Once retrieval worked, the failure moved. When the 2B model searched, it got the right section 8 times in 11 and stated the facts correctly 7 of those 8 times. But it searched in only 11 of 30 policy questions, and every hallucinated number came from not searching. Before improving a component, count how often the system calls it: a perfect tool the model skips fixes nothing."</div>
+
+</div>
+
+<!-- 14 -->
+<div class="section page">
+<h2>14 · What went wrong, and what it taught</h2>
+
+<table class="small">
+  <tr><th style="width:28%">What happened</th><th style="width:36%">Cause</th><th>What changed</th></tr>
+  <tr><td>The 2B model read escaped JSON in every run since the baseline</td><td>Tool results written with <code>json.dumps</code> defaults; Gemini's adapter passed parsed JSON, so only the small model saw <code>\u2013</code></td><td><code>ensure_ascii=False</code>; old traces decoded before checking. Takeaway: look at the exact bytes each model receives</td></tr>
+  <tr><td>Embeddings wiped more than once</td><td>Reloading chunks without <code>--model</code> rewrites the table without vectors</td><td>Re-embedded each time; the tool's model check fails loudly on an empty index. Still a sharp edge worth closing</td></tr>
+  <tr><td>A full-text query errored: <code>ts_rank(tsvector, record)</code></td><td>A subquery in <code>FROM</code> returned a record, not a <code>tsquery</code></td><td>Wrapped as <code>(SELECT … AS tq) query</code></td></tr>
+  <tr><td>First embedding timing was 58.7 s</td><td>It included the model download</td><td>A warm-up call before every timing</td></tr>
+  <tr><td>Two report numbers were wrong on first draft</td><td>Hybrid "fixed 2" (it fixed 1); the score range was misread</td><td>Every number re-derived from the run files before commit</td></tr>
+  <tr><td>CI failed on the label check</td><td><code>numpy</code> imported at module level, but CI does not install the embedding group</td><td>Import only for type checking; tested in a clean virtual environment</td></tr>
+  <tr><td>The ceiling run waited two days</td><td>Google Cloud paused the Gemini project for an account review</td><td>Ran from a second project on the same billing account once the first stayed blocked after reinstatement</td></tr>
+</table>
+
+</div>
+
+<!-- 15 -->
+<div class="section page">
+<h2>15 · Defending the design: interview questions</h2>
+<div class="qa"><h3>Why chunk by section instead of fixed-size windows?</h3><p>The pages were written one rule per section, so the section boundary is a semantic boundary. Fixed windows would cut a rule from its exception or merge two unrelated rules, and their IDs would mean nothing. Sections also give citable, human-readable IDs, and none was long enough to need splitting (largest: 120 tokens).</p><h3>Some chunks are one sentence. Isn't that too small?</h3><p>For retrieval, a single sharp rule is ideal: the embedding is about one thing and the citation points at one rule. The risk is that a one-line rule lacks topic words, which the path line (page › heading) fixes. I rewrote only the two chunks that were pointers with no rule.</p><h3>Why pgvector instead of a vector database?</h3><p>104 rows. A separate database adds a service, a copy of the data and a sync job for no measured benefit, and keeping it in Postgres lets vector and full-text search run in one query against one table.</p><h3>Why no HNSW index?</h3><p>An approximate index trades a little accuracy for speed on large tables. At 104 rows an exact scan is instant and returns true nearest neighbours, so the evaluation measures the embedding model, not index approximation. I'd add one past tens of thousands of chunks.</p><h3>Why recall@3?</h3><p>Because the tool returns three results and the model reads three. A right answer at rank 4 is invisible to it. MRR is the tie-breaker for how high the answer lands.</p><h3>Hybrid search is the standard for support bots. Why did you drop it?</h3><p>I tested it: it never beat vector search on recall@3, and the any-word version lost 10 customer messages to filler words while fixing one. Hybrid wins on exact rare tokens, and this help center has none: order numbers go to order tools, there are no product names, one term per idea. The code and evaluation stay, so it is one command to recheck if the content changes.</p><h3>Why bge-small over a bigger embedding model?</h3><p>On my labelled set it led on customer messages and tied on model queries, at 6 ms against 14.5 ms. The four-times-larger bge-base was worse on customer messages. Page edits moved recall more than model size did, so the model was not the bottleneck.</p><h3>The model card recommends a query prefix. Why is it off?</h3><p>I measured it: it reordered 33 of 60 top-3 lists but gave the same recall on questions and one query worse on model queries. Off by default, and a flag reruns the comparison.</p><h3>Why measure on model-written queries, not just customer questions?</h3><p>In a tool-calling agent the model writes the query, usually clean keywords. Those 37 real queries are the production distribution; raw messages with typos are a harder stress test. I chose methods on both and the cutoff on the production one.</p><h3>How did you pick 0.68, and isn't it fragile?</h3><p>From unanswerable questions, because answering and non-answering scores overlap too much to read a threshold off answerable ones. 0.68 is the highest cutoff that keeps every answerable model query and empties all twelve unanswerable ones. Yes, the margin is thin (0.668), so it is documented as something to recheck when the pages, the model or query style change.</p><h3>Why edit the pages instead of improving the retriever?</h3><p>Reading the misses showed most were content problems: the page used different words, or said nothing (no page mentioned exchanges). Six edits beat a larger model. In a real company that is also the cheapest fix, and it improves the help center for humans too.</p><h3>How do you stop the model from hallucinating policy?</h3><p>Three layers: the tool returns only sections above the cutoff and says so when nothing matches; the prompt requires a citation for every policy fact; and a grounding check traces every number and citation in every reply to tool results, logged in the trace and scored. The evaluation showed all invented numbers came from not searching, which points the fix at behaviour.</p><h3>Your grounding check flagged a correct answer. Isn't it broken?</h3><p>It flags numbers the customer typed, on purpose: the customer's words are not evidence. That costs a few false positives that are easy to read, against never letting a repeated wrong number pass. Its real gap is the other way: dates are matched one number at a time, so an invented date can pass. That is listed for the guardrails.</p><h3>Retrieval works but the model searches in a third of cases. Was this wasted?</h3><p>No, it located the problem. Before, I could not tell whether bad answers came from search or the model. Now search is measured at 0.95 on real queries, and the remaining failures are tool choice: list orders first, then run out of calls. That is a training-data problem, which is why the next fine-tune trains on tool-using conversations.</p><h3>How do you handle policy changes?</h3><p>Each page carries a version and an effective date, which travel with every result. Superseded pages live in an archive that is excluded by path and by a front-matter guard, so they cannot compete at search time. Five golden cases quote the old policy and check that Nova corrects it with a citation; the ceiling model does in five of five.</p><h3>Why not add a reranker?</h3><p>I didn't measure one, so I won't claim it would or wouldn't help. On model queries recall@3 is already 0.95, and the remaining misses are raw typos the agent never sends. A cross-encoder adds latency to every search. It becomes worth testing if the help center grows or recall drops.</p><h3>What would you do differently?</h3><p>Build the model-query set first: it is the production distribution and it would have saved time on the raw-message set. Make the index loader keep embeddings by default. And match dates whole in the grounding check from the start.</p></div>
+</div>
+
+<!-- 16 -->
+<div class="section page">
+<h2>16 · Limits, what comes next, glossary</h2>
+
+<h3>Known limits</h3>
+<ul>
+  <li><b>Small, self-labelled sets:</b> 60 and 37 questions, labelled by me. One question is 1.7 and 2.7 points.</li>
+  <li><b>The cutoff margin is thin</b> (0.668 against 0.68) and depends on the model's query style.</li>
+  <li><b>Raw typos still miss;</b> retrieval relies on the model rewriting messages into keywords.</li>
+  <li><b>Dates are checked number by number</b> in the grounding check.</li>
+  <li><b>No reranker, no query expansion;</b> neither was measured.</li>
+  <li><b>Reloading chunks without <code>--model</code> clears the embeddings.</b></li>
+</ul>
+<h3>What comes next</h3>
+<ul>
+  <li><b>Behaviour:</b> search first on policy questions, cite what was retrieved, never state a policy number without a search. The three
+    hallucinations in this part are the training signal for the next fine-tune.</li>
+  <li><b>Prompt:</b> scope the "list orders first" rule to order questions, the likely cause of the wasted calls.</li>
+  <li><b>Guardrails:</b> match dates whole, and decide which grounding failures block a reply.</li>
+</ul>
+<h3>Glossary</h3>
+<table class="small">
+  <tr><th style="width:22%">Term</th><th>Plain meaning</th></tr>
+  <tr><td>RAG</td><td>Retrieval-augmented generation: look up the relevant text first, then answer from it.</td></tr>
+  <tr><td>Chunk</td><td>One searchable piece of a document; here, one help-center section with its path.</td></tr>
+  <tr><td>Embedding</td><td>A list of numbers representing a text's meaning, so similar texts are close together.</td></tr>
+  <tr><td>Cosine similarity</td><td>How closely two embeddings point the same way; the search score (about 0.5 to 0.95 for top results here).</td></tr>
+  <tr><td>Full-text search</td><td>Keyword matching with stemming (Postgres <code>tsvector</code>/<code>tsquery</code>).</td></tr>
+  <tr><td>Hybrid, RRF</td><td>Merging vector and keyword rankings; reciprocal rank fusion scores each result by 1 / (60 + rank) in each list.</td></tr>
+  <tr><td>recall@3</td><td>Share of questions with an answering chunk among the top three results.</td></tr>
+  <tr><td>MRR</td><td>Mean reciprocal rank: the average of 1 / rank of the first answering result.</td></tr>
+  <tr><td>Cutoff</td><td>The minimum similarity score a result needs to be returned at all.</td></tr>
+  <tr><td>Grounded</td><td>Every number and citation in a reply traces to a tool result from the same conversation.</td></tr>
+  <tr><td>Ceiling</td><td>A strong model (Gemini) on the same loop and tools, showing what is achievable.</td></tr>
+</table>
+
+</div>
+
+</body>
+</html>
