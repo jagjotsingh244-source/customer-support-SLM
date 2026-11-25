@@ -73,6 +73,16 @@ CLOSING = re.compile(r"^\W*(ok(ay)?|k|thanks?|thank you|thx|ty|got it|great|cool
                      r"will wait|perfect|cool))*\W*$", re.I)
 
 
+# A customer who thanks or signs off is not stuck, whatever Nova said: "cool thx have a good day", "That answers
+# my question". Used by the no-progress rule only.
+SATISFIED = re.compile(r"\b(thanks?|thank you|thx|ty|appreciate|that (answers|helps|covers|is (exactly|what))|"
+                       r"got it|perfect|great|bye|have a (good|nice)|will wait|i'?ll wait)\b", re.I)
+
+
+def content(msg: str) -> bool:
+    return bool(CLOSING.match(msg or "") or SATISFIED.search(msg or ""))
+
+
 @dataclass(frozen=True)
 class Escalation:
     reason: str            # asked_for_person, high_risk:<topic>, possible_lost, no_progress
@@ -118,7 +128,7 @@ def must_escalate(user_msg: str, turns_without_progress: int, results: list, now
     for r in results:
         if (d := days_since_last_scan(r, now)) is not None and d >= LOST_AFTER_DAYS:
             return Escalation("possible_lost", "lost_parcel")
-    if turns_without_progress >= NO_PROGRESS_TURNS and not CLOSING.match(user_msg or ""):
+    if turns_without_progress >= NO_PROGRESS_TURNS and not content(user_msg):
         return Escalation("no_progress", "other")
     return None
 
@@ -158,8 +168,11 @@ class Progress:
             self.replies.append(reply)
         if new:
             self.turns_without_progress = 0
-        elif stuck and not CLOSING.match(user_msg or ""):
-            self.turns_without_progress += 1
+        elif stuck and not content(user_msg):
+            # A repeated reply means the customer asked twice and got the same answer: two turns going nowhere.
+            # Counting only the repeat let a customer give up after three identical replies (sim-una-004).
+            repeat = reply is not None and _repeats(reply, self.replies[:-1])
+            self.turns_without_progress = max(self.turns_without_progress + 1, NO_PROGRESS_TURNS if repeat else 0)
         return self.turns_without_progress
 
 

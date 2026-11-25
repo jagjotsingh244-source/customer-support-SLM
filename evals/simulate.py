@@ -15,7 +15,8 @@ rows, so no case can see another's writes. Two runs on the same database at once
 same customers: give parallel runs their own database copy (--db-url).
 
 Nova runs exactly as served: prompt v2, tools v2, the state block and history trimming, temperature 0.2, at
-most 4 model calls per turn. The simulator runs as it did for the training data (temperature 1.0), so each
+most 4 model calls per turn. --guards (with --prompt v3) and --handoff-rules add the checks around the model and
+the hand-offs made in code, as in evals/run_eval.py. The simulator runs as it did for the training data (temperature 1.0), so each
 run meets a slightly different customer: that variation is part of what pass^3 measures.
 """
 
@@ -95,8 +96,15 @@ class Runner:
     def _converse(self, case, conns, owner) -> dict:
         t0 = time.perf_counter()
         session = tools.Session.open(conns, case.customer_id)
-        messages = [{"role": "system", "content": system_prompt(now(), session.customer_name, PROMPT)}]
+        messages = [{"role": "system", "content": system_prompt(now(), session.customer_name, self.a.prompt)}]
         context = Context(self.count)
+        guard = rules = None
+        if self.a.guards:
+            from agent.guardrails import Guard
+            guard = Guard(messages[0]["content"])
+        if self.a.handoff_rules:
+            from agent.escalation import HandoffRules
+            rules = HandoffRules()
         p = BY_NAME[case.persona]
         sc = Scenario(case.scenario or "general", case.customer_id, case.order_id, case.goal, case.knowledge, {}, [])
         sim = CustomerSimulator(self.sim, self.a.sim_model, sc,
@@ -109,7 +117,7 @@ class Runner:
             t1 = time.perf_counter()
             reply, tr = run_turn(self.nova, self.a.model, messages, tools.TOOLS, tools.DISPATCH, session,
                                  max_steps=MAX_CALLS, temperature=self.a.temperature, trace_id=f"{case.id}-{n}",
-                                 context=context)
+                                 context=context, guard=guard, rules=rules)
             tr["turn_s"] = round(time.perf_counter() - t1, 3)
             tr["reply"] = reply
             tr.pop("sent", None)
@@ -146,7 +154,7 @@ def run(a) -> Path:
     nova = OpenAI(base_url=a.base_url, api_key=key, timeout=120, max_retries=2)
     sim = OpenAI(base_url=a.sim_url.rstrip("/") + "/v1", api_key=key, timeout=120, max_retries=2)
     config = {"run": a.run, "system": a.system, "provider": "openai", "model": a.model, "base_url": a.base_url,
-              "prompt_version": PROMPT, "tools_version": "v2", "state": True, "temperature": a.temperature,
+              "prompt_version": a.prompt, "guards": a.guards, "handoff_rules": a.handoff_rules, "tools_version": "v2", "state": True, "temperature": a.temperature,
               "sampling": "default", "max_model_calls_per_turn": MAX_CALLS, "max_customer_turns": MAX_TURNS,
               "case_set": "simulated", "cases": len(cases), "simulator": {"url": a.sim_url, "model": a.sim_model,
               "sampling": SIM_SAMPLING}, "commit": git_commit(), "db": a.db_url.split("@")[-1], "notes": a.notes}
@@ -182,6 +190,9 @@ def main() -> None:
     ap.add_argument("--sim-model", default="teacher")
     ap.add_argument("--temperature", type=float, default=0.2)
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--prompt", default=PROMPT, help="system prompt version (v3 with --guards)")
+    ap.add_argument("--guards", action="store_true", help="the checks around the model (agent/guardrails.py)")
+    ap.add_argument("--handoff-rules", action="store_true", help="hand-offs made in code (agent/escalation.py)")
     ap.add_argument("--db-url", default=DB_URL)
     ap.add_argument("--ids", nargs="*")
     ap.add_argument("--limit", type=int)

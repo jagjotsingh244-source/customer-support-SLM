@@ -135,18 +135,17 @@ def test_the_models_own_handoff_gets_the_state_summary_and_no_second_ticket():
     assert trace["tool_calls"][0]["result"]["ticket_id"] == 900001
 
 
-def test_two_turns_going_round_in_circles_force_a_handoff_on_the_third():
+def test_the_same_answer_twice_forces_a_handoff_on_the_next_ask():
     tools, rules = Tools(), HandoffRules(now=lambda: NOW)
     same = "Your order 11538 is shipped and on its way to you."
     model = Model(completion(calls=[call("get_order_status", {"order_id": 11538})]), completion(same),
                   completion(calls=[call("get_order_status", {"order_id": 11538})]), completion(same),
-                  completion("Your order 11538 is shipped and on its way."),
-                  completion("I've passed this to the team."))
+                  completion("I've passed this to the team; a teammate will reply here."))
     messages = [{"role": "system", "content": "rules"}]
-    for text in ["where are my cushion covers 11538", "but WHERE is it", "this is useless", "hello??"]:
+    for text in ["where are my cushion covers 11538", "but WHERE is it", "this is useless"]:
         messages.append({"role": "user", "content": text})
         reply, trace = turn(model, tools, messages, rules)
-    assert trace["forced_handoff"] == "no_progress" and tools.tickets == 1
+    assert trace["forced_handoff"] == "no_progress" and tools.tickets == 1   # the same answer twice, then a third ask
 
 
 def test_new_answers_from_known_facts_are_not_counted_as_stuck():

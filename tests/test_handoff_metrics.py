@@ -71,11 +71,11 @@ def test_no_handoffs_gives_no_precision_rather_than_zero():
 
 def test_the_counter_for_a_turn_comes_from_the_turns_before_it():
     t = trace([("where is my cushion cover order", [call("get_order_status", STATUS)], "It has shipped."),
-               ("but where is it", [call("get_order_status", STATUS)], "It has shipped."),    # nothing new: 1
-               ("hello??", [], "It has shipped."),                                            # 2, counted after
-               ("are you there", [], "It has shipped.")])                                     # checked with 2
+               ("but where is it", [call("get_order_status", STATUS)], "It has shipped."),    # same reply: 2
+               ("hello??", [], "It has shipped."),                                            # checked with 2
+               ("are you there", [], "It has shipped.")])
     fired = h.replay(t, NOW)
-    assert [(f.turn, f.rule.reason, f.counter_before) for f in fired] == [(3, "no_progress", 2)]
+    assert [(f.turn, f.rule.reason, f.counter_before) for f in fired] == [(2, "no_progress", 2)]
 
 
 def test_a_closing_turn_does_not_add_to_the_counter():

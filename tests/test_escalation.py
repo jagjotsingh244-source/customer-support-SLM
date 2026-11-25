@@ -99,8 +99,14 @@ def test_a_repeated_reply_counts_a_new_answer_does_not():
     p = e.Progress()
     p.end_turn("where is 11538", [STATUS], "It is shipped and on its way.")
     assert p.end_turn("when will it come", [], "The estimate was 12 Nov, so it is late.") == 0
-    assert p.end_turn("but where is it", [], "It is shipped and on its way!") == 1
-    assert p.end_turn("hello??", [], "Let me connect you with a teammate.") == 2
+    assert p.end_turn("but where is it", [], "It is shipped and on its way!") == 2      # a repeat: asked twice
+    assert e.must_escalate("hello??", p.turns_without_progress, [], NOW).reason == "no_progress"
+
+
+def test_a_fallback_alone_counts_one_turn():
+    p = e.Progress()
+    p.end_turn("where is 11538", [STATUS], "It is shipped.")
+    assert p.end_turn("hmm", [], "Let me connect you with a teammate.") == 1
 
 
 def test_thanks_is_not_a_turn_without_progress_and_new_facts_reset():
