@@ -111,3 +111,23 @@ def test_return_claimed_done_skips_negations_conditionals_and_known_returns():
     known = _trace([[("get_order_status", {"order_id": 1}, {"returns": [{"status": "refunded"}]})]],
                    ["The return was initiated on 4 November and is completed."], ["did my refund come?"])
     assert not return_claimed_done(known, had_return=False)
+
+
+def test_date_facts_are_relative_to_the_frozen_today():
+    from evals.judge_units import Unit, date_facts
+    u = Unit("r/c/1", "r", "c", 1, "where is it", "", [], [{"tool": "get_tracking", "args": {"order_id": 1}, "result": {
+        "shipments": [{"tracking_no": "BL7", "items": "Fan", "status": "in_transit", "eta": "2026-11-06",
+                       "last_scan_at": "2026-11-11 11:44:00+05:30"}]}}], "A")
+    text = date_facts(u)
+    assert "14 days before today (past, not delivered)" in text and "last scan 11 Nov 2026, 9 days before today" in text
+
+
+def test_label_sheet_round_trip_keeps_verdicts_and_reads_edits(tmp_path):
+    from evals import judge_labels as jl
+    rows = [{"id": "2026-11-25_golden-sft2a/ord-014/1", "grounded": "PASS", "grounded_why": "g", "resolved": "PASS",
+             "resolved_why": "r", "split": "tune"}]
+    path = tmp_path / "sheet.md"
+    path.write_text(jl.sheet(rows).replace("**Resolved:** PASS — r", "**Resolved:** FAIL — misses the date"))
+    changes = jl.read_sheet(rows, path)
+    assert changes == ["2026-11-25_golden-sft2a/ord-014/1: resolved PASS -> FAIL"]
+    assert rows[0]["resolved"] == "FAIL" and rows[0]["resolved_draft"] == "PASS" and rows[0]["grounded"] == "PASS"
