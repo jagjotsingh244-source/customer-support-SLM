@@ -249,6 +249,32 @@ re-run); better retrieval is the planned fix.
 - **Two views of tool use:** strict (exact calls, nothing extra: correct and efficient) and required calls
   (every needed call, in order, with the right arguments; extras allowed: correct). Both are reported.
 
+## Serving format
+
+**FP8 ships.** Each release is the adapter merged into the base (`serving/export_formats.py`), served by vLLM with
+`--quantization fp8`. The adapter repo stays the source of truth; merging is a one-minute scripted step that checks
+its own result (only the adapter's target tensors change; logits match base + adapter). Measured on one L4,
+golden set three times per format (`evals/reports/06a_formats.md`):
+
+| Format | Golden pass@1 | Tokens/s, 1 / 32 conversations | Time to first token | p95 per turn | Weights on the GPU |
+|---|---|---|---|---|---|
+| Base + adapter | 66% [58–74] | 56 / 1,202 | 0.62 s | 3.65 s | 3.6 GiB |
+| Merged 16-bit | 64% [56–73] | 63 / 1,292 | 0.55 s | 3.47 s | 3.6 GiB |
+| **FP8** | **69% [61–77]** | **86 / 1,615** | **0.41 s** | **2.73 s** | **2.4 GiB** |
+
+Why: no format loses measurable quality, and FP8 is the only one under the 3 s p95 budget. Memory was never the
+limit (every format fits about 100 full-length conversations at once). Why not base + adapter, which makes
+trying a new adapter next to the current one trivial: a candidate can still be served next to the current
+model as a second FP8 model (a 2B model needs 2.4 GiB). Serving the adapter costs 35% of FP8's tokens per second
+(12% from LoRA itself, the rest from 16-bit weights) on every customer turn, while a new candidate comes along
+rarely.
+
+Requirements that travel with every format: the tokenizer and `chat_template.jinja` the model was trained with
+(training and server prompts are checked token for token by `serving/template_check.py`), and thinking left off.
+vLLM leaves `enable_thinking` unset, as training did. llama.cpp needs `--reasoning off`, or the model thinks
+before every answer. The q4_k_m GGUF (`123jagjot/nova-sft2a-v1-gguf`) is for running offline on a laptop, not
+for serving.
+
 ## Change log
 
 Record every budget or mechanism change: old → new, and the evidence.
@@ -292,3 +318,4 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-25 | Hand-off replies may not promise a time ("shortly", "soon"): removed in code from the training conversations (`synth/repair.py`), rejected by the `style` check, forbidden in teacher rules r6 | The hand-off tool tells Nova not to promise a time, and the fact-check judge rejected 454 conversations for it alone, emptying the hardest cells of the coverage grid. Repair and re-judging recovered 327 |
 | 2026-11-25 | A coding agent can stand in for the teacher model through a mailbox server (`synth/agent_server.py`); its conversations are judged by hand and recorded with the agent and model as the teacher | No GPU credit was left for the open-weights teacher. Adversarial customers stay with the open-weights teacher (`synth/agent_plan_adversarial.json`) |
 | 2026-11-25 | SFT-2a v2 (`123jagjot/sft2a-r16-lr2e-4-traj_v2`, trained on `nova-sft2-mix-v2`) is not promoted; v1 stays Nova's model (`evals/reports/03_sft2.md`, "Second round") | Same server, same cases: golden pass@1 61% against 64%, fresh 60% against 66%. Inside the intervals, but no gain, and the release gate blocks it (fresh grounding +3.9 per 100, p95 latency 3.12 s) on top of the hard-rule hits both adapters share |
+| 2026-11-26 | Serving format: the merged model in FP8 (`--quantization fp8` on vLLM 0.34.0), with the training tokenizer and chat template; the adapter stays the source of truth, merged per release by `serving/export_formats.py` | Golden pass@1 69% [61–77] against 66% for base + adapter and 64% merged in 16-bit (three runs each, one L4); 54% faster decoding for one conversation, first token 0.41 s against 0.62 s, p95 2.73 s per turn, the only format under the 3 s budget. Training and server prompts identical on 10 of 10 captured requests (`evals/reports/06a_formats.md`) |

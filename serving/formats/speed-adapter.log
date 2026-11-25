@@ -1,0 +1,4 @@
+{'concurrency': 1, 'tokens_per_s': 55.5, 'tokens_per_s_per_conversation': 55.5}
+{'concurrency': 8, 'tokens_per_s': 400.1, 'tokens_per_s_per_conversation': 50.1}
+{'concurrency': 32, 'tokens_per_s': 1201.5, 'tokens_per_s_per_conversation': 37.8}
+{"model": "nova_adapter", "prompt_tokens": 1161, "output_tokens": 256, "ttft_s_median": 0.622, "levels": [{"concurrency": 1, "tokens_per_s": 55.5, "tokens_per_s_per_conversation": 55.5}, {"concurrency": 8, "tokens_per_s": 400.1, "tokens_per_s_per_conversation": 50.1}, {"concurrency": 32, "tokens_per_s": 1201.5, "tokens_per_s_per_conversation": 37.8}]}

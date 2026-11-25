@@ -1,0 +1,23 @@
+{
+ "model": "nova_merged",
+ "prompt_tokens": 1161,
+ "output_tokens": 256,
+ "ttft_s_median": 0.549,
+ "levels": [
+  {
+   "concurrency": 1,
+   "tokens_per_s": 62.8,
+   "tokens_per_s_per_conversation": 62.8
+  },
+  {
+   "concurrency": 8,
+   "tokens_per_s": 440.4,
+   "tokens_per_s_per_conversation": 55.2
+  },
+  {
+   "concurrency": 32,
+   "tokens_per_s": 1291.7,
+   "tokens_per_s_per_conversation": 40.7
+  }
+ ]
+}

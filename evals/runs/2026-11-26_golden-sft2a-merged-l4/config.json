@@ -1,0 +1,26 @@
+{
+  "run": "2026-11-26_golden-sft2a-merged-l4",
+  "system": "candidate",
+  "provider": "openai",
+  "model": "nova_merged",
+  "adapter": null,
+  "base_url": "http://localhost:8000/v1",
+  "prompt_version": "v3",
+  "tools_version": "v2",
+  "state": true,
+  "guards": true,
+  "handoff_rules": true,
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 107,
+  "commit": "",
+  "db_host": "localhost:5433",
+  "notes": "GCP L4 (nova-eval9), vLLM 0.34.0, served as: merged; three repeats at once",
+  "served_models": [
+    "nova_merged"
+  ]
+}

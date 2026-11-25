@@ -1,0 +1,26 @@
+{
+  "run": "2026-11-26_smoke-sft2a-gguf-q4-mac",
+  "system": "candidate",
+  "provider": "openai",
+  "model": "nova_q4",
+  "adapter": null,
+  "base_url": "http://localhost:8090/v1",
+  "prompt_version": "v3",
+  "tools_version": "v2",
+  "state": true,
+  "guards": true,
+  "handoff_rules": true,
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 30,
+  "commit": "f91a98e",
+  "db_host": "localhost:5433",
+  "notes": "Mac (Apple silicon, Metal), llama.cpp 1.0.0 (b12359), q4_k_m GGUF of the merged model, --jinja --reasoning off",
+  "served_models": [
+    "nova_q4"
+  ]
+}

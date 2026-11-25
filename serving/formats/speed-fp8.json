@@ -1,0 +1,23 @@
+{
+ "model": "nova_fp8",
+ "prompt_tokens": 1161,
+ "output_tokens": 256,
+ "ttft_s_median": 0.413,
+ "levels": [
+  {
+   "concurrency": 1,
+   "tokens_per_s": 85.7,
+   "tokens_per_s_per_conversation": 85.7
+  },
+  {
+   "concurrency": 8,
+   "tokens_per_s": 598.9,
+   "tokens_per_s_per_conversation": 75.1
+  },
+  {
+   "concurrency": 32,
+   "tokens_per_s": 1614.7,
+   "tokens_per_s_per_conversation": 51.0
+  }
+ ]
+}

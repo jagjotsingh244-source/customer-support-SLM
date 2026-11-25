@@ -1,0 +1,4 @@
+(APIServer pid=2221) INFO 11-25 20:16:09 [config.py:1097] Mamba cache mode is set to 'align' for Qwen3_5ForConditionalGeneration by default when prefix caching is enabled
+(EngineCore pid=2277) INFO 11-25 20:16:32 [model_runner.py:441] Model loading took 3.62 GiB memory and 5.047768 seconds
+(EngineCore pid=2277) INFO 11-25 20:16:38 [gpu_worker.py:795] Available KV cache memory: 15.46 GiB
+(EngineCore pid=2277) INFO 11-25 20:17:05 [kv_cache_utils.py:1168] GPU KV cache size: 840,265 tokens, Maximum concurrency for 8,192 tokens per request: 102.57x

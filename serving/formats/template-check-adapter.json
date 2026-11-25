@@ -1,0 +1,165 @@
+{
+ "server": "http://localhost:8000",
+ "model": null,
+ "tokenizers": [
+  "outputs/sft2a-r16-lr2e-4-traj_v1",
+  "Qwen/Qwen3.5-2B"
+ ],
+ "eos_token": {
+  "outputs/sft2a-r16-lr2e-4-traj_v1": "<|im_end|>",
+  "Qwen/Qwen3.5-2B": "<|im_end|>"
+ },
+ "pass": true,
+ "requests": [
+  {
+   "n": 1,
+   "kind": "first-turn, customer message last",
+   "messages": 2,
+   "server_tokens": 1161,
+   "prompt_tokens_reported": 1161,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1161,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1161,
+    "identical": true
+   }
+  },
+  {
+   "n": 2,
+   "kind": "first-turn, after tool result",
+   "messages": 4,
+   "server_tokens": 1243,
+   "prompt_tokens_reported": 1243,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1243,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1243,
+    "identical": true
+   }
+  },
+  {
+   "n": 3,
+   "kind": "multi-turn, customer message last",
+   "messages": 4,
+   "server_tokens": 1415,
+   "prompt_tokens_reported": 1415,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1415,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1415,
+    "identical": true
+   }
+  },
+  {
+   "n": 4,
+   "kind": "multi-turn, after tool result",
+   "messages": 6,
+   "server_tokens": 1660,
+   "prompt_tokens_reported": 1660,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1660,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1660,
+    "identical": true
+   }
+  },
+  {
+   "n": 5,
+   "kind": "first-turn, customer message last",
+   "messages": 2,
+   "server_tokens": 1158,
+   "prompt_tokens_reported": 1158,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1158,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1158,
+    "identical": true
+   }
+  },
+  {
+   "n": 6,
+   "kind": "first-turn, after tool result",
+   "messages": 4,
+   "server_tokens": 1514,
+   "prompt_tokens_reported": 1514,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1514,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1514,
+    "identical": true
+   }
+  },
+  {
+   "n": 7,
+   "kind": "multi-turn, customer message last",
+   "messages": 4,
+   "server_tokens": 1285,
+   "prompt_tokens_reported": 1285,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1285,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1285,
+    "identical": true
+   }
+  },
+  {
+   "n": 8,
+   "kind": "multi-turn, after tool result",
+   "messages": 6,
+   "server_tokens": 1629,
+   "prompt_tokens_reported": 1629,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1629,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1629,
+    "identical": true
+   }
+  },
+  {
+   "n": 9,
+   "kind": "first-turn, customer message last",
+   "messages": 2,
+   "server_tokens": 1164,
+   "prompt_tokens_reported": 1164,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 1164,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 1164,
+    "identical": true
+   }
+  },
+  {
+   "n": 10,
+   "kind": "first-turn, after tool result",
+   "messages": 10,
+   "server_tokens": 2274,
+   "prompt_tokens_reported": 2274,
+   "outputs/sft2a-r16-lr2e-4-traj_v1": {
+    "tokens": 2274,
+    "identical": true
+   },
+   "Qwen/Qwen3.5-2B": {
+    "tokens": 2274,
+    "identical": true
+   }
+  }
+ ]
+}

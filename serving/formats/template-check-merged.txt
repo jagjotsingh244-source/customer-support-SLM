@@ -1,0 +1,12 @@
+ 1. first-turn, customer message last           1161 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+ 2. first-turn, after tool result               1243 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+ 3. multi-turn, customer message last           1415 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+ 4. multi-turn, after tool result               1660 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+ 5. first-turn, customer message last           1158 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+ 6. first-turn, after tool result               1514 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+ 7. multi-turn, customer message last           1285 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+ 8. multi-turn, after tool result               1629 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+ 9. first-turn, customer message last           1164 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+10. first-turn, after tool result               2274 tokens on the server | sft2a-r16-lr2e-4-traj_v1: identical | Qwen3.5-2B: identical
+end-of-turn token: {'outputs/sft2a-r16-lr2e-4-traj_v1': '<|im_end|>', 'Qwen/Qwen3.5-2B': '<|im_end|>'}
+PASS: every request renders to identical token ids
