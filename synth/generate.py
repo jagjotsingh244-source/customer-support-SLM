@@ -317,6 +317,8 @@ def main() -> None:
     ap.add_argument("--personas", nargs="*", default=[p.name for p in PERSONAS])
     ap.add_argument("--cells", nargs="*", help="scenario:persona pairs, taken in turn instead of the grid (to fill "
                     "the cells filtering left empty)")
+    ap.add_argument("--cells-file", type=Path, help="JSON list of [scenario, persona, count]: exactly that many "
+                    "conversations per cell, shuffled (a plan made from the keep rates, synth/coverage.py)")
     ap.add_argument("--workers", type=int, default=8, help="conversations in parallel")
     ap.add_argument("--seed", type=int, default=3407)
     ap.add_argument("--sim-url", help="a different server for the simulator (default: the teacher's)")
@@ -348,11 +350,16 @@ def main() -> None:
     gen = Generator(teacher, sim, a.sim_model)
     out = RunFile(free_path(RAW, a.label))
     grid, rng = Grid(a.scenarios, [BY_NAME[p] for p in a.personas]), random.Random(a.seed)
-    if a.cells:
+    if a.cells_file:
+        plan = [(sc, p) for sc, p, n in json.loads(a.cells_file.read_text()) for _ in range(n)]
+        random.Random(a.seed).shuffle(plan)
+        jobs = [(sc, p, a.seed * 100_000 + i) for i, (sc, p) in enumerate(plan)]
+    elif a.cells:
         cells = [tuple(c.split(":")) for c in a.cells]
         jobs = [(*cells[i % len(cells)], a.seed * 100_000 + i) for i in range(a.n)]
     else:
         jobs = [(*grid.next(rng), a.seed * 100_000 + i) for i in range(a.n)]
+    a.n = len(jobs)
     stopped = False
     max_hours = a.max_hours or (1.2 * a.max_dollars / a.dollars_per_hour if a.max_dollars else None)
     t0, done, totals = time.perf_counter(), 0, {"prompt": 0, "completion": 0, "sim_prompt": 0, "sim_completion": 0}

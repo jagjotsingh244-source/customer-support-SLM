@@ -1,0 +1,46 @@
+{
+ "displayName": "nova-teacher-qwen3.5-27b",
+ "description": "Qwen3.5-27B (bf16) on vLLM 0.34.0, same flags as serving/modal_teacher.py, for synthetic training conversations",
+ "containerSpec": {
+  "imageUri": "us-central1-docker.pkg.dev/nova-evals/dockerhub/vllm/vllm-openai:v0.34.0",
+  "args": [
+   "Qwen/Qwen3.5-27B",
+   "--served-model-name",
+   "teacher",
+   "--port",
+   "8080",
+   "--max-model-len",
+   "16384",
+   "--max-num-seqs",
+   "64",
+   "--gpu-memory-utilization",
+   "0.92",
+   "--language-model-only",
+   "--enable-auto-tool-choice",
+   "--tool-call-parser",
+   "qwen3_coder",
+   "--enable-prefix-caching",
+   "--speculative-config",
+   "{\"method\": \"mtp\", \"num_speculative_tokens\": 2}"
+  ],
+  "env": [
+   {
+    "name": "HF_HUB_ENABLE_HF_TRANSFER",
+    "value": "0"
+   },
+   {
+    "name": "HF_XET_HIGH_PERFORMANCE",
+    "value": "1"
+   }
+  ],
+  "ports": [
+   {
+    "containerPort": 8080
+   }
+  ],
+  "predictRoute": "/v1/chat/completions",
+  "healthRoute": "/health",
+  "deploymentTimeout": "3600s",
+  "sharedMemorySizeMb": "16384"
+ }
+}
