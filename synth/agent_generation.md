@@ -16,7 +16,7 @@ that. Use an **open-weights model** (for example Qwen or gpt-oss under Apache-2.
 output can be trained on freely. A provider's model may come with terms that limit training other models on its
 output, and heavy automated use can get an account restricted. To keep that risk low:
 
-- keep runs small (the plan here is 60 conversations) and use two or three agents, not more;
+- keep runs small (the plan here is 19 conversations) and use two or three agents, not more;
 - the adversarial customers (prompt injection, pretending to be staff, asking for the system prompt) are left out
   of this plan (`synth/agent_plan_adversarial.json`): they are generated with the open-weights teacher instead;
 - stop at the first warning, rate limit or policy message, and do not retry around it.
@@ -46,8 +46,8 @@ TEACHER_URL=http://127.0.0.1:8765 TEACHER_API_KEY=local uv run --group rag --gro
   python -m synth.generate --cells-file synth/agent_plan.json --label agent-r1 --workers 3 --stall-s 3600
 ```
 
-`synth/agent_plan.json` lists the scenario x persona cells that still have fewer than three kept conversations,
-and how many to make for each (60 in all; the adversarial cells are in a separate plan).
+`synth/agent_plan.json` lists the scenario x persona cells that still have fewer than two kept conversations,
+and how many to make for each (19 in all, enough for at least two kept per cell; the adversarial cells are in a separate plan).
 
 ## The agent's loop
 
