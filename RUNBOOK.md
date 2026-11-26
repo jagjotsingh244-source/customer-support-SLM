@@ -8,6 +8,7 @@ whoever is on call. Commands are Makefile targets (`make help`) unless shown in 
 | Part | Where | Settings | Look at it |
 |---|---|---|---|
 | Chat page and backend (`api/app.py`, `ui/index.html`) | Cloud Run `nova-backend`, project `nova-evals`, `us-east4`, public | environment variables on the service (list below) | `/health`; Cloud Run logs |
+| Short address | Vercel project `nova-support-demo`: https://nova-support-agent.vercel.app forwards every request to the backend (`vercel/`) | `vercel/vercel.json` | the page loads; a chat streams |
 | Model server (vLLM, the fine-tune in FP8) | Modal app `nova-serve`, one L4, scales to zero after 15 idle minutes | `serving/modal_nova.py`; key in Modal secret `nova-serve` | first request after idle takes about 2 minutes |
 | Store: orders, help center, vectors, three roles | Neon Postgres | owner URL in `.env` (`NEON_URL`), never in the backend | `make reindex DB_URL=...` checks retrieval |
 | Traces | Langfuse Cloud (US), project "My Project" | `LANGFUSE_*` on the backend | the Tracing page; filter by tag, user or time |
