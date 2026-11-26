@@ -220,3 +220,26 @@ def test_only_the_confirm_role_can_reset_and_only_demo_customers():
         with psycopg.connect(role_url(role, backend.DB_URL), autocommit=True) as c, \
                 pytest.raises(psycopg.errors.InsufficientPrivilege):
             c.execute("SELECT demo_reset(%s)", (RETURNS,))
+
+
+def test_done_carries_the_steps_without_tool_results(client, model):
+    sign_in(client, TRACKING)
+    model(completion(call=("get_tracking", {"order_id": 12466})), completion("It's on its way."))
+    steps = dict(events(client, "Where is order 12466?")[0])["done"]["steps"]
+    assert [t["text"] for t in steps["tools"]] == ["Checked the tracking for order 12466"]
+    assert steps["tools"][0]["ok"] is True and steps["model"]["calls"] == 2
+    assert steps["checks"]["changed_reply"] is False and steps["fallback"] is False
+    assert "BlueLine" not in json.dumps(steps)                  # labels and numbers only, no tool results
+
+
+def test_my_orders_lists_only_the_signed_in_customers_orders(client):
+    assert client.get("/my-orders").status_code == 401
+    sign_in(client, RETURNS)
+    orders = client.get("/my-orders").json()
+    with psycopg.connect(backend.DB_URL) as owner:
+        expected = [r[0] for r in owner.execute(
+            "SELECT order_id FROM orders WHERE customer_id = %s ORDER BY placed_at DESC", (RETURNS,))]
+    assert [o["order_id"] for o in orders] == expected
+    mouse = next(o for o in orders if o["order_id"] == 12063)
+    assert mouse["items"] == ["Wireless mouse"] and mouse["status"] == "delivered" and mouse["delivered"]
+    assert set(mouse) == {"order_id", "status", "placed", "delivered", "eta", "total_inr", "items", "return"}

@@ -244,6 +244,42 @@ def status_text(tool: str, args: dict) -> str:
     return text
 
 
+# The same steps in the past tense, for the "How Nova answered" list under a reply.
+DONE_STEP = {
+    "list_my_orders": "Checked your orders",
+    "get_order_status": "Looked at order {order_id}",
+    "get_tracking": "Checked the tracking for order {order_id}",
+    "search_help_center": "Searched the help center",
+    "propose_return": "Checked whether it can go back",
+    "escalate_to_human": "Opened a ticket for a teammate",
+}
+NO_ORDER_ID_DONE = {"get_order_status": "Looked at your order", "get_tracking": "Checked the tracking"}
+
+
+def step_text(tool: str, args: dict) -> str:
+    oid = args.get("order_id")
+    text = DONE_STEP.get(tool, "Used a tool")
+    if "{order_id}" in text:
+        text = text.format(order_id=oid) if isinstance(oid, int) else NO_ORDER_ID_DONE[tool]
+    return text
+
+
+def _steps(trace: dict, reply: str) -> dict:
+    """What the turn did, for the page: each tool step with its time and outcome, the model's share, and the
+    reply checks. Labels and numbers only: no tool results, no arguments beyond an order number."""
+    from agent.loop import FALLBACK_REPLY, SKIPPED
+    from agent.state import parse_args
+    steps = [{"text": step_text(t["name"], parse_args(t["args"]) or {}), "ms": t["latency_ms"],
+              "ok": bool(t["ok"]), "skipped": t["result"] == SKIPPED}
+             for t in trace["tool_calls"]]
+    return {"tools": steps,
+            "model": {"calls": len(trace["model_calls"]),
+                      "s": round(sum(m["latency_s"] for m in trace["model_calls"]), 2)},
+            "checks": {"ms": trace.get("checks_ms"), "changed_reply": bool(trace.get("output_guard"))},
+            "rule_handoff": bool(trace.get("forced_handoff")),
+            "fallback": reply == FALLBACK_REPLY}
+
+
 def _cards(trace: dict) -> tuple[list, dict | None]:
     """The Confirm cards (one per return proposed this turn) and the hand-off, from the tool results.
     A card carries the proposal id and what to show; Confirm sends back only the id."""
@@ -336,7 +372,7 @@ def turn_events(c: Chat, text: str):
                 "model_calls": len(trace["model_calls"]), "tools": [t["name"] for t in trace["tool_calls"]],
                 "escalated": trace["escalated"], "final_call_s": final, "checks_ms": trace.get("checks_ms")}
         log.info(json.dumps({"event": "turn", **done}))
-        yield "done", done
+        yield "done", {**done, "steps": _steps(trace, reply)}
         return
 
 
@@ -425,6 +461,36 @@ def chat(body: Message, response: Response, c: Chat = Depends(current_chat)):
             out["events"].append({"event": kind, **data})
     response.headers["Server-Timing"] = f"turn;dur={out['turn_s'] * 1000:.0f}, model;dur={out['model_s'] * 1000:.0f}"
     return out
+
+
+ORDER_STATUS = {**LATEST, "placed": "placed"}
+
+
+@app.get("/my-orders")
+def my_orders(c: Chat = Depends(current_chat)):
+    """The signed-in customer's orders, newest first, as a shop's "Your orders" page would show them, so a visitor
+    can see what to ask about and check Nova's answers. Read as the confirm role under row-level security."""
+    from agent.tools_v2 import as_customer
+    with as_customer(confirmer(), c.customer_id) as db:
+        orders = db.execute("""
+            SELECT o.order_id, o.status::text AS status, o.placed_at, o.total_inr,
+                   (SELECT max(s.delivered_at) FROM shipments s WHERE s.order_id = o.order_id) AS delivered_at,
+                   (SELECT min(s.eta) FROM shipments s WHERE s.order_id = o.order_id AND s.delivered_at IS NULL
+                      AND s.status::text NOT IN ('cancelled', 'lost')) AS eta
+              FROM orders o ORDER BY o.placed_at DESC""").fetchall()
+        items = db.execute("""
+            SELECT i.order_id, p.name, i.qty FROM order_items i JOIN products p USING (product_id)
+             ORDER BY i.order_id, i.line_no""").fetchall()
+        returns = db.execute("SELECT order_id, status::text AS status FROM returns ORDER BY proposed_at").fetchall()
+    by_order: dict = {}
+    for i in items:
+        by_order.setdefault(i["order_id"], []).append(i["name"] if i["qty"] == 1 else f"{i['name']} ×{i['qty']}")
+    ret = {r["order_id"]: r["status"] for r in returns}
+    day = lambda t: t.date().isoformat() if t else None          # noqa: E731
+    return [{"order_id": o["order_id"], "status": ORDER_STATUS.get(o["status"], o["status"]),
+             "placed": day(o["placed_at"]), "delivered": day(o["delivered_at"]),
+             "eta": o["eta"].isoformat() if o["eta"] else None, "total_inr": float(o["total_inr"]),
+             "items": by_order.get(o["order_id"], []), "return": ret.get(o["order_id"])} for o in orders]
 
 
 @app.post("/feedback")
