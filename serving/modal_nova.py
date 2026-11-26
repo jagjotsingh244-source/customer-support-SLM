@@ -44,8 +44,8 @@ image = (
     # model's linear-attention layers) and Inductor's code default to the container's disk and were rebuilt on
     # every cold start (about two minutes). Both now live in the volume too.
     .env({"TRITON_CACHE_DIR": "/root/.cache/vllm/triton", "TORCHINDUCTOR_CACHE_DIR": "/root/.cache/vllm/inductor"})
-    .add_local_file(os.path.join(HERE, "launch_vllm.sh"), "/srv/launch_vllm.sh")
     .env({"NOVA_APP": APP_NAME, "NOVA_MODEL_DIR": MODEL_DIR, "NOVA_SERVED": SERVED_NAME})
+    .add_local_file(os.path.join(HERE, "launch_vllm.sh"), "/srv/launch_vllm.sh")   # local files go last
 )
 
 
