@@ -134,9 +134,8 @@ silicon, Metal); p95 per turn 7.5 s against 10.2 s.
 
 ## Cost
 
-Exports and runs: about 34 minutes of one L4 VM (₹50 of credit). The FP8 numbers feed the serving cost per
-1,000 conversations, which is measured under load later; the estimate in `evals/reports/04_comparison.md`
-($0.21) stays until then.
+Exports and runs: about 34 minutes of one L4 VM (₹50 of credit). Cost per 1,000 conversations is measured on
+the deployment, under load: $0.16 at 50 customers at once (`evals/reports/06_serving.md`).
 
 ## Reproduce
 

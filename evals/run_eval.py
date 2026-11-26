@@ -134,7 +134,7 @@ def make_client(a):
         from agent.gemini_adapter import GeminiChatClient
         return GeminiChatClient(api_key=os.environ["GEMINI_API_KEY"], vertexai=False)
     from openai import OpenAI
-    return OpenAI(base_url=a.base_url, api_key=os.environ.get("OPENAI_API_KEY", "EMPTY"))
+    return OpenAI(base_url=a.base_url, api_key=os.environ.get("NOVA_KEY") or os.environ.get("OPENAI_API_KEY", "EMPTY"))
 
 
 def tool_module(version: str):

@@ -1,0 +1,10 @@
+*
+!pyproject.toml
+!uv.lock
+!config.py
+!agent/
+!api/
+!db/
+!rag/
+**/__pycache__
+!kb/

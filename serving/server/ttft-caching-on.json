@@ -1,0 +1,8 @@
+{
+ "requests": 20,
+ "prompt_tokens_median": 1168.5,
+ "first_request_s": 0.066,
+ "ttft_median_s": 0.042,
+ "ttft_max_s": 0.044,
+ "same_request_again_median_s": 0.041
+}

@@ -1,0 +1,11 @@
+[
+ {
+  "run": 1,
+  "waited_for_scale_to_zero_s": 58,
+  "warmup_s": 116.2,
+  "warmup_reported_s": 115.7,
+  "first_chat_s": 2.15,
+  "first_chat_server_s": 1.732,
+  "first_chat_model_calls": 2
+ }
+]

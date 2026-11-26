@@ -1,0 +1,29 @@
+[
+ {
+  "run": 1,
+  "waited_for_scale_to_zero_s": 137,
+  "warmup_s": 419.5,
+  "warmup_reported_s": 418.8,
+  "first_chat_s": 2.66,
+  "first_chat_server_s": 2.001,
+  "first_chat_model_calls": 2
+ },
+ {
+  "run": 2,
+  "waited_for_scale_to_zero_s": 91,
+  "warmup_s": 609.2,
+  "warmup_reported_s": null,
+  "first_chat_s": 282.3,
+  "first_chat_server_s": 281.896,
+  "first_chat_model_calls": 2
+ },
+ {
+  "run": 3,
+  "waited_for_scale_to_zero_s": 136,
+  "warmup_s": 231.7,
+  "warmup_reported_s": 231.3,
+  "first_chat_s": 2.9,
+  "first_chat_server_s": 2.571,
+  "first_chat_model_calls": 2
+ }
+]

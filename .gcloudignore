@@ -1,0 +1,13 @@
+# Cloud Build gets only what the backend image needs (the same list as .dockerignore).
+/*
+!/Dockerfile
+!/.dockerignore
+!/pyproject.toml
+!/uv.lock
+!/config.py
+!/agent/
+!/api/
+!/db/
+!/rag/
+!/kb/
+**/__pycache__/

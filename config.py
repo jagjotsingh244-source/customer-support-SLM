@@ -15,6 +15,7 @@ no customer is seen on both sides.
 """
 
 import hashlib
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -29,9 +30,16 @@ EVAL_SHARE = 0.20
 WINDOW_DAYS = {"electronics": 7, "home": 15, "accessories": 15}
 
 
+# NOW_MODE=real switches the deployed backend to the real time; everything else (tests, evals, seeding)
+# keeps the frozen NOW. Read once, at import.
+NOW_MODE = os.environ.get("NOW_MODE", "frozen")
+if NOW_MODE not in ("frozen", "real"):
+    raise ValueError(f"NOW_MODE must be frozen or real, not {NOW_MODE!r}")
+
+
 def now() -> datetime:
     """The only way any code in this repo asks for the time."""
-    return NOW
+    return datetime.now(IST) if NOW_MODE == "real" else NOW
 
 
 def partition_for(customer_id: int) -> str:

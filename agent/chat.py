@@ -64,7 +64,7 @@ def main() -> None:
         client = GeminiChatClient(api_key=os.environ["VERTEX_API_KEY"], project=os.environ["VERTEX_PROJECT"],
                                   location=os.environ.get("VERTEX_LOCATION", "global"))
     elif a.base_url:
-        client = OpenAI(base_url=a.base_url, api_key=os.environ.get("OPENAI_API_KEY", "EMPTY"))
+        client = OpenAI(base_url=a.base_url, api_key=os.environ.get("NOVA_KEY") or os.environ.get("OPENAI_API_KEY", "EMPTY"))
     else:
         ap.error("--base-url is required with --provider openai")
     session = Session.open(connect(DB_URL), a.customer)

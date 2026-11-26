@@ -72,7 +72,14 @@ Estimates get replaced by measurements as the project goes on.
   So about **$0.0025 per conversation, $2.50 per 1,000** plus about $0.20 per cold start. Full run, to keep at least
   2,000 after filtering: about 3,000 generated, **about 2.7 hours and $7-8** (the keep rate replaces this guess once
   the filters run). The run stops itself at a dollar cap and when nothing finishes for 5 minutes (`synth/generate.py`).
-- **Cost per 1,000 conversations: ~$5** — *estimate*. Assumes a GPU at about $1/hour serving about 200 conversations/hour. Replace with the real GPU rate and measured throughput once serving is set up.
+- **Cost per 1,000 conversations: $0.16 (₹14) at 50 customers at once, $0.62 at 10, $7.05 one at a time** —
+  *measured* 2026-11-26 on the deployment (`evals/reports/06_serving.md`): Modal L4 with CPU and memory $0.89/h,
+  Cloud Run backend $0.21/h, Neon free tier, divided by measured conversations an hour (6,720 at 50 customers).
+  Replaces the $5 estimate (a GPU at $1/h serving 200 conversations/h). Scaled to zero it costs nothing; each
+  cold start costs 2–10 minutes of GPU.
+- **Deployed latency** (same date): p95 per turn 4.2 s at one customer, 8.7 s at 50, over the 3 s target. On the
+  rented GPU with everything on one machine it was 2.9 s; the difference is the hops between providers (backend to
+  Modal on every model call, to Neon on every tool call) and, at 50, batched prefill. Not yet fixed.
 
 ## Risk tests
 
@@ -275,6 +282,20 @@ vLLM leaves `enable_thinking` unset, as training did. llama.cpp needs `--reasoni
 before every answer. The q4_k_m GGUF (`123jagjot/nova-sft2a-v1-gguf`) is for running offline on a laptop, not
 for serving.
 
+## Deployment
+
+Three parts, deployed separately, each configured only by environment variables (`api/app.py` lists them):
+
+| Part | Where | Scales | State |
+|---|---|---|---|
+| Model: vLLM 0.34.0, merged fine-tune in FP8 (`serving/launch_vllm.sh`) | Modal, one L4 (`serving/modal_nova.py`) | to zero after 60 s idle; cold start 116 s after the cache fix | none; weights in a Modal volume |
+| Backend: agent loop, tools, guardrails, confirm (`Dockerfile`) | Cloud Run `us-east4`, 2 vCPU / 4 GiB, one instance, session affinity | to zero | conversations in memory (one instance); private until opened |
+| Store: Postgres 16 + pgvector, three roles, row-level security | Neon, US East | to zero (drops idle connections: the backend pings and replaces them) | everything persistent |
+
+`NOW_MODE=real` in production, frozen everywhere else (`config.py`). `/warmup` wakes the model before a demo.
+Conversations living in one instance's memory is a known limit: a second instance would need a shared session
+store.
+
 ## Change log
 
 Record every budget or mechanism change: old → new, and the evidence.
@@ -319,3 +340,5 @@ Record every budget or mechanism change: old → new, and the evidence.
 | 2026-11-25 | A coding agent can stand in for the teacher model through a mailbox server (`synth/agent_server.py`); its conversations are judged by hand and recorded with the agent and model as the teacher | No GPU credit was left for the open-weights teacher. Adversarial customers stay with the open-weights teacher (`synth/agent_plan_adversarial.json`) |
 | 2026-11-25 | SFT-2a v2 (`123jagjot/sft2a-r16-lr2e-4-traj_v2`, trained on `nova-sft2-mix-v2`) is not promoted; v1 stays Nova's model (`evals/reports/03_sft2.md`, "Second round") | Same server, same cases: golden pass@1 61% against 64%, fresh 60% against 66%. Inside the intervals, but no gain, and the release gate blocks it (fresh grounding +3.9 per 100, p95 latency 3.12 s) on top of the hard-rule hits both adapters share |
 | 2026-11-26 | Serving format: the merged model in FP8 (`--quantization fp8` on vLLM 0.34.0), with the training tokenizer and chat template; the adapter stays the source of truth, merged per release by `serving/export_formats.py` | Golden pass@1 69% [61–77] against 66% for base + adapter and 64% merged in 16-bit (three runs each, one L4); 54% faster decoding for one conversation, first token 0.41 s against 0.62 s, p95 2.73 s per turn, the only format under the 3 s budget. Training and server prompts identical on 10 of 10 captured requests (`evals/reports/06a_formats.md`) |
+| 2026-11-26 | Model server flags live in one script, `serving/launch_vllm.sh` (FP8, API key required, prefix caching on, `--max-num-seqs 64`), used on rented GPUs and inside the Modal container | Golden ×3 through it 67% [59–75], same as the comparison runs (64% [56–73]); key enforced (401 without); prefix caching: first token 42 ms against 73 ms; 20 requests at once with no warnings |
+| 2026-11-26 | Deployed: model on Modal (scale to zero), backend on Cloud Run, store on Neon; measured cost replaces the estimate | 2,095 turns under load with no errors; $0.16 per 1,000 conversations at 50 customers. Misses written down: deployed p95 4.2–8.7 s against 3 s, and cold starts of 4–15 min before the kernel caches moved into the volume (116 s after) (`evals/reports/06_serving.md`) |
