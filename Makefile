@@ -16,6 +16,7 @@ CANARY_VERSION ?= $(CANARY_MODEL)
 CANARY_SHARE ?= 0.10
 IMAGE ?= us-east4-docker.pkg.dev/nova-evals/nova/backend
 TAG ?=
+PORT ?= 8080
 
 # The shipping configuration: the one the golden set measures and the backend serves (api/app.py).
 EVAL = uv run --group rag python evals/run_eval.py --provider openai --system candidate --tools v2 --prompt v3 \
@@ -23,10 +24,20 @@ EVAL = uv run --group rag python evals/run_eval.py --provider openai --system ca
 
 export DB_URL
 
-.PHONY: help test reindex old-policy eval smoke gate canary rollback deploy
+.PHONY: help setup chat test reindex old-policy eval smoke gate canary rollback deploy
 
 help:              ## list the targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /\t/'
+
+setup:             ## local store: Postgres in Docker, seeded shop, help center loaded and embedded
+	docker compose up -d --wait
+	uv run python -m db.seed
+	uv run python db/load_kb.py
+	uv run --group rag python rag/index.py --model $(EMBEDDER)
+
+chat:              ## the chat page on http://localhost:$(PORT), using the model server on $(BASE_URL)
+	MODEL_BASE_URL=$(BASE_URL) MODEL_NAME=$(MODEL) COOKIE_SECURE=0 MODEL_IDLE_S=100000 DEMO_RESET=1 \
+	  uv run --group api --group rag uvicorn api.app:app --port $(PORT)
 
 test:              ## unit and integration tests (needs the local database)
 	uv run --group api --group rag --group dev pytest -q tests/
