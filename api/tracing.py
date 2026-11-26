@@ -21,7 +21,8 @@ What is sent, per turn (the trace's id is the turn's trace id, which /feedback t
       reply_checks     output-filter hits and grounding issues
 
 Tags: adapter:<MODEL_VERSION>, prompt:<version>, kb:<index version>, now:<mode>. Scores, for filtering and comparing
-versions (and a dashboard, once there is traffic): escalated, tool_errors, grounding_issues, filter_hits, input_flags on every turn, thumbs when a visitor clicks.
+versions (and a dashboard, once there is traffic): escalated, tool_errors, grounding_issues, filter_hits,
+input_flags on every turn, thumbs when a visitor clicks.
 
 Everything passes through agent.privacy.redact_obj before it leaves (the SDK's mask hook): phone numbers masked,
 card numbers and email addresses replaced. The customer's name is never sent; the customer is "customer-<id>".
