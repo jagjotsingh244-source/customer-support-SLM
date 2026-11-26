@@ -41,6 +41,10 @@ SECRET = r"(otp|one[- ]time password|cvv|cvc|upi pin|\bpin\b|password|card numbe
 ASKS = re.compile(r"\b(share|send|give|provide|tell|enter|type|confirm|need|require|what is|what's)\b[^.!?\n]{0,40}"
                   + SECRET, re.I)
 WARNS = re.compile(r"\b(never|do not|don't|won't|will not|not|no one|nobody)\b", re.I)
+# The one place a customer does enter a secret: bank details for a cash-on-delivery refund, on the order page
+# (help center, "Cash on delivery"). "You need to add your bank details on the order page" sends them there, it
+# does not ask for them in chat; it was blanked in three golden cases. Only bank details, and only the order page.
+ORDER_PAGE = re.compile(r"\bbank details\b[^.!?\n]{0,40}\bon (the|your) order page\b", re.I)
 
 TOOL_NAMES = {   # what each tool means to a customer
     "list_my_orders": ("check your recent orders", "your recent orders"),
@@ -96,7 +100,13 @@ def personal_data(text: str, own_email: str | None = None) -> list[str]:
 
 def asks_for_secret(text: str) -> bool:
     """A sentence that asks for an OTP, CVV, PIN, password, card or bank details, and is not a warning."""
-    return any(ASKS.search(s) and not WARNS.search(s) for s in re.split(r"(?<=[.!?])\s+|\n+", text or ""))
+    return any(ASKS.search(s) and not WARNS.search(s) and not _to_order_page(s)
+               for s in re.split(r"(?<=[.!?])\s+|\n+", text or ""))
+
+
+def _to_order_page(sentence: str) -> bool:
+    """The sentence points to the order page for bank details, and asks for no other secret."""
+    return bool(ORDER_PAGE.search(sentence)) and not ASKS.search(ORDER_PAGE.sub("", sentence))
 
 
 def plain_tool_words(reply: str) -> tuple[str, bool]:

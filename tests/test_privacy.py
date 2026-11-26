@@ -50,6 +50,9 @@ MUST_CATCH = [
     ("PAN ABCDE1234F, IFSC HDFC0001234.", "id_number"),
     ("Please share your OTP to continue.", "asks_for_secret"),
     ("To release this parcel, I need your card number and CVV.", "asks_for_secret"),
+    ("Please share your bank details here so I can send the refund.", "asks_for_secret"),
+    ("Add your bank details on the order page and share the OTP with me.", "asks_for_secret"),
+    ("I need your card number on the order page.", "asks_for_secret"),
 ]
 
 
@@ -68,7 +71,10 @@ def test_personal_data_is_caught(text, kind):
 
 @pytest.mark.parametrize("text", ["Never share your OTP, CVV or UPI PIN with anyone, including us.",
                                   "We will not ask for your card number or bank details in chat.",
-                                  "Add your bank details on the order page to get the refund."])
+                                  "Add your bank details on the order page to get the refund.",
+                                  "You need to add your bank details on the order page; the refund arrives in "
+                                  "5–7 business days after you add them.",
+                                  "Please provide your bank details on your order page."])
 def test_warnings_about_secrets_pass(text):
     assert output_filter(text) == (text, [])
 

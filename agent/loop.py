@@ -221,7 +221,8 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             log.warning(json.dumps({"trace_id": trace["trace_id"], "turn": turn, "input_flags": trace["input_flags"]}))
     if rules and (esc := rules.at_turn_start(user_msg)):
         force_handoff(esc)
-    for step_no in range(max_steps):
+    steps, step_no = max_steps, -1
+    while (step_no := step_no + 1) < steps:
         sent = context.prepare(messages) if context else messages
         t0 = time.perf_counter()
         with span("model_call", as_type="generation", model=model, metadata={"step": step_no + 1},
@@ -285,7 +286,34 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             results.append(force_tracking(oid))
         if rules and (esc := rules.after_tools(results)):
             force_handoff(esc)
+        if step_no == steps - 1 == max_steps - 1 and handed_off(trace):
+            # The ticket opened on the last allowed call: one more call, only to tell the customer. Without it the
+            # customer got "Let me connect you with a teammate." after the teammate was already connected (esc-005).
+            steps += 1
+            trace["extra_step"] = "after_handoff"
+    if handed_off(trace):                           # still asking for tools: say what was done, not the fallback
+        return finish(_handed_off_reply(messages, trace))
     return finish(_hand_off(messages, trace)[0])     # ran out of steps
+
+
+def handed_off(trace) -> int | None:
+    """The ticket id of a hand-off that succeeded in this turn, if any."""
+    for c in trace["tool_calls"]:
+        r = c["result"]
+        if c["name"] == "escalate_to_human" and c["ok"] and isinstance(r, dict) and r.get("handed_off"):
+            return r.get("ticket_id")
+    return None
+
+
+def _handed_off_reply(messages, trace):
+    """A fixed reply for a turn that opened a ticket but ran out of calls before saying so. It promises no time,
+    as the hand-off note asks, and states no facts, so it needs no grounding check."""
+    reply = (f"I've passed this to our support team as ticket {handed_off(trace)}. A teammate will reply here, "
+             "and you won't need to repeat anything.")
+    trace["grounding"] = []
+    trace["out_of_steps"] = "after_handoff"
+    messages.append({"role": "assistant", "content": reply})
+    return reply
 
 
 def _hand_off(messages, trace):

@@ -187,3 +187,36 @@ def test_personal_data_never_reaches_the_customer_and_the_log_is_redacted(caplog
     assert reply == SAFE_REPLY and trace["output_guard"]["hits"] == ["phone"]
     args = [json.loads(r.getMessage())["args"] for r in caplog.records if r.levelname == "INFO"]
     assert args == ['{"order_id": 11538, "note": "call ••••••3210"}']
+
+
+def test_a_hand_off_on_the_last_call_still_gets_its_reply():
+    """esc-005: four calls, the fourth opens the ticket. The loop allows one more call, for the reply only."""
+    tools = Tools()
+    model = Model(completion(calls=[call("get_order_status", {"order_id": 12086}, "a")]),
+                  completion(calls=[call("get_tracking", {"order_id": 12086}, "b")]),
+                  completion(calls=[call("get_order_status", {"order_id": 12086}, "c")]),
+                  completion(calls=[call("escalate_to_human", {"reason": "not_received", "summary": "s"}, "d")]),
+                  completion("I've passed this to our support team as ticket 900001; last scan was Pune."))
+    messages = [{"role": "system", "content": "rules"}, {"role": "user", "content": "power bank never came"}]
+    reply, trace = turn(model, tools, messages)
+    assert reply.endswith("last scan was Pune.") and trace["extra_step"] == "after_handoff"
+    assert len(trace["model_calls"]) == 5 and not model.replies
+
+
+def test_out_of_calls_after_a_hand_off_says_the_ticket_not_the_fallback():
+    tools = Tools()
+    model = Model(*[completion(calls=[call("get_order_status", {"order_id": 12086}, f"s{i}")]) for i in range(3)],
+                  completion(calls=[call("escalate_to_human", {"reason": "not_received", "summary": "s"}, "d")]),
+                  completion(calls=[call("get_tracking", {"order_id": 12086}, "e")]))
+    messages = [{"role": "system", "content": "rules"}, {"role": "user", "content": "power bank never came"}]
+    reply, trace = turn(model, tools, messages)
+    assert "ticket 900001" in reply and "Let me connect you" not in reply
+    assert trace["out_of_steps"] == "after_handoff" and len(trace["model_calls"]) == 5
+
+
+def test_out_of_calls_without_a_hand_off_is_still_the_fallback():
+    tools = Tools()
+    model = Model(*[completion(calls=[call("get_order_status", {"order_id": 12086}, f"s{i}")]) for i in range(4)])
+    messages = [{"role": "system", "content": "rules"}, {"role": "user", "content": "where is my order"}]
+    reply, trace = turn(model, tools, messages)
+    assert reply == "Let me connect you with a teammate." and len(trace["model_calls"]) == 4

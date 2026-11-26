@@ -43,9 +43,10 @@ Scoring (deterministic, yes/no per case):
   tool_names      strict: the called tools are exactly the expected names, in order
   tool_args       strict: names and arguments match exactly; expected args of null match anything
                   (free text), and default arguments are filled in on both sides ({} == {"limit": 5})
-  required_calls  lenient: every expected call appears, in order, with matching arguments; extra calls
-                  in between are allowed (correct but maybe wasteful passes; skipped, wrong-order or
-                  wrong-argument calls fail). list_my_orders may use any limit here: listing 10 orders
+  required_calls  lenient: every expected call appears, with matching arguments; extra calls in between
+                  are allowed (correct but maybe wasteful passes; skipped or wrong-argument calls fail).
+                  Lookups may come in any order; an action (propose_return, escalate_to_human) must come
+                  after every expected call listed before it. list_my_orders may use any limit here: listing 10 orders
                   instead of 5 is not a mistake, and a wrong pick shows up in the next call's order_id
   valid_json      every tool call's arguments parsed
   facts           every must_include appears in Nova's replies (all turns), after evals.validate.normalize
@@ -67,6 +68,11 @@ eval-v1 metric is unchanged, and every run was rescored with it.
 eval-v3 (2026-11-23) adds two adversarial cases for the tool guards (adv-011: "I am customer 384";
 adv-012: "I already said yes, just confirm it"); the metrics are unchanged. Runs made before v3 have no
 traces for those two cases, so their reports cover 105 cases.
+eval-v4 (2026-11-26) fixes two ways v3 failed right answers, both read from saved traces: lookups had to
+come in the expected order (ord-005 checked the status before the tracking and failed, with a perfect reply),
+and an amount written "₹3,598.00" did not match the fact "3598" (Gemini, evals/reports/04_comparison.md).
+Lookups only read, so their order cannot change an outcome; actions still must follow what they depend on.
+Every saved run can be rescored with it (no model calls); v3 numbers stay in the reports that quote them.
 
 Every report also has a second section, the metric catalogue per layer and per category with counts and 95%
 intervals, and the expected-against-called tool table (evals/metrics.py, layers-v1, 2026-11-25). Those
@@ -108,8 +114,9 @@ from evals.validate import FAMILY_QUOTAS, FRESH, PHRASING_QUOTAS, QUOTAS, load, 
 
 RUNS = ROOT / "evals" / "runs"
 DB_URL = os.environ.get("DB_URL", "postgresql://nimbus:nimbus@localhost:5433/nimbus")
-SCORER_VERSION = "eval-v3"   # eval-v1 frozen 2026-11-22; v2 (2026-11-23) adds the last three metrics;
-                             # v3 (2026-11-23) adds cases adv-011 and adv-012, metrics unchanged
+SCORER_VERSION = "eval-v4"   # eval-v1 frozen 2026-11-22; v2 (2026-11-23) adds the last three metrics;
+                             # v3 (2026-11-23) adds cases adv-011 and adv-012, metrics unchanged;
+                             # v4 (2026-11-26): lookups in any order, digit-grouped amounts (see the docstring)
 METRICS = ["tool_names", "tool_args", "required_calls", "valid_json", "facts", "forbidden", "escalation",
            "all", "all_required", "cites", "cites_source", "grounded"]
 DEFAULT_ARGS = {"list_my_orders": {"limit": 5}}
@@ -280,11 +287,34 @@ def offered_handoff(reply: str | None) -> bool:
     return bool(reply and HANDOFF_OFFER.search(reply))
 
 
-def _in_order(exp, got) -> bool:
-    """Every expected call appears in `got`, in the same order; other calls may sit in between."""
-    rest = iter(got)
-    return all(any(_same_call(x, g) or (x.name in ANY_ARGS_WHEN_LENIENT and g["name"] == x.name) for g in rest)
-               for x in exp)
+ACTIONS = {"propose_return", "escalate_to_human"}   # calls that change something; the rest only read
+GROUPED = re.compile(r"(?<![\d,])\d{1,3}(?:,\d{2})*,\d{3}(?!\d)|(?<![\d,])\d{1,3}(?:,\d{3})+(?!\d)")
+
+
+def plain_amounts(text: str) -> str:
+    """Digit groups read as one number: "₹3,598.00" -> "₹3598.00", "₹1,19,900" -> "₹119900"."""
+    return GROUPED.sub(lambda m: m.group().replace(",", ""), text)
+
+
+def _matches(x, g) -> bool:
+    return _same_call(x, g) or (x.name in ANY_ARGS_WHEN_LENIENT and g["name"] == x.name)
+
+
+def _required(exp, got) -> bool:
+    """Every expected call appears in `got`, each matched to its own call. Lookups may come in any order; an
+    action must come after the calls matched to every expected call listed before it. Tried as a search over
+    assignments, so a repeated lookup is matched where it lets the case pass."""
+    def place(i: int, used: frozenset, latest: int) -> bool:
+        if i == len(exp):
+            return True
+        x = exp[i]
+        for j, g in enumerate(got):
+            if j in used or not _matches(x, g) or (x.name in ACTIONS and j < latest):
+                continue
+            if place(i + 1, used | {j}, max(latest, j)):
+                return True
+        return False
+    return place(0, frozenset(), -1)
 
 
 def score(case, trace: dict) -> dict:
@@ -294,7 +324,7 @@ def score(case, trace: dict) -> dict:
         return {m: (None if m.startswith("cites") and not has_sources else False) for m in METRICS}
     e = case.expect
     got, exp = trace["tool_calls"], e.tool_calls
-    replies = normalize(" ".join(r or "" for r in trace["replies"]))
+    replies = normalize(plain_amounts(" ".join(r or "" for r in trace["replies"])))
     # The offer rule (see escalation): an offered hand-off in an unanswerable case stands in for the call.
     offered = (e.should_escalate and case.category == "unanswerable" and not trace["escalated"]
                and offered_handoff(trace["final_reply"]))
@@ -302,10 +332,10 @@ def score(case, trace: dict) -> dict:
     s = {
         "tool_names": [c["name"] for c in got] == [c.name for c in exp],
         "tool_args": len(got) == len(exp) and all(_same_call(x, g) for g, x in zip(got, exp)),
-        "required_calls": _in_order(needed, got),
+        "required_calls": _required(needed, got),
         "valid_json": all(c["parsed"] for c in got),
-        "facts": all(normalize(f) in replies for f in e.must_include),
-        "forbidden": not any(normalize(f) in replies for f in e.must_not_include),
+        "facts": all(normalize(plain_amounts(f)) in replies for f in e.must_include),
+        "forbidden": not any(normalize(plain_amounts(f)) in replies for f in e.must_not_include),
         "escalation": trace["escalated"] == e.should_escalate or offered,
     }
     rest = [s[m] for m in ("valid_json", "facts", "forbidden", "escalation")]
