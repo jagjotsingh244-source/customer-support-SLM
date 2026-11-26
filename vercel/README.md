@@ -1,6 +1,6 @@
 # Short address
 
-The public demo's short address on Vercel: https://nova-support-agent.vercel.app (project `nova-support-demo`). Vercel serves nothing itself: every request (the page, the chat
+The public demo's short address on Vercel: https://novasupportagent.vercel.app (project `nova-support-demo`). Vercel serves nothing itself: every request (the page, the chat
 stream, sign-in, the Confirm click) is forwarded to the backend on Cloud Run, which still holds the sessions,
 tools, checks and the model connection. The session cookie is set for the Vercel address, because the browser only
 ever talks to it.
@@ -8,5 +8,8 @@ ever talks to it.
 Deploy from this folder with the Vercel CLI, signed in to the project owner's account:
 
     cd vercel && npx vercel@latest --prod
+
+The project is not linked to the GitHub repository: a push must not deploy the whole repository in place of this
+folder (it did once, and the address answered 404 until the good deployment was promoted again).
 
 To point the address at a new backend URL, change the destination in `vercel.json` and deploy again.
