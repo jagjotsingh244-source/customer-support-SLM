@@ -62,9 +62,9 @@ class Scripted:
 def model(monkeypatch):
     def use(*steps, awake=True):
         fake = Scripted(*steps)
-        monkeypatch.setattr(backend.model_endpoint, "client", lambda: fake)
-        monkeypatch.setattr(backend.model_endpoint, "ready", lambda timeout: (awake, "ready" if awake else "asleep"))
-        monkeypatch.setitem(backend._MODEL, "last_ok", float("-inf") if not awake else 1e18)
+        monkeypatch.setattr(backend.model_endpoint, "client", lambda base_url=None: fake)
+        monkeypatch.setattr(backend.model_endpoint, "ready", lambda timeout, base_url=None: (awake, "ready" if awake else "asleep"))
+        monkeypatch.setattr(backend, "_MODEL", {} if not awake else {backend.model_endpoint.MODEL_BASE_URL: 1e18})
         return fake
     return use
 
@@ -243,3 +243,29 @@ def test_my_orders_lists_only_the_signed_in_customers_orders(client):
     mouse = next(o for o in orders if o["order_id"] == 12063)
     assert mouse["items"] == ["Wireless mouse"] and mouse["status"] == "delivered" and mouse["delivered"]
     assert set(mouse) == {"order_id", "status", "placed", "delivered", "eta", "total_inr", "items", "return"}
+
+
+def test_a_canary_conversation_goes_to_the_canary_model_and_keeps_it(client, model, monkeypatch):
+    monkeypatch.setenv("CANARY_MODEL", "nova-next")
+    monkeypatch.setenv("CANARY_VERSION", "sft2b-v1-fp8")
+    monkeypatch.setenv("CANARY_SHARE", "1")
+    sign_in(client, TRACKING)
+    fake = model(completion("Hello!"), completion("Still me."))
+    done = dict(events(client, "hi")[0])["done"]
+    assert fake.requests[0]["model"] == "nova-next"
+    assert backend.SESSIONS[client.cookies["nova_session"]].route.version == "sft2b-v1-fp8"
+    monkeypatch.setenv("CANARY_SHARE", "0")                     # rollback: new conversations only
+    events(client, "and again")
+    assert fake.requests[1]["model"] == "nova-next" and done["trace_id"]
+
+
+def test_rollback_sends_every_new_conversation_to_production(client, model, monkeypatch):
+    monkeypatch.setenv("CANARY_MODEL", "nova-next")
+    monkeypatch.setenv("CANARY_SHARE", "0")
+    routes = {backend.pick_route().name for _ in range(200)}
+    assert routes == {backend.MODEL_NAME}
+    monkeypatch.setenv("CANARY_SHARE", "0.1")
+    picks = [backend.pick_route().canary for _ in range(2000)]
+    assert 0.06 < sum(picks) / len(picks) < 0.14                # about one in ten
+    monkeypatch.delenv("CANARY_MODEL")
+    assert not any(backend.pick_route().canary for _ in range(200))   # a share without a model does nothing

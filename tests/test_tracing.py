@@ -52,9 +52,9 @@ def client():
 
 def model(monkeypatch, *steps):
     fake = Scripted(*steps)
-    monkeypatch.setattr(backend.model_endpoint, "client", lambda: fake)
-    monkeypatch.setattr(backend.model_endpoint, "ready", lambda timeout: (True, "ready"))
-    monkeypatch.setitem(backend._MODEL, "last_ok", 1e18)
+    monkeypatch.setattr(backend.model_endpoint, "client", lambda base_url=None: fake)
+    monkeypatch.setattr(backend.model_endpoint, "ready", lambda timeout, base_url=None: (True, "ready"))
+    monkeypatch.setattr(backend, "_MODEL", {backend.model_endpoint.MODEL_BASE_URL: 1e18})
 
 
 def spans_of(exporter, lf):

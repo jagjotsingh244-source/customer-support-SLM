@@ -23,9 +23,16 @@ import modal
 
 PORT = 8000
 SCALEDOWN = int(os.environ.get("NOVA_SCALEDOWN", "60"))   # idle seconds before the GPU is released
+# One deployed app per model, each under a permanent name (RUNBOOK.md, "Release a new model"). The defaults are
+# production; a canary is the same file deployed with other values, e.g.
+#   NOVA_APP=nova-next-serve NOVA_MODEL_DIR=nova-sft2b-v1-merged NOVA_SERVED=nova-next modal deploy serving/modal_nova.py
+# The values are baked into the image's environment, so the container reads the same ones it was deployed with.
+APP_NAME = os.environ.get("NOVA_APP", "nova-serve")
+MODEL_DIR = os.environ.get("NOVA_MODEL_DIR", "nova-sft2a-v1-merged")
+SERVED_NAME = os.environ.get("NOVA_SERVED", "nova")
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-app = modal.App("nova-serve")
+app = modal.App(APP_NAME)
 models = modal.Volume.from_name("nova-models")
 compile_cache = modal.Volume.from_name("nova-vllm-cache", create_if_missing=True)
 image = (
@@ -36,6 +43,7 @@ image = (
     # every cold start (about two minutes). Both now live in the volume too.
     .env({"TRITON_CACHE_DIR": "/root/.cache/vllm/triton", "TORCHINDUCTOR_CACHE_DIR": "/root/.cache/vllm/inductor"})
     .add_local_file(os.path.join(HERE, "launch_vllm.sh"), "/srv/launch_vllm.sh")
+    .env({"NOVA_APP": APP_NAME, "NOVA_MODEL_DIR": MODEL_DIR, "NOVA_SERVED": SERVED_NAME})
 )
 
 
@@ -45,5 +53,5 @@ image = (
 @modal.concurrent(max_inputs=64)
 @modal.web_server(port=PORT, startup_timeout=20 * 60)
 def serve() -> None:
-    env = dict(os.environ, MODEL="/models/nova-sft2a-v1-merged", SERVED_NAME="nova", PORT=str(PORT))
+    env = dict(os.environ, MODEL=f"/models/{MODEL_DIR}", SERVED_NAME=SERVED_NAME, PORT=str(PORT))
     subprocess.Popen(["bash", "/srv/launch_vllm.sh"], env=env)

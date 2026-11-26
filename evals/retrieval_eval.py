@@ -82,6 +82,8 @@ def main() -> None:
     ap.add_argument("--check-labels", action="store_true")
     ap.add_argument("--file", default=str(ROOT / "evals" / "retrieval" / "questions.jsonl"))
     ap.add_argument("--misses", metavar="METHOD", help="print every question this method misses at k=3")
+    ap.add_argument("--min-recall3", type=float, metavar="SHARE",
+                    help="exit 1 if vector search (what Nova's tool uses) has recall@3 below this (make reindex)")
     args = ap.parse_args()
     if args.check_labels:
         return check_labels()
@@ -129,6 +131,8 @@ def main() -> None:
          "query_ms_median": statistics.median(times), "summary": summary, "questions": per_q},
         indent=1, ensure_ascii=False))
     print(f"\nrankings: {(out_dir / f'{slug}.json').relative_to(ROOT)}")
+    if args.min_recall3 is not None and summary["vector"]["recall@3"] < args.min_recall3:
+        sys.exit(f"FAILED: vector recall@3 {summary['vector']['recall@3']:.2f} is under {args.min_recall3:.2f}")
 
     if args.misses:
         print(f"\nmisses at k={K} for {args.misses}:")

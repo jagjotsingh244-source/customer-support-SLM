@@ -37,6 +37,7 @@ import queue
 import secrets
 import sys
 import threading
+import random
 import time
 import uuid
 from collections import OrderedDict
@@ -158,6 +159,7 @@ class Chat:
     traces: dict = field(default_factory=dict)       # trace id -> turn number, for feedback
     feedback: dict = field(default_factory=dict)     # trace id -> "up" | "down"
     conversation_id: str = field(default_factory=lambda: uuid.uuid4().hex)   # the traces' session id
+    route: "Route" = None                            # which model answers this conversation, fixed at sign-in
 
 
 SESSIONS: "OrderedDict[str, Chat]" = OrderedDict()
@@ -176,6 +178,39 @@ def _counter():
     return token_counter(tools_v2.TOOLS)
 
 
+# Model routing: production and an optional canary ---------------------------------------------------------
+
+@dataclass(frozen=True)
+class Route:
+    """Which model answers a conversation: the served name, its endpoint, and the version its traces are tagged
+    with."""
+    name: str
+    base_url: str
+    version: str
+    canary: bool = False
+
+
+def production_route() -> Route:
+    return Route(MODEL_NAME, model_endpoint.MODEL_BASE_URL, tracing.MODEL_VERSION)
+
+
+def pick_route() -> Route:
+    """Production, or the canary for a CANARY_SHARE slice of new conversations (0 to 1). Read from the environment
+    at every sign-in, so a rollback is one variable: CANARY_SHARE=0 (ops/set_env.sh). A conversation keeps the
+    model it started with.
+
+        CANARY_MODEL     the canary's served name, e.g. nova-next (a new, permanent name: never reuse one)
+        CANARY_BASE_URL  its endpoint, when another server serves it (default MODEL_BASE_URL)
+        CANARY_VERSION   its tag in traces (default CANARY_MODEL)
+        CANARY_SHARE     share of new conversations it gets (default 0: off)"""
+    share = float(os.environ.get("CANARY_SHARE", "0") or 0)
+    name = os.environ.get("CANARY_MODEL", "").strip()
+    if name and share > 0 and random.random() < share:
+        return Route(name, os.environ.get("CANARY_BASE_URL") or model_endpoint.MODEL_BASE_URL,
+                     os.environ.get("CANARY_VERSION") or name, canary=True)
+    return production_route()
+
+
 def new_chat(customer_id: int) -> Chat:
     from agent import tools_v2
     from agent.escalation import HandoffRules
@@ -185,8 +220,10 @@ def new_chat(customer_id: int) -> Chat:
     with Conns() as conns:
         session = tools_v2.Session.open(conns, customer_id)
     messages = [{"role": "system", "content": system_prompt(now(), session.customer_name, PROMPT)}]
+    route = pick_route()
+    log.info(json.dumps({"event": "route", "model": route.name, "version": route.version, "canary": route.canary}))
     return Chat(customer_id, session.customer_name, messages, Context(_counter()), Guard(messages[0]["content"]),
-                HandoffRules())
+                HandoffRules(), route=route)
 
 
 def current_chat(nova_session: str | None = Cookie(default=None)) -> Chat:
@@ -231,7 +268,7 @@ WAKING = "Nova is waking up. Sorry, the GPU sleeps when nobody's chatting (stude
 TURN_FAILED = "Nova couldn't answer just now. Please send that again in a moment."
 MODEL_IDLE_S = float(os.environ.get("MODEL_IDLE_S", "60"))   # the model endpoint sleeps after this long idle
 HEARTBEAT_S = 15                                              # an SSE comment keeps proxies from closing a long wait
-_MODEL = {"last_ok": float("-inf")}
+_MODEL: dict = {}                                             # endpoint -> when it last answered
 
 
 NO_ORDER_ID = {"get_order_status": "Looking at your order…", "get_tracking": "Checking the tracking…"}
@@ -307,15 +344,18 @@ def _run(c: Chat, text: str, trace_id: str, emit) -> tuple[str, dict]:
     from agent import tools_v2
     from agent.loop import FALLBACK_REPLY, run_turn
     with c.lock, Conns() as conns:                     # one turn at a time per conversation
-        if time.monotonic() - _MODEL["last_ok"] > MODEL_IDLE_S and not model_endpoint.ready(timeout=2)[0]:
+        route = c.route or production_route()
+        if (time.monotonic() - _MODEL.get(route.base_url, float("-inf")) > MODEL_IDLE_S
+                and not model_endpoint.ready(timeout=2, base_url=route.base_url)[0]):
             emit("status", {"text": WAKING, "waking": True})
         session = tools_v2.Session(conns, c.customer_id, c.customer_name)
         kept = len(c.messages)
         c.messages.append({"role": "user", "content": text})
         with tracing.turn(trace_id, customer_id=c.customer_id, conversation_id=c.conversation_id, message=text,
-                          tags=trace_tags(conns.reader)) as (root, spans):
+                          tags=[f"adapter:{route.version}", *trace_tags(conns.reader)],
+                          version=route.version) as (root, spans):
             try:
-                reply, trace = run_turn(model_endpoint.client(), MODEL_NAME, c.messages, tools_v2.TOOLS,
+                reply, trace = run_turn(model_endpoint.client(route.base_url), route.name, c.messages, tools_v2.TOOLS,
                                         tools_v2.DISPATCH, session, max_steps=MAX_CALLS, temperature=TEMPERATURE,
                                         trace_id=trace_id, context=c.context, guard=c.guard, rules=c.rules,
                                         spans=spans,
@@ -330,7 +370,7 @@ def _run(c: Chat, text: str, trace_id: str, emit) -> tuple[str, dict]:
                         metadata={"turn": c.turns + 1, "tools": [t["name"] for t in trace["tool_calls"]],
                                   "rule_handoff": trace.get("forced_handoff"), "fallback": reply == FALLBACK_REPLY})
         tracing.score_turn(trace_id, tracing.turn_scores(trace_id, trace))
-        _MODEL["last_ok"] = time.monotonic()
+        _MODEL[route.base_url] = time.monotonic()
         c.turns += 1
         c.traces[trace_id] = c.turns
         return reply, trace
@@ -347,7 +387,7 @@ def trace_tags(reader) -> list[str]:
             kb = tracing.kb_version(reader)
         except psycopg.Error:
             kb = "unknown"
-        _TAGS.extend([f"adapter:{tracing.MODEL_VERSION}", f"prompt:{PROMPT}", f"kb:{kb}",
+        _TAGS.extend([f"prompt:{PROMPT}", f"kb:{kb}",
                       f"now:{os.environ.get('NOW_MODE', 'frozen')}"])
     return _TAGS
 
@@ -546,6 +586,8 @@ def health():
         out["database"] = f"error: {type(e).__name__}"
     _, detail = model_endpoint.ready(timeout=3)
     out["model"] = detail
+    out["canary"] = {"share": float(os.environ.get("CANARY_SHARE", "0") or 0),
+                     "model": os.environ.get("CANARY_MODEL") or None}
     status = 200 if out["database"] == "ok" else 503
     return JSONResponse(out, status_code=status)
 

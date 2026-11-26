@@ -42,6 +42,13 @@ def now() -> datetime:
     return datetime.now(IST) if NOW_MODE == "real" else NOW
 
 
+def wall_clock_today():
+    """Today's date in IST from the real clock, whatever NOW_MODE says. Only for operations on real files, such
+    as deleting old trace logs (scripts/prune_traces.py): retention must follow the calendar even when the shop's
+    clock is frozen. Never for anything Nova says or decides."""
+    return datetime.now(IST).date()
+
+
 def partition_for(customer_id: int) -> str:
     """'eval' for about EVAL_SHARE of customers, 'train' for the rest.
 

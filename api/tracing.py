@@ -6,7 +6,9 @@ the loop never import this module; the backend hands the loop a span opener (age
 
     LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY   the project's keys; without both, tracing is off and nothing leaves
     LANGFUSE_HOST                              e.g. https://us.cloud.langfuse.com
-    MODEL_VERSION                              what serves MODEL_NAME, for the adapter tag (default sft2a-v1-fp8)
+    MODEL_VERSION                              what serves MODEL_NAME, for the adapter tag (default sft2a-v1-fp8);
+                                               a canary conversation is tagged with CANARY_VERSION instead, and
+                                               the trace's version says which model answered (api/app.py)
 
 What is sent, per turn (the trace's id is the turn's trace id, which /feedback takes):
 
@@ -74,7 +76,8 @@ def kb_version(reader_conn) -> str:
 
 
 @contextmanager
-def turn(trace_id: str, *, customer_id: int, conversation_id: str, message: str, tags: list[str]):
+def turn(trace_id: str, *, customer_id: int, conversation_id: str, message: str, tags: list[str],
+         version: str = MODEL_VERSION):
     """One trace for one turn. Yields (root, spans): root.update(output=...) at the end, spans(name, **kw) to open
     a nested step (handed to the loop)."""
     lf = client()
@@ -89,7 +92,7 @@ def turn(trace_id: str, *, customer_id: int, conversation_id: str, message: str,
     with lf.start_as_current_observation(trace_context={"trace_id": trace_id}, name="turn", as_type="agent",
                                          input={"message": message}) as root, \
             propagate_attributes(user_id=f"customer-{customer_id}", session_id=conversation_id, tags=tags,
-                                 trace_name="turn", version=MODEL_VERSION):
+                                 trace_name="turn", version=version):
         yield root, spans
 
 

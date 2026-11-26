@@ -27,13 +27,13 @@ import os
 import re
 import sys
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from agent.privacy import redact, redact_obj  # noqa: E402
+from config import wall_clock_today  # noqa: E402
 
 DEFAULT_DIR = ROOT / "logs" / "traces"
 KEEP_DAYS, KEEP_REDACTED_DAYS = 30, 365
@@ -159,7 +159,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--keep-redacted-days", type=int, default=KEEP_REDACTED_DAYS,
                    help="days a redacted trace file is kept (default 365)")
     p.add_argument("--today", type=date.fromisoformat,
-                   default=datetime.now(ZoneInfo("Asia/Kolkata")).date(), help="YYYY-MM-DD (default: today in IST)")
+                   default=wall_clock_today(), help="YYYY-MM-DD (default: today in IST, by the real clock)")
     p.add_argument("--apply", action="store_true", help="make the changes; without it, only print them")
     a = p.parse_args(argv)
     if a.keep_days < 0 or a.keep_redacted_days < a.keep_days:

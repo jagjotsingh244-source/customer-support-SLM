@@ -73,3 +73,54 @@ jobs:
       - name: Only Nova's reply is trained (Qwen3.5-2B chat template)
         # Only the tokenizer is needed, so no torch: transformers at the pinned version plus jinja2 for the template.
         run: uv run --no-project --with pytest --with jinja2 --with "transformers==5.23.0" pytest -q tests/test_masking.py
+
+  # Every pull request: the whole test suite on a freshly seeded store, then the 30-case smoke eval against the
+  # model server, through the shipping configuration. A broken tool fails the tests; a model or prompt change that
+  # costs quality fails the smoke eval (under 27 of 30). The smoke eval needs two repository secrets, the model
+  # server's URL and key; without them it is skipped with a notice, and the tests still run.
+  tests-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: nimbus
+          POSTGRES_PASSWORD: nimbus
+          POSTGRES_DB: nimbus
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nimbus -d nimbus"
+          --health-interval 2s --health-timeout 3s --health-retries 15
+    env:
+      DB_URL: postgresql://nimbus:nimbus@localhost:5432/nimbus
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Seed the store, load and embed the help center
+        run: |
+          uv run --frozen python -m db.seed
+          uv run --frozen python db/load_kb.py
+          uv run --frozen --group rag python rag/index.py --model BAAI/bge-small-en-v1.5
+      - name: Unit and integration tests (tools, guards, backend routes, streaming, tracing, canary routing)
+        run: uv run --frozen --group api --group rag --group dev pytest -q tests/
+      - name: Is a model server configured?
+        id: smoke
+        env:
+          BASE_URL: ${{ secrets.STAGING_MODEL_URL }}
+        run: |
+          if [ -z "$BASE_URL" ]; then
+            echo "::notice::Smoke eval skipped: set the STAGING_MODEL_URL and STAGING_NOVA_KEY repository secrets"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Smoke eval, 30 cases, must pass at least 27
+        if: steps.smoke.outputs.run == 'true'
+        env:
+          BASE_URL: ${{ secrets.STAGING_MODEL_URL }}
+          NOVA_KEY: ${{ secrets.STAGING_NOVA_KEY }}
+        run: |
+          uv run --frozen --group rag python evals/run_eval.py --provider openai --system candidate --tools v2 \
+            --prompt v3 --state --guards --handoff-rules --model nova --base-url "$BASE_URL" \
+            --run "ci-${GITHUB_RUN_ID}-smoke" --smoke --fail-under 0.90

@@ -463,6 +463,9 @@ def main() -> None:
                     "probe next to its clean twin")
     ap.add_argument("--notes", default="", help="free text stored in config.json")
     ap.add_argument("--rescore", type=Path, help="re-score an existing run folder; no model calls")
+    ap.add_argument("--smoke", action="store_true", help="only the 30 smoke cases in evals/smoke.json (CI)")
+    ap.add_argument("--fail-under", type=float, metavar="SHARE",
+                    help="exit 1 if the share of cases passing all_required is below this, e.g. 0.9 (CI gate)")
     a = ap.parse_args()
 
     if a.rescore:
@@ -476,7 +479,18 @@ def main() -> None:
         ap.error("--adapter is for --provider local; a vLLM server takes the adapter as a LoRA module (--model <name>)")
     if a.provider == "openai" and not a.base_url:
         ap.error("--base-url is required with --provider openai")
-    print(report(run(a)))
+    if a.smoke:
+        a.ids = [c["id"] for c in json.loads((ROOT / "evals" / "smoke.json").read_text())["cases"]]
+    out = run(a)
+    print(report(out))
+    if a.fail_under is not None:
+        scores = json.loads((out / "scores.json").read_text())["scores"]
+        rows = scores.values() if isinstance(scores, dict) else scores
+        passed = [bool(r.get("all_required")) for r in rows]
+        share = sum(passed) / len(passed) if passed else 0.0
+        print(f"all_required: {sum(passed)}/{len(passed)} = {share:.2f} (minimum {a.fail_under:.2f})")
+        if share < a.fail_under:
+            sys.exit(f"FAILED: pass rate {share:.2f} is under {a.fail_under:.2f}")
 
 
 if __name__ == "__main__":
