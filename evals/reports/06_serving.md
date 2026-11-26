@@ -10,7 +10,7 @@ Nova runs as three separately deployed parts, each configured only by environmen
 
 **Result.** The served model scores what the notebook-era runs scored: golden pass@1 67% [59–75] through the
 launch script, against 64% [56–73] in the comparison runs. The API key is enforced, and prefix caching cuts
-time to first token from 73 to 42 ms. Deployed, Nova answered 2,095 turns across the three load levels with no
+time to first token from 73 to 42 ms. Deployed, Nova answered 2,091 turns across the three load levels with no
 errors. At 50 simulated customers that is 6,720 conversations an hour, so **$0.16 (about ₹14) per 1,000
 conversations**, from Modal's and Cloud Run's per-second prices and the measured throughput.
 
@@ -129,8 +129,8 @@ this machine (India) and the backend (US East) is kept apart.
 | Customers at once | Turns in 5 min | Conversations in 5 min | Errors | Server turn p50 / p95 | Model share p50 / p95 | Seen by the client p50 / p95 |
 |---|---|---|---|---|---|---|
 | 1 | 39 | 13 | 0 | 2.4 / 4.2 s | 1.9 / 3.3 s | 2.8 / 4.5 s |
-| 10 | 431 | 148 | 0 | 2.3 / 4.5 s | 2.1 / 3.9 s | 2.7 / 4.9 s |
-| 50 | 1,625 | 560 | 0 | 4.5 / 8.7 s | 3.9 / 7.5 s | 4.8 / 9.0 s |
+| 10 | 429 | 148 | 0 | 2.3 / 4.5 s | 2.1 / 3.9 s | 2.7 / 4.9 s |
+| 50 | 1,623 | 560 | 0 | 4.5 / 8.7 s | 3.9 / 7.5 s | 4.8 / 9.0 s |
 
 The GPU, from vLLM's log over each level (`serving/load/vllm_engine_stats.log`):
 
