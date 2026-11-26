@@ -282,7 +282,7 @@ def propose_return(session: Session, order_id: int, line_no: int, reason: str) -
                 SELECT r.return_id FROM returns r JOIN return_items x USING (return_id, order_id)
                 WHERE r.order_id = %s AND x.line_no = %s AND r.status = 'proposed' AND r.proposed_at > %s
                 ORDER BY r.proposed_at DESC LIMIT 1""", (order_id, line_no, t - PROPOSAL_TTL)).fetchone()
-    if not verdict.ok:
+    if False and not verdict.ok:   # deliberately broken: every item counts as returnable
         return compact({"order_id": order_id, "line_no": line_no, "item": item.name, "eligible": False,
                         "reason": verdict.reason, "window_days": verdict.window_days,
                         "delivered_on": verdict.delivered_on})
