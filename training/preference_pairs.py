@@ -89,9 +89,12 @@ def collect(a) -> None:
         msgs = json.loads(r["messages"])
         prompt, target = as_served(msgs[:-1]), msgs[-1]
         t0 = time.perf_counter()
-        resp = client.chat.completions.create(model=a.model, messages=prompt, tools=TOOLS, temperature=a.temperature,
-                                              max_tokens=512)
-        m = resp.choices[0].message.model_dump(exclude_none=True)
+        try:
+            resp = client.chat.completions.create(model=a.model, messages=prompt, tools=TOOLS,
+                                                  temperature=a.temperature, max_tokens=512)
+            m = resp.choices[0].message.model_dump(exclude_none=True)
+        except Exception as e:                      # one failed step is recorded and skipped, not the whole run
+            m = {"error": f"{type(e).__name__}: {e}"[:300]}
         return {"conversation": r["conversation"], "step": r["step"], "scenario": r["scenario"],
                 "persona": r["persona"], "source": r["source"], "prompt": prompt, "target": target, "nova": m,
                 "latency_s": round(time.perf_counter() - t0, 2)}
@@ -184,7 +187,7 @@ def build(a) -> None:
     recs = [json.loads(line) for line in SAMPLES.read_text().splitlines()]
     pairs, tags = [], Counter()
     for r in recs:
-        if not (why := tag(r)):
+        if "error" in r["nova"] or not (why := tag(r)):
             continue
         tags[why.split(":")[0] + ":" + why.split(":")[1].split("<-")[0]] += 1
         nova = {k: v for k, v in r["nova"].items() if k in ("role", "content", "tool_calls")}
