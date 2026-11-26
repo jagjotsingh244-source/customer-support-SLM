@@ -1,0 +1,1058 @@
+{
+  "base_url_kind": "local",
+  "summary": {
+    "turns": 15,
+    "failed": 0,
+    "first_event_s": {
+      "p50": 1.392,
+      "p95": 2.036
+    },
+    "reply_s": {
+      "p50": 6.884,
+      "p95": 10.416
+    },
+    "hold_upper_bound_s": {
+      "p50": 2.9814,
+      "p95": 4.569599999999999
+    },
+    "checks_ms": {
+      "p50": 1.0,
+      "max": 11.4
+    },
+    "turns_with_status_before_reply": 15,
+    "mean_tools_per_turn": 2.6
+  },
+  "turns": [
+    {
+      "message": "Where is my order?",
+      "statuses": [
+        {
+          "t_s": 2.192,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 2.866,
+          "text": "Checking the tracking for order 12466…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 2.192,
+      "reply_s": 5.11,
+      "reply": "Your order 12466 for the Cable organiser is in transit with BlueLine. The last scan was at the Vijayawada hub on 2026-11-20, and the estimated delivery date is 2026-11-23.",
+      "done": {
+        "trace_id": "3c1414aef5204fdab6890949d947475d",
+        "turn_s": 5.108,
+        "model_s": 4.439,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 2.214,
+        "checks_ms": 11.4,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 13,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 12466",
+              "ms": 10,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 4.44
+          },
+          "checks": {
+            "ms": 11.4,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 57
+    },
+    {
+      "message": "I'd like to return the wireless mouse I got last week.",
+      "statuses": [
+        {
+          "t_s": 1.836,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.438,
+          "text": "Looking at order 12063…",
+          "waking": false
+        },
+        {
+          "t_s": 6.974,
+          "text": "Checking whether it can go back…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.836,
+      "reply_s": 10.416,
+      "reply": "You can return the Wireless mouse from order 12063. A return proposal has been created with an estimated refund of ₹699.00. Please press the Confirm button on the card that appears to proceed with the return.",
+      "confirm_card": {
+        "proposal_id": 908361,
+        "order_id": 12063,
+        "item": "Wireless mouse",
+        "refund_estimate_inr": 699.0
+      },
+      "done": {
+        "trace_id": "e5e4bca1a54d4550b61be07c948e91d8",
+        "turn_s": 10.412,
+        "model_s": 10.34,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "get_order_status",
+          "propose_return"
+        ],
+        "escalated": false,
+        "final_call_s": 3.412,
+        "checks_ms": 1.3,
+        "model_version": "sft2a-v1-bf16-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 10,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Looked at order 12063",
+              "ms": 13,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked whether it can go back",
+              "ms": 21,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 4,
+            "s": 10.34
+          },
+          "checks": {
+            "ms": 1.3,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 116
+    },
+    {
+      "message": "My phone case still hasn't arrived and it's been weeks.",
+      "statuses": [
+        {
+          "t_s": 1.161,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 1.941,
+          "text": "Checking the tracking for order 11343…",
+          "waking": false
+        },
+        {
+          "t_s": 1.955,
+          "text": "Passing this to a teammate…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.161,
+      "reply_s": 5.122,
+      "reply": "I see your phone case (Order 11343) is still with BlueLine, last scanned at the Hyderabad hub on 2026-11-11. Since it's been over a week and the tracking shows no updates, I've escalated this to a teammate. Your ticket number is 902291, and they will reply to you shortly.",
+      "handoff": {
+        "ticket_id": 902291,
+        "support_open": true,
+        "opens": null
+      },
+      "done": {
+        "trace_id": "e5432b1a352c4a7f823972c4a8a490d2",
+        "turn_s": 5.119,
+        "model_s": 5.06,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking",
+          "escalate_to_human"
+        ],
+        "escalated": true,
+        "final_call_s": 3.149,
+        "checks_ms": 1.0,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 13,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 11343",
+              "ms": 13,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Opened a ticket for a teammate",
+              "ms": 13,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 5.06
+          },
+          "checks": {
+            "ms": 1.0,
+            "changed_reply": false
+          },
+          "rule_handoff": true,
+          "fallback": false
+        }
+      },
+      "customer_id": 137
+    },
+    {
+      "message": "My order is late. When will it get here?",
+      "statuses": [
+        {
+          "t_s": 1.392,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.05,
+          "text": "Checking the tracking for order 11592…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.392,
+      "reply_s": 7.635,
+      "reply": "Your order 11592 (Coffee mug set, Steam iron, Noise-cancelling headphones) is in transit with BlueLine, tracking BL70001531. The estimated delivery date was 2026-11-14, and the last scan was at the Ahmedabad hub on 2026-11-16. It is still with the carrier.",
+      "done": {
+        "trace_id": "8abaf0e4c1f04fb9980ee387122e6ab6",
+        "turn_s": 7.628,
+        "model_s": 7.594,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 4.568,
+        "checks_ms": 1.6,
+        "model_version": "sft2a-v1-bf16-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 10,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 11592",
+              "ms": 11,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 7.59
+          },
+          "checks": {
+            "ms": 1.6,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 176
+    },
+    {
+      "message": "Can I return the induction cooktop I bought in October?",
+      "statuses": [
+        {
+          "t_s": 1.952,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.638,
+          "text": "Looking it up in the help center…",
+          "waking": false
+        },
+        {
+          "t_s": 7.204,
+          "text": "Passing this to a teammate…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.952,
+      "reply_s": 11.303,
+      "reply": "I cannot process the return directly. I have connected you to a teammate who will assist with your return request for the induction cooktop from order 11156 or 10782. Your ticket number is 902292, and they will reply to you shortly.",
+      "handoff": {
+        "ticket_id": 902292,
+        "support_open": true,
+        "opens": null
+      },
+      "done": {
+        "trace_id": "c730212d9c0e4b89a15d83bfe91a35e2",
+        "turn_s": 11.3,
+        "model_s": 10.97,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "search_help_center",
+          "escalate_to_human"
+        ],
+        "escalated": true,
+        "final_call_s": 4.072,
+        "checks_ms": 1.4,
+        "model_version": "sft2a-v1-bf16-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 12,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Searched the help center",
+              "ms": 266,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Opened a ticket for a teammate",
+              "ms": 26,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 4,
+            "s": 10.97
+          },
+          "checks": {
+            "ms": 1.4,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 372
+    },
+    {
+      "message": "Where is my order?",
+      "statuses": [
+        {
+          "t_s": 1.907,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.452,
+          "text": "Checking the tracking for order 12466…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.907,
+      "reply_s": 7.777,
+      "reply": "Your order 12466 for the Cable organiser is in transit with BlueLine (tracking BL70002564). The last scan was at the Vijayawada hub on 2026-11-20, and the estimated delivery date is 2026-11-23.",
+      "done": {
+        "trace_id": "c7ef5e2d9ee44704aa273f25fb4c0add",
+        "turn_s": 7.775,
+        "model_s": 7.727,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 4.307,
+        "checks_ms": 0.7,
+        "model_version": "sft2a-v1-bf16-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 15,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 12466",
+              "ms": 10,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 7.73
+          },
+          "checks": {
+            "ms": 0.7,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 57
+    },
+    {
+      "message": "I'd like to return the wireless mouse I got last week.",
+      "statuses": [
+        {
+          "t_s": 1.29,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 2.249,
+          "text": "Looking at order 12063…",
+          "waking": false
+        },
+        {
+          "t_s": 4.683,
+          "text": "Checking whether it can go back…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.29,
+      "reply_s": 7.343,
+      "reply": "You can return the Wireless mouse from order 12063. The system shows it's eligible for a return due to a change of mind, with an estimated refund of ₹699.00. Please press Confirm on the card that appears to proceed with the return.",
+      "confirm_card": {
+        "proposal_id": 908362,
+        "order_id": 12063,
+        "item": "Wireless mouse",
+        "refund_estimate_inr": 699.0
+      },
+      "done": {
+        "trace_id": "9f09372cdd4d43758b6871b2be3c5658",
+        "turn_s": 7.34,
+        "model_s": 7.262,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "get_order_status",
+          "propose_return"
+        ],
+        "escalated": false,
+        "final_call_s": 2.636,
+        "checks_ms": 0.7,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 9,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Looked at order 12063",
+              "ms": 21,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked whether it can go back",
+              "ms": 20,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 4,
+            "s": 7.26
+          },
+          "checks": {
+            "ms": 0.7,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 116
+    },
+    {
+      "message": "My phone case still hasn't arrived and it's been weeks.",
+      "statuses": [
+        {
+          "t_s": 1.287,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 2.098,
+          "text": "Checking the tracking for order 11343…",
+          "waking": false
+        },
+        {
+          "t_s": 2.105,
+          "text": "Passing this to a teammate…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.287,
+      "reply_s": 4.424,
+      "reply": "I have escalated your issue regarding the missing phone case (Order 11343) to a teammate. Your ticket number is 902293, and they will reply to you shortly.",
+      "handoff": {
+        "ticket_id": 902293,
+        "support_open": true,
+        "opens": null
+      },
+      "done": {
+        "trace_id": "69d6548acec8448284da2c948f795bf4",
+        "turn_s": 4.422,
+        "model_s": 4.373,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking",
+          "escalate_to_human"
+        ],
+        "escalated": true,
+        "final_call_s": 2.303,
+        "checks_ms": 1.4,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 12,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 11343",
+              "ms": 6,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Opened a ticket for a teammate",
+              "ms": 6,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 4.37
+          },
+          "checks": {
+            "ms": 1.4,
+            "changed_reply": false
+          },
+          "rule_handoff": true,
+          "fallback": false
+        }
+      },
+      "customer_id": 137
+    },
+    {
+      "message": "My order is late. When will it get here?",
+      "statuses": [
+        {
+          "t_s": 1.788,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.271,
+          "text": "Checking the tracking for order 11592…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.788,
+      "reply_s": 8.635,
+      "reply": "Your order 11592 (Coffee mug set, Steam iron, Noise-cancelling headphones) is currently in transit with BlueLine, tracking BL70001531. The estimated delivery date was 2026-11-14, and the last scan was at the Ahmedabad hub on 2026-11-16. The parcel is still with the carrier and expected to arrive soon.",
+      "done": {
+        "trace_id": "4ecdf295da4c4a129972dd1bb39209ac",
+        "turn_s": 8.632,
+        "model_s": 8.602,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 5.351,
+        "checks_ms": 1.0,
+        "model_version": "sft2a-v1-bf16-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 7,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 11592",
+              "ms": 8,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 8.6
+          },
+          "checks": {
+            "ms": 1.0,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 176
+    },
+    {
+      "message": "Can I return the induction cooktop I bought in October?",
+      "statuses": [
+        {
+          "t_s": 1.419,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 2.334,
+          "text": "Looking it up in the help center…",
+          "waking": false
+        },
+        {
+          "t_s": 3.716,
+          "text": "Checking whether it can go back…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.419,
+      "reply_s": 6.278,
+      "reply": "The induction cooktop from order 11156 cannot be returned because it was delivered on 2026-11-02, which is outside the 15-day return window. The help center does not cover this specific return policy, so I can connect you with a teammate to discuss further.",
+      "done": {
+        "trace_id": "802024d64c1a43bfb959630fe355775c",
+        "turn_s": 6.277,
+        "model_s": 5.983,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "search_help_center",
+          "propose_return"
+        ],
+        "escalated": false,
+        "final_call_s": 2.548,
+        "checks_ms": 0.7,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 9,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Searched the help center",
+              "ms": 254,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked whether it can go back",
+              "ms": 9,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 4,
+            "s": 5.98
+          },
+          "checks": {
+            "ms": 0.7,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 372
+    },
+    {
+      "message": "Where is my order?",
+      "statuses": [
+        {
+          "t_s": 1.176,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 1.932,
+          "text": "Checking the tracking for order 12466…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.176,
+      "reply_s": 4.583,
+      "reply": "Your order 12466 for the Cable organiser is in transit with BlueLine (tracking BL70002564). The last scan was at the Vijayawada hub on 2026-11-20, and the estimated delivery date is 2026-11-23.",
+      "done": {
+        "trace_id": "1ca5c57b45de4045b1391a1cf58f8b67",
+        "turn_s": 4.58,
+        "model_s": 4.55,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 2.637,
+        "checks_ms": 0.8,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 4,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 12466",
+              "ms": 9,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 4.55
+          },
+          "checks": {
+            "ms": 0.8,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 57
+    },
+    {
+      "message": "I'd like to return the wireless mouse I got last week.",
+      "statuses": [
+        {
+          "t_s": 1.173,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 2.059,
+          "text": "Looking at order 12063…",
+          "waking": false
+        },
+        {
+          "t_s": 4.485,
+          "text": "Checking whether it can go back…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.173,
+      "reply_s": 7.288,
+      "reply": "You can return the Wireless mouse from order 12063. The system shows it's eligible for a return due to a change of mind. A refund of ₹699.00 is estimated. Please press Confirm on the card that appears to proceed with the return.",
+      "confirm_card": {
+        "proposal_id": 908363,
+        "order_id": 12063,
+        "item": "Wireless mouse",
+        "refund_estimate_inr": 699.0
+      },
+      "done": {
+        "trace_id": "2f8c12f9f0b245539cea1523156115df",
+        "turn_s": 7.286,
+        "model_s": 7.228,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "get_order_status",
+          "propose_return"
+        ],
+        "escalated": false,
+        "final_call_s": 2.781,
+        "checks_ms": 0.7,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 7,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Looked at order 12063",
+              "ms": 12,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked whether it can go back",
+              "ms": 19,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 4,
+            "s": 7.23
+          },
+          "checks": {
+            "ms": 0.7,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 116
+    },
+    {
+      "message": "My phone case still hasn't arrived and it's been weeks.",
+      "statuses": [
+        {
+          "t_s": 2.036,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.553,
+          "text": "Checking the tracking for order 11343…",
+          "waking": false
+        },
+        {
+          "t_s": 3.563,
+          "text": "Passing this to a teammate…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 2.036,
+      "reply_s": 6.884,
+      "reply": "I've escalated your issue regarding the missing phone case (Order 11343) to a teammate. Your ticket number is 902294, and they will reply to you shortly.",
+      "handoff": {
+        "ticket_id": 902294,
+        "support_open": true,
+        "opens": null
+      },
+      "done": {
+        "trace_id": "e79ddd737760440cb053ef12c576874d",
+        "turn_s": 6.882,
+        "model_s": 6.844,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking",
+          "escalate_to_human"
+        ],
+        "escalated": true,
+        "final_call_s": 3.308,
+        "checks_ms": 0.7,
+        "model_version": "sft2a-v1-bf16-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 8,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 11343",
+              "ms": 10,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Opened a ticket for a teammate",
+              "ms": 7,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 6.84
+          },
+          "checks": {
+            "ms": 0.7,
+            "changed_reply": false
+          },
+          "rule_handoff": true,
+          "fallback": false
+        }
+      },
+      "customer_id": 137
+    },
+    {
+      "message": "My order is late. When will it get here?",
+      "statuses": [
+        {
+          "t_s": 1.231,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 2.049,
+          "text": "Checking the tracking for order 11592…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.231,
+      "reply_s": 5.049,
+      "reply": "Your order 11592 (Coffee mug set, Steam iron, Noise-cancelling headphones) is currently in transit with BlueLine, tracking BL70001531. The estimated delivery date is 2026-11-14, and the last scan was at the Ahmedabad hub on 2026-11-16. The parcel is still with the carrier and on its way.",
+      "done": {
+        "trace_id": "323f711ae30d4d0597d79db08ec9cfbd",
+        "turn_s": 5.047,
+        "model_s": 5.009,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 2.98,
+        "checks_ms": 1.4,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 8,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked the tracking for order 11592",
+              "ms": 12,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 3,
+            "s": 5.01
+          },
+          "checks": {
+            "ms": 1.4,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 176
+    },
+    {
+      "message": "Can I return the induction cooktop I bought in October?",
+      "statuses": [
+        {
+          "t_s": 1.199,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 2.113,
+          "text": "Looking it up in the help center…",
+          "waking": false
+        },
+        {
+          "t_s": 3.547,
+          "text": "Checking whether it can go back…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.199,
+      "reply_s": 6.24,
+      "reply": "The induction cooktop in order 11156 cannot be returned because it was delivered on 2026-11-02, which is outside the 15-day return window. The help center does not cover this specific return policy, so I can connect you with a teammate to discuss your options.",
+      "done": {
+        "trace_id": "f060f6f6ea654d038d0b6adebc67dc94",
+        "turn_s": 6.238,
+        "model_s": 5.908,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "search_help_center",
+          "propose_return"
+        ],
+        "escalated": false,
+        "final_call_s": 2.678,
+        "checks_ms": 1.7,
+        "model_version": "sft2a-v1-q4-gguf-mac",
+        "steps": {
+          "tools": [
+            {
+              "text": "Checked your orders",
+              "ms": 11,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Searched the help center",
+              "ms": 293,
+              "ok": true,
+              "skipped": false
+            },
+            {
+              "text": "Checked whether it can go back",
+              "ms": 9,
+              "ok": true,
+              "skipped": false
+            }
+          ],
+          "model": {
+            "calls": 4,
+            "s": 5.91
+          },
+          "checks": {
+            "ms": 1.7,
+            "changed_reply": false
+          },
+          "rule_handoff": false,
+          "fallback": false
+        }
+      },
+      "customer_id": 372
+    }
+  ]
+}

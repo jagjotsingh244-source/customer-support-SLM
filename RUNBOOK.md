@@ -87,8 +87,8 @@ production's runs before it ships, like a new model.
 
 | What went wrong | Command | Measured |
 |---|---|---|
-| The canary model | `make rollback` | see evals/reports/07_operations.md |
-| A backend release | `gcloud run services update-traffic ... --to-revisions <previous>=100` | seconds |
+| The canary model | `make rollback` | 72 s (a new revision); evals/reports/07_operations.md |
+| A backend release | `gcloud run services update-traffic ... --to-revisions <previous>=100` | 9 s if that revision is still warm, 86 s if it scaled to zero |
 | A help-center change | revert the PR, then section 1 from step 5 | a few minutes |
 | Public access (a runaway bill, abuse) | `gcloud run services remove-iam-policy-binding nova-backend --region us-east4 --project nova-evals --member=allUsers --role=roles/run.invoker` | seconds |
 
