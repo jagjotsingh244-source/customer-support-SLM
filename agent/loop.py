@@ -53,7 +53,7 @@ def legacy_dispatch(registry: dict):
 
 
 def run_turn(client, model, messages, tools, registry, session, max_steps=4, temperature=0.2, sampling=None,
-             trace_id=None, context=None, guard=None, rules=None):
+             trace_id=None, context=None, guard=None, rules=None, on_event=None):
     """Answer the last user message in `messages` (appended to in place).
 
     Returns (reply, trace). The trace keeps what the scorecard needs: every tool
@@ -93,6 +93,11 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
     tells the model what to say for the time of day (support hours 9:00-21:00 IST).
 
     Without either, everything runs as before.
+
+    `on_event(type, data)`, when given, is called with ("status", {"tool", "args"}) just before each tool call
+    runs, the model's and the forced ones alike, so a chat page can say "Checking your orders..." while the
+    turn is still going. Nothing of the reply is sent this way: the reply leaves only as the return value,
+    after every check above. trace["checks_ms"] is how long those reply checks took.
     """
     trace = {"trace_id": trace_id or uuid.uuid4().hex[:8], "tool_calls": [], "model_calls": [], "escalated": False,
              "format_errors": 0}
@@ -109,6 +114,8 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             parsed = isinstance(json.loads(raw), dict)
         except (json.JSONDecodeError, TypeError):
             parsed = False
+        if on_event:
+            on_event("status", {"tool": name, "args": parse_args(raw) or {}})
         t0 = time.perf_counter()
         repeat = rules.repeat_handoff(name) if rules else None
         result = repeat or dispatch(name, raw, session, attempts)
@@ -198,6 +205,7 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
         messages.append(msg.model_dump(exclude_none=True))
         if not msg.tool_calls:
             reply = msg.content
+            t_checks = time.perf_counter()
             if guard:
                 reply, hits = guard.outgoing(reply, messages)
                 if hits:
@@ -205,6 +213,7 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
                     messages[-1]["content"] = reply      # the history holds what the customer saw
                     log.warning(json.dumps({"trace_id": trace["trace_id"], "turn": turn, "output_guard": hits}))
             trace["grounding"] = grounding_issues(reply, tool_contents_before(messages, len(messages)))
+            trace["checks_ms"] = round(1000 * (time.perf_counter() - t_checks), 1)
             return finish(reply)
         results = []
         for k, call in enumerate(msg.tool_calls):

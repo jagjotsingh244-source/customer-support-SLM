@@ -5,7 +5,7 @@ Nova runs as three separately deployed parts, each configured only by environmen
 | Part | Where | Why there |
 |---|---|---|
 | Model server: vLLM 0.34.0, the merged fine-tune in FP8, `serving/launch_vllm.sh` | Modal, one L4, **scale to zero** (`serving/modal_nova.py`) | The GPU is the expensive part and is needed only while someone is chatting |
-| Backend: FastAPI, the agent loop, tools, guardrails, the confirm route (`api/app.py`, `Dockerfile`) | Google Cloud Run, `us-east4`, 2 vCPU / 4 GiB, scales to zero, private (needs a Google identity token until it is opened) | Always reachable, little CPU, billed per request |
+| Backend: FastAPI, the agent loop, tools, guardrails, the confirm route (`api/app.py`, `Dockerfile`) | Google Cloud Run, `us-east4`, 2 vCPU / 4 GiB, scales to zero, public since 2026-11-26 (the demo; it was private until then) | Always reachable, little CPU, billed per request |
 | Store: orders, help center, pgvector, three roles with row-level security | Neon (managed Postgres 16), US East | Persists through every restart; nothing lives on a GPU machine's disk |
 
 **Result.** The served model scores what the notebook-era runs scored: golden pass@1 67% [59–75] through the
@@ -75,9 +75,11 @@ failed with `AdminShutdown`: Neon suspends its compute after a few idle minutes 
 backend's pool now pings a connection pair that has been idle for more than a minute before using it, and
 replaces any pair that failed during a turn (`tests/test_api_sessions.py` closes them all and signs in again).
 
-**Kept private.** The backend accepts only requests with a Google identity token, so an unattended URL cannot
-run up GPU time. Opening it for a demo is one command:
-`gcloud run services add-iam-policy-binding nova-backend --region us-east4 --member=allUsers --role=roles/run.invoker`.
+**Kept private until the demo.** Until 2026-11-26 the backend accepted only requests with a Google identity token, so an unattended URL could not
+run up GPU time. It was opened for the demo with
+`gcloud run services add-iam-policy-binding nova-backend --region us-east4 --member=allUsers --role=roles/run.invoker`
+(`remove-iam-policy-binding` with the same arguments closes it). Open, anyone with the link can wake the GPU; the
+spend is bounded by one container and by the Modal credit, after which the model stops answering.
 
 ## 3. Cold starts
 
@@ -178,6 +180,72 @@ awake, plus each cold start (5–10 minutes of GPU, $0.07–0.15) and nothing wh
 All of section 2–4 cost about $0.60 of Modal credit and under ₹20 of Cloud Run and Cloud Build; the GPU checks in
 section 1 used about 11 minutes of the GCP L4 (about ₹16).
 
+## 6. The chat page and streamed events
+
+A turn takes several seconds: list the orders, read the tracking, then write. A blank box for that long reads as
+broken. So `POST /chat/stream` sends **events**, as server-sent events, and the page (`ui/index.html`, one file
+served by the backend at `/`) shows each one as it arrives:
+
+| Event | Sent when | The page shows |
+|---|---|---|
+| `status` | a tool call starts (the model's or one the hand-off rules force) | "Checking your orders…", "Checking the tracking for order 12466…" (only a number is ever put into the line) |
+| `status` with `waking` | the model endpoint has been idle past its scale-down window and does not answer | "Waking Nova up…" |
+| `reply` | the reply has passed the grounding check and the output filter | the message |
+| `confirm_card` | `propose_return` found the item returnable | the item, order and refund estimate, and a Confirm button that sends **only the proposal id** to `/returns/{id}/confirm`, which re-reads and re-checks everything |
+| `handoff` | a ticket was opened | the ticket number, and when a person will reply (from the store's clock and the support hours) |
+| `done` | the turn is over | input enabled again, thumbs up/down sent to `/feedback` with the turn's trace id |
+| `error` | the turn failed (model unreachable) | a plain message; the conversation is put back as it was and the text returns to the box |
+
+**The reply is never streamed token by token.** The output filter (links, a prompt echo, an action claim no tool
+backs, personal data, tool names) reads the finished reply. Tokens on screen before it runs could not be taken
+back, so the reply is held until the loop returns, and the status lines fill the wait. The page never calls the
+model: every request goes to the backend, which holds the session, tools and checks. `/chat` runs the same
+events and answers once, in JSON, for the load test and scripts.
+
+**What the hold costs.** Streamed, the first words would appear about one time to first token after the final
+model call starts. Buffered, they appear when that call has finished and the checks have run. So the hold is at
+most the final call's latency plus the checks. `serving/stream_check.py` signs in as each demo customer, sends
+their suggested message through the stream and times what arrives (10 turns, `serving/stream/mac.json`):
+
+| Where | First status line, p50 / p95 | Reply, p50 / p95 | Hold (upper bound), p50 / p95 | Checks |
+|---|---|---|---|---|
+| Mac: the bf16 GGUF in llama.cpp, local store | 1.7 / 2.1 s | 7.3 / 10.6 s | 3.4 / 4.2 s | under 5 ms |
+| Deployed: Modal L4 (FP8) + Cloud Run + Neon, timed from this machine in India | 0.9 / 4.5 s | 2.9 / 5.1 s | 0.8 / 1.2 s | about 1 ms (one 116 ms outlier on the first turn) |
+
+Every turn, on both, showed a status line before its reply. Deployed, the first one arrives in under a second
+and the reply at 2.9 s (p50), so a visitor sees Nova working about 2 s before the answer. The checks cost almost
+nothing (about 1 ms); the hold is the time the model takes to write the reply: **at most 0.8 s at p50 and 1.2 s
+at p95** on the L4, which the status lines cover. Measured on 2026-11-26 right after a cold start
+(`serving/stream/deployed.json`); the 4.5 s first-event p95 is the first turn, which also warmed the backend.
+Nothing here needed the progressive filtering (streaming with a hold-back window) that a slow hold would call
+for.
+
+**The public demo** opens on a contact list: five scenario customers first, then all 88 eval-partition customers with search (city and latest order shown; `demo_customer_list()` in `db/demo.sql` returns only those three fields). The other 412 customers are the training partition: chatting as them would flatter the model. A cold start shows "Nova is waking up. Sorry, the GPU sleeps when nobody's chatting (student budget). About 2 minutes." with a timer; the live one took about 100 s.
+
+**Five demo customers**, each chosen to show one part of Nova (`DEMO_PERSONAS` in `api/app.py`; the picker shows
+each with a message to try; `DEMO_CUSTOMERS` can narrow sign-in to a list):
+
+| Customer | Scenario | What Nova does on the Mac |
+|---|---|---|
+| 57 | A parcel on its way | Lists the orders, reads the tracking, gives carrier, last scan and estimate |
+| 116 | Returning something | Checks the order, proposes the return: Confirm card, ₹699 estimate |
+| 137 | A parcel that never came | Reads the tracking (no scan for weeks), opens a ticket: hand-off card |
+| 176 | A late order | Gives the old estimate and the last scan |
+| 372 | A return window that has closed | **Opens a ticket instead of saying the window has closed** (below; the same deployed) |
+
+**Found while testing, fixed: demo visitors shared one store.** After one visitor pressed Confirm, the next one
+signed in as the same customer heard "your return is already confirmed". With `DEMO_RESET=1`, signing in first
+calls `demo_reset()` (`db/demo.sql`), which deletes the returns and tickets the tools made for that one
+customer. It runs with the owner's rights but only touches tool-made rows (ids from 900001) of an eval-partition
+customer, and only the confirm role may call it (`tests/test_api_stream.py` checks all three), so the backend
+still never holds the owner's password. Two visitors signed in as the same customer at once would still share
+it; for a demo that is acceptable.
+
+**Found while testing, not fixed: customer 372.** Asked "Can I return the induction cooktop I bought in October?",
+Nova searched the returns policy but never looked at the delivery date, and handed off instead of saying the
+15-day window had closed (both runs). It is a model behaviour, not a page bug, so it goes to the first weekly
+review of traces as a candidate golden case.
+
 ## Reproduce
 
     NOVA_KEY=... HF_TOKEN=... DATE=2026-11-26 bash serving/check_server.sh              # on the GPU machine
@@ -187,3 +255,6 @@ section 1 used about 11 minutes of the GCP L4 (about ₹16).
     uv run --group teacher modal deploy serving/modal_nova.py
     BACKEND_TOKEN=$(gcloud auth print-identity-token) uv run --group teacher python serving/cold_start.py --backend ... --runs 3
     BACKEND=... BACKEND_TOKEN=... bash serving/load_test.sh
+    llama-server -m outputs/gguf/nova-sft2a-v1-bf16.gguf --jinja --reasoning off -c 8192 -ngl 99 --port 8090   # the Mac
+    MODEL_BASE_URL=http://localhost:8090/v1 COOKIE_SECURE=0 DEMO_RESET=1 uv run --group api --group rag uvicorn api.app:app --port 8080
+    uv run --group dev python serving/stream_check.py --base-url http://localhost:8080 --repeats 2 --out serving/stream/mac.json

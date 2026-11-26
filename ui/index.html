@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Nova support demo</title>
+<!--
+  Nova's chat page. One file, no build step, served by the backend at / (api/app.py), so every request goes to
+  the backend, which holds the session, the tools and the checks. The page never talks to the model.
+  Events from POST /chat/stream: status (a tool started), reply (passed every check), confirm_card, handoff,
+  done (trace id for the thumbs), error. The look follows a phone messaging app: a contact list, then a thread.
+-->
+<style>
+  :root {
+    --bg: #ffffff; --grouped: #f2f2f7; --ink: #000000; --ink-2: #3c3c4399; --ink-3: #3c3c434d;
+    --sep: #3c3c4329; --blue: #007aff; --on-blue: #ffffff; --bubble: #e9e9eb; --fill: #7676801f;
+    --green: #248a3d; --red: #d70015; --amber-bg: #fff4e0; --amber-ink: #8a5300; --avatar: #a2a2ab;
+    --bar: #f9f9f9e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #000000; --grouped: #000000; --ink: #ffffff; --ink-2: #ebebf599; --ink-3: #ebebf54d;
+      --sep: #54545899; --blue: #0a84ff; --on-blue: #ffffff; --bubble: #26252a; --fill: #7676803d;
+      --green: #30d158; --red: #ff6961; --amber-bg: #3a2a0c; --amber-ink: #ffd60a; --avatar: #636366;
+      --bar: #1d1d1fe6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #000000; --grouped: #000000; --ink: #ffffff; --ink-2: #ebebf599; --ink-3: #ebebf54d;
+    --sep: #54545899; --blue: #0a84ff; --on-blue: #ffffff; --bubble: #26252a; --fill: #7676803d;
+    --green: #30d158; --red: #ff6961; --amber-bg: #3a2a0c; --amber-ink: #ffd60a; --avatar: #636366;
+    --bar: #1d1d1fe6;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased;
+    font: 17px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  .wrap { max-width: 680px; margin: 0 auto; }
+  [hidden] { display: none !important; }
+
+  /* Contact list */
+  .list-top { padding: 20px 16px 8px; }
+  .eyebrow { font-size: 13px; color: var(--ink-2); }
+  .large-title { font-size: 34px; font-weight: 700; letter-spacing: 0.01em; margin: 2px 0 10px; }
+  .search {
+    display: flex; align-items: center; gap: 6px; background: var(--fill); border-radius: 10px;
+    padding: 0 8px; height: 36px; color: var(--ink-2);
+  }
+  .search input { flex: 1; border: 0; background: none; font: inherit; font-size: 17px; color: var(--ink); outline: none; min-width: 0; }
+  .search input::placeholder { color: var(--ink-2); }
+  .section { font-size: 13px; color: var(--ink-2); text-transform: none; padding: 18px 16px 6px; }
+  .row {
+    width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
+    padding: 9px 16px; position: relative; min-height: 60px;
+  }
+  .row:active, .row:focus-visible { background: var(--fill); outline: none; }
+  .row::after { content: ""; position: absolute; left: 68px; right: 0; bottom: 0; border-bottom: 0.5px solid var(--sep); }
+  .row:last-child::after { display: none; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center;
+    background: var(--avatar); color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .row .text { flex: 1; min-width: 0; }
+  .row .name { font-size: 17px; font-weight: 600; }
+  .row .sub { font-size: 15px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chev { color: var(--ink-3); flex: none; }
+  .foot { font-size: 13px; color: var(--ink-2); padding: 16px 16px 32px; }
+  .empty { font-size: 15px; color: var(--ink-2); padding: 12px 16px; }
+
+  /* Thread */
+  .bar {
+    position: sticky; top: 0; z-index: 2; background: var(--bar); border-bottom: 0.5px solid var(--sep);
+    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 8px 8px 6px;
+  }
+  .back { color: var(--blue); display: flex; align-items: center; gap: 2px; font-size: 17px; justify-self: start; padding: 4px; }
+  .who { text-align: center; }
+  .who .avatar { width: 36px; height: 36px; margin: 0 auto 2px; font-size: 14px; background: var(--blue); }
+  .who .t { font-size: 11px; color: var(--ink); }
+  .who .s { font-size: 11px; color: var(--ink-2); }
+  .thread { display: flex; flex-direction: column; gap: 2px; padding: 12px 12px 8px; min-height: calc(100vh - 160px); }
+  .stamp { text-align: center; font-size: 11px; color: var(--ink-2); margin: 6px 0 10px; }
+  .bubble {
+    max-width: 78%; padding: 7px 12px; border-radius: 18px; font-size: 17px; line-height: 1.3;
+    white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 8px;
+  }
+  .me { align-self: flex-end; background: var(--blue); color: var(--on-blue); border-bottom-right-radius: 5px; }
+  .nova { align-self: flex-start; background: var(--bubble); color: var(--ink); border-bottom-left-radius: 5px; }
+  .note {
+    align-self: center; max-width: 88%; text-align: center; font-size: 13px; color: var(--ink-2); margin: 8px 0 2px;
+  }
+  .note.err { color: var(--red); }
+  .waking {
+    align-self: stretch; background: var(--amber-bg); color: var(--amber-ink); border-radius: 14px;
+    padding: 10px 12px; font-size: 15px; line-height: 1.35; margin: 4px 0 6px; display: flex; gap: 8px;
+  }
+  .waking b { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .typing { align-self: flex-start; display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .typing .dots { background: var(--bubble); border-radius: 18px; padding: 11px 13px; display: flex; gap: 4px; }
+  .typing .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-2); animation: blink 1.2s infinite; }
+  .typing .dots i:nth-child(2) { animation-delay: .2s; } .typing .dots i:nth-child(3) { animation-delay: .4s; }
+  .typing .what { font-size: 13px; color: var(--ink-2); }
+  @keyframes blink { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .typing .dots i { animation: none; opacity: .6; } }
+  .card {
+    align-self: flex-start; width: min(78%, 300px); border: 0.5px solid var(--sep); border-radius: 18px;
+    padding: 12px 14px; margin-top: 8px; background: var(--bg);
+  }
+  .card .h { font-size: 15px; font-weight: 600; }
+  .card .d { font-size: 13px; color: var(--ink-2); margin: 2px 0 10px; }
+  .card .d:last-child { margin-bottom: 0; }
+  .pill {
+    width: 100%; background: var(--blue); color: var(--on-blue); border-radius: 12px; padding: 9px; font-size: 15px;
+    font-weight: 600;
+  }
+  .pill:disabled { opacity: .45; }
+  .card .result { font-size: 13px; margin-top: 8px; }
+  .card .result.ok { color: var(--green); } .card .result.bad { color: var(--red); }
+  .thumbs { align-self: flex-start; display: flex; gap: 2px; margin: 2px 0 0 4px; }
+  .thumbs button { color: var(--ink-3); padding: 4px 6px; border-radius: 8px; display: grid; place-items: center; }
+  .thumbs button[aria-pressed="true"] { color: var(--blue); }
+  .thumbs svg { width: 17px; height: 17px; }
+  .try { padding: 0 0 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .try:empty { display: none; }
+  .try button {
+    border: 0.5px solid var(--sep); border-radius: 16px; padding: 6px 12px; font-size: 15px; color: var(--blue);
+    text-align: left;
+  }
+
+  /* Input */
+  .composer {
+    position: sticky; bottom: 0; background: var(--bar); border-top: 0.5px solid var(--sep);
+    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  }
+  .field { display: flex; align-items: flex-end; gap: 6px; border: 0.5px solid var(--ink-3); border-radius: 19px; padding: 3px 3px 3px 14px; background: var(--bg); }
+  .field textarea {
+    flex: 1; border: 0; outline: none; resize: none; background: none; color: var(--ink); font: inherit; font-size: 17px;
+    line-height: 1.3; padding: 5px 0; max-height: 120px; min-width: 0;
+  }
+  .field textarea::placeholder { color: var(--ink-3); }
+  .send {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--blue); color: var(--on-blue);
+    display: grid; place-items: center; flex: none;
+  }
+  .send:disabled { background: var(--ink-3); }
+  .send svg { width: 16px; height: 16px; }
+  @media (min-width: 700px) { .thread { padding: 16px 20px 8px; } .composer { padding-left: 20px; padding-right: 20px; } }
+</style>
+</head>
+<body>
+<!-- Contact list -->
+<main class="wrap" id="picker">
+  <div class="list-top">
+    <div class="eyebrow">NimbusCart support demo</div>
+    <div class="large-title">Choose a customer</div>
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="Search customers" autocomplete="off" aria-label="Search customers">
+    </label>
+  </div>
+  <div id="featured-wrap">
+    <div class="section">Try a scenario</div>
+    <div id="featured"></div>
+  </div>
+  <div class="section" id="all-title">All customers</div>
+  <div id="all"><div class="empty">Loading…</div></div>
+  <p class="foot" id="about">These customers and orders are made up. Pick one to chat with Nova, NimbusCart's support
+    assistant.</p>
+</main>
+
+<!-- Thread -->
+<main class="wrap" id="chat" hidden>
+  <header class="bar">
+    <button class="back" id="back" type="button" aria-label="Back to customers">
+      <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2 2 10l8 8"/></svg>
+      Customers
+    </button>
+    <div class="who"><div class="avatar" aria-hidden="true">N</div><div class="t">Nova</div><div class="s" id="as"></div></div>
+    <span></span>
+  </header>
+  <section class="thread" id="thread" aria-live="polite"></section>
+  <form class="composer" id="form">
+    <div class="try" id="try"></div>
+    <div class="field">
+      <textarea id="input" rows="1" maxlength="4000" placeholder="Message" aria-label="Message Nova"></textarea>
+      <button class="send" id="send" type="submit" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </div>
+  </form>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const WAKING = "Nova is waking up. Sorry, the GPU sleeps when nobody's chatting (student budget). About 2 minutes.";
+const state = { ready: false, busy: false, warming: null, list: { featured: [], customers: [] } };
+const THUMB = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+  + 'stroke-linejoin="round" aria-hidden="true"><path d="M7 11v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3a4 4 0 0 0 4-4V6a2 2 0 0 1 4 0v5h3a2 2 0 0 1 2 2l-1 5a2 3 0 0 1-2 2h-7a3 3 0 0 1-3-3"/></svg>';
+const CHEV = '<svg class="chev" width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" '
+  + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m1 1 6 6-6 6"/></svg>';
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;     // always text, never HTML: replies are model output
+  return e;
+}
+const initials = (name) => name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+const rupees = (n) => "₹" + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+const day = (iso) => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long" });
+const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+const scrollDown = () => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+
+function canSend() {
+  const ok = state.ready && !state.busy;
+  $("send").disabled = !ok || !$("input").value.trim();
+  $("input").placeholder = state.ready ? "Message" : "Nova is waking up…";
+  return ok;
+}
+
+// The contact list ---------------------------------------------------------------------------------
+function row(c, sub, onPick) {
+  const b = el("button", "row");
+  b.type = "button";
+  const av = el("div", "avatar", initials(c.name));
+  av.setAttribute("aria-hidden", "true");
+  const text = el("div", "text");
+  text.append(el("div", "name", c.name), el("div", "sub", sub));
+  b.append(av, text);
+  b.insertAdjacentHTML("beforeend", CHEV);
+  b.addEventListener("click", () => onPick(c));
+  return b;
+}
+
+function renderList() {
+  const q = $("search").value.trim().toLowerCase();
+  const match = (c) => !q || `${c.name} ${c.city}`.toLowerCase().includes(q);
+  const featured = state.list.featured.filter(match);
+  $("featured-wrap").hidden = featured.length === 0;
+  $("featured").replaceChildren(...featured.map((c) => row(c, c.scenario, signIn)));
+  const all = state.list.customers.filter(match);
+  $("all-title").textContent = q ? `Customers matching “${$("search").value.trim()}”` : `All customers (${state.list.customers.length})`;
+  $("all").replaceChildren(...(all.length ? all.map((c) => row(c, `${c.city} · latest order ${c.latest}`, signIn))
+    : [el("div", "empty", "No customers match that search.")]));
+}
+
+async function loadList() {
+  try {
+    const r = await fetch("/demo-customers");
+    if (!r.ok) throw new Error(String(r.status));
+    state.list = await r.json();
+    renderList();
+  } catch (e) {
+    $("all").replaceChildren(el("div", "empty", "Couldn't load the customers. Reload the page to try again."));
+  }
+}
+
+// Cold start: the model sleeps when nobody is chatting. Wake it as soon as the page opens. -----------
+let wakeNote = null;
+function showWaking() {
+  if (wakeNote || state.ready || $("chat").hidden) return;
+  wakeNote = el("div", "waking");
+  wakeNote.setAttribute("role", "status");
+  const t0 = state.wakeStarted || Date.now();
+  const text = el("span", "", WAKING + " ");
+  const timer = el("b", "", "0:00");
+  text.append(timer);
+  wakeNote.append(text);
+  $("thread").prepend(wakeNote);
+  wakeNote.tick = setInterval(() => { timer.textContent = mmss(Math.round((Date.now() - t0) / 1000)); }, 1000);
+}
+function hideWaking() {
+  if (!wakeNote) return;
+  clearInterval(wakeNote.tick); wakeNote.remove(); wakeNote = null;
+}
+
+async function wake() {
+  if (state.warming) return state.warming;
+  state.warming = (async () => {
+    let health = {};
+    try { health = await (await fetch("/health")).json(); } catch (e) { }
+    if (health.now_mode === "frozen") {
+      $("about").textContent = "These customers and orders are made up, and the shop's clock is fixed at 20 November "
+        + "2026 so their dates stay the same. Pick one to chat with Nova, NimbusCart's support assistant.";
+      state.frozen = true;
+    }
+    if (health.model === "ready") { state.ready = true; canSend(); return; }
+    state.wakeStarted = Date.now();
+    showWaking();
+    try {
+      const r = await fetch("/warmup", { method: "POST" });
+      if (!r.ok) throw new Error(String(r.status));
+      state.ready = true; hideWaking();
+    } catch (e) {
+      hideWaking();
+      $("thread").prepend(el("div", "note err", "Nova couldn't start right now. Reload the page to try again."));
+    } finally {
+      state.warming = null; canSend();
+    }
+  })();
+  return state.warming;
+}
+
+// Signing in ---------------------------------------------------------------------------------------
+async function signIn(c) {
+  const r = await fetch("/demo-login", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customer_id: c.customer_id }),
+  }).catch(() => null);
+  if (!r || !r.ok) { alert("Couldn't sign in as that customer. Try another one."); return; }
+  $("picker").hidden = true; $("chat").hidden = false;
+  $("as").textContent = `chatting as ${c.name}`;
+  const thread = $("thread");
+  thread.replaceChildren(el("div", "stamp", state.frozen ? "Thursday 20 November 2026, 10:00" : "Today"));
+  thread.append(el("div", "bubble nova", `Hi ${c.name.split(" ")[0]}, I'm Nova, NimbusCart's support assistant. `
+    + "I can check your orders and deliveries, explain our policies and start a return."));
+  wakeNote = null; showWaking();
+  const chip = el("button", "", c.try);
+  chip.type = "button";
+  chip.addEventListener("click", () => { $("input").value = c.try; canSend(); $("input").focus(); });
+  $("try").replaceChildren(chip);
+  window.scrollTo({ top: 0 });
+  canSend();
+  $("input").focus();
+}
+$("back").addEventListener("click", () => {
+  $("chat").hidden = true; $("picker").hidden = false; hideWaking(); window.scrollTo({ top: 0 });
+});
+
+// One turn: POST the message, read the server-sent events as they arrive. -----------------------------
+let typing = null;
+function setTyping(text) {
+  if (!typing) {
+    typing = el("div", "typing");
+    const dots = el("div", "dots");
+    dots.append(el("i"), el("i"), el("i"));
+    typing.append(dots, el("span", "what"));
+    $("thread").append(typing);
+  }
+  typing.querySelector(".what").textContent = text || "";
+  $("thread").append(typing);                       // keep it last
+}
+function clearTyping() { if (typing) { typing.remove(); typing = null; } }
+
+async function send(text) {
+  state.busy = true; canSend();
+  $("try").replaceChildren();
+  $("thread").append(el("div", "bubble me", text));
+  setTyping("");
+  scrollDown();
+  let r;
+  try {
+    r = await fetch("/chat/stream", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }),
+    });
+  } catch (e) { return failed(text, "Couldn't reach Nova. Check your connection and send it again."); }
+  if (r.status === 401) return failed(text, "Your session ended. Go back to Customers to start again.");
+  if (!r.ok || !r.body) return failed(text, "Nova couldn't answer just now. Send it again in a moment.");
+  const reader = r.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "", replied = false, finished = false;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let cut;
+    while ((cut = buf.indexOf("\n\n")) >= 0) {
+      const block = buf.slice(0, cut); buf = buf.slice(cut + 2);
+      let kind = "message", data = "";
+      for (const line of block.split("\n")) {
+        if (line.startsWith("event:")) kind = line.slice(6).trim();
+        else if (line.startsWith("data:")) data += line.slice(5).trim();
+      }
+      if (!data) continue;                            // a keep-alive comment
+      const d = JSON.parse(data);
+      if (kind === "status" && d.waking) { state.ready = false; state.wakeStarted = Date.now(); showWaking(); setTyping(""); }
+      else if (kind === "status") { hideWaking(); state.ready = true; setTyping(d.text); }
+      else if (kind === "reply") { hideWaking(); state.ready = true; clearTyping(); $("thread").append(el("div", "bubble nova", d.text)); replied = true; }
+      else if (kind === "confirm_card") $("thread").append(confirmCard(d));
+      else if (kind === "handoff") $("thread").append(handoffCard(d));
+      else if (kind === "done") { if (replied) $("thread").append(thumbs(d.trace_id)); finished = true; }
+      else if (kind === "error") return failed(text, d.text);
+      scrollDown();
+    }
+  }
+  if (!finished) return failed(text, "The answer was cut off. Send it again.");
+  clearTyping(); state.busy = false; canSend(); $("input").focus();
+}
+
+function failed(text, why) {
+  clearTyping(); hideWaking();
+  $("thread").append(el("div", "note err", why));
+  if (!$("input").value) $("input").value = text;     // nothing is lost: the message is back in the box
+  state.busy = false; canSend(); scrollDown();
+}
+
+// The Confirm card sends only the proposal id; the backend re-reads and re-checks everything.
+function confirmCard(c) {
+  const card = el("div", "card");
+  card.append(el("div", "h", c.item || "Return"));
+  const est = c.refund_estimate_inr != null ? ` · refund ${rupees(c.refund_estimate_inr)}` : "";
+  card.append(el("div", "d", `Order ${c.order_id}${est}. Nothing happens until you confirm.`));
+  const btn = el("button", "pill", "Confirm return");
+  btn.type = "button";
+  const out = el("div", "result");
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    let r, body = {};
+    try { r = await fetch(`/returns/${encodeURIComponent(c.proposal_id)}/confirm`, { method: "POST" }); body = await r.json(); }
+    catch (e) { out.textContent = "Couldn't reach NimbusCart. Try again."; out.className = "result bad"; btn.disabled = false; return; }
+    if (r.ok) {
+      out.textContent = `Return confirmed. A courier will pick it up on ${day(body.pickup_date)}.`;
+      out.className = "result ok"; btn.remove(); return;
+    }
+    out.textContent = {
+      expired: "This offer has expired. Ask Nova to check the return again.",
+      not_open: "This return was already confirmed or closed.",
+      not_eligible: "This item can no longer be returned. Ask Nova why.",
+      not_found: "This return isn't on your account.",
+    }[body.error] || "That didn't work. Ask Nova to check the return again.";
+    out.className = "result bad";
+  });
+  card.append(btn, out);
+  return card;
+}
+
+function handoffCard(h) {
+  const card = el("div", "card");
+  card.append(el("div", "h", `Ticket ${h.ticket_id} is open`));
+  let when = "A teammate from the support team will reply here. You don't need to repeat anything.";
+  if (!h.support_open && h.opens) {
+    when = `Support is offline now (9:00 to 21:00 IST). A teammate will reply when it opens at 9:00 IST ${h.opens}. `
+      + "You don't need to repeat anything.";
+  }
+  card.append(el("div", "d", when));
+  return card;
+}
+
+function thumbs(traceId) {
+  const box = el("div", "thumbs");
+  for (const [rating, aria] of [["up", "Helpful"], ["down", "Not helpful"]]) {
+    const b = el("button");
+    b.type = "button"; b.setAttribute("aria-label", aria); b.setAttribute("aria-pressed", "false");
+    b.innerHTML = THUMB;                              // a fixed icon, not model text
+    if (rating === "down") b.firstChild.style.transform = "rotate(180deg)";
+    b.addEventListener("click", async () => {
+      const r = await fetch("/feedback", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ trace_id: traceId, rating }),
+      }).catch(() => null);
+      if (r && r.ok) box.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    });
+    box.append(b);
+  }
+  return box;
+}
+
+// Wiring ------------------------------------------------------------------------------------------
+$("search").addEventListener("input", renderList);
+$("form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = $("input").value.trim();
+  if (!text || !canSend()) return;
+  $("input").value = ""; autosize();
+  send(text);
+});
+function autosize() { const t = $("input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 120) + "px"; }
+$("input").addEventListener("input", () => { autosize(); canSend(); });
+$("input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("form").requestSubmit(); }
+});
+
+canSend();
+loadList();
+wake();
+</script>
+</body>
+</html>

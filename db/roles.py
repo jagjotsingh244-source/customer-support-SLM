@@ -38,6 +38,7 @@ def role_url(role: str, owner_url: str = DB_URL) -> str:
 def apply(conn: psycopg.Connection) -> None:
     """Run db/roles.sql and set the passwords, in the caller's transaction."""
     conn.execute((HERE / "roles.sql").read_text())
+    conn.execute((HERE / "demo.sql").read_text())    # the public demo: customer list and per-visitor reset
     for role in ROLES:
         conn.execute(sql.SQL("ALTER ROLE {} PASSWORD {}").format(sql.Identifier(role), sql.Literal(password(role))))
 

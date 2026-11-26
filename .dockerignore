@@ -8,3 +8,4 @@
 !rag/
 **/__pycache__
 !kb/
+!ui/

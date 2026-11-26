@@ -10,4 +10,5 @@
 !/db/
 !/rag/
 !/kb/
+!/ui/
 **/__pycache__/

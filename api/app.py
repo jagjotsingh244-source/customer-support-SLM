@@ -1,4 +1,5 @@
-"""Nova's backend API: the chat, the customer's Confirm click on a proposed return, health and warm-up.
+"""Nova's backend API: the chat page, the chat (streamed as events), the customer's Confirm click on a proposed
+return, thumbs feedback, health and warm-up.
 
     uv run --group api --group rag uvicorn api.app:app --port 8080
 
@@ -13,8 +14,16 @@ Configured only by environment variables, so the same code runs on a laptop, in 
     MODEL_NAME      the served model name (default nova)
     NOW_MODE        real in production, frozen (the default) in tests and evals (config.py)
     DEMO_CUSTOMERS  comma-separated customer ids that /demo-login accepts (default: any eval-partition customer)
+    DEMO_RESET      1 on the public demo: signing in clears what earlier visitors did for that customer
     DB_POOL         conversations that can be mid-turn at once, each with its own connections (default 16)
     COOKIE_SECURE   1 (default): the session cookie is sent over https only; 0 for local http
+    MODEL_IDLE_S    seconds after which the model endpoint may be asleep (default 60, its scale-down window): the
+                    next turn checks first and tells the customer it is waking
+
+A turn on /chat/stream sends events: status as each tool starts, then reply once the reply has passed the
+grounding check and output filter (it is never streamed token by token past them), confirm_card for a proposed
+return, handoff for a ticket, and done with the trace id that /feedback takes. /chat runs the same turn and
+answers once, in JSON.
 
 The customer comes from the session cookie that /demo-login sets, never from the body or the conversation.
 Conversations live in this process's memory (one instance; the deployment pins it), and nothing a customer
@@ -29,15 +38,17 @@ import secrets
 import sys
 import threading
 import time
+import uuid
 from collections import OrderedDict
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
+from typing import Literal
 
 import psycopg
 from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from psycopg.rows import dict_row
 from pydantic import BaseModel, Field
 
@@ -51,6 +62,7 @@ DB_URL = os.environ.get("DATABASE_URL") or os.environ.get("DB_URL", "postgresql:
 MODEL_NAME = os.environ.get("MODEL_NAME", "nova")
 PROMPT, MAX_CALLS, TEMPERATURE = "v3", 4, 0.2   # the shipping configuration the golden set measures
 SESSIONS_KEPT = 2000
+UI = Path(__file__).resolve().parent.parent / "ui"
 
 @asynccontextmanager
 async def lifespan(_app):
@@ -143,6 +155,8 @@ class Chat:
     rules: object
     lock: threading.Lock = field(default_factory=threading.Lock)
     turns: int = 0
+    traces: dict = field(default_factory=dict)       # trace id -> turn number, for feedback
+    feedback: dict = field(default_factory=dict)     # trace id -> "up" | "down"
 
 
 SESSIONS: "OrderedDict[str, Chat]" = OrderedDict()
@@ -183,6 +197,149 @@ def current_chat(nova_session: str | None = Cookie(default=None)) -> Chat:
         return chat
 
 
+# Demo customers -------------------------------------------------------------------------------------
+
+# Five eval-partition customers, each showing a different part of Nova, listed first in the picker with a message
+# to try. Every other eval-partition customer follows (db/demo.sql demo_customer_list()).
+DEMO_PERSONAS = [
+    {"customer_id": 57, "scenario": "A parcel on its way", "try": "Where is my order?"},
+    {"customer_id": 116, "scenario": "Returning something", "try": "I'd like to return the wireless mouse I got last week."},
+    {"customer_id": 137, "scenario": "A parcel that never came", "try": "My phone case still hasn't arrived and it's been weeks."},
+    {"customer_id": 176, "scenario": "A late order", "try": "My order is late. When will it get here?"},
+    {"customer_id": 372, "scenario": "A return window that has closed", "try": "Can I return the induction cooktop I bought in October?"},
+]
+ANY_CUSTOMER_TRY = "Where is my order?"
+LATEST = {"placed": "just placed", "packed": "being packed", "shipped": "on its way",
+          "out_for_delivery": "out for delivery", "delivered": "delivered", "cancelled": "cancelled",
+          "return_requested": "return in progress", "refunded": "refunded"}
+_DEMO_LIST: list = []                                   # read once per process: the store's customers do not change
+
+
+# Turn events ----------------------------------------------------------------------------------------
+
+# What the chat page shows while a tool runs. Only an order id (a number) is ever put into the text.
+STATUS = {
+    "list_my_orders": "Checking your orders…",
+    "get_order_status": "Looking at order {order_id}…",
+    "get_tracking": "Checking the tracking for order {order_id}…",
+    "search_help_center": "Looking it up in the help center…",
+    "propose_return": "Checking whether it can go back…",
+    "escalate_to_human": "Passing this to a teammate…",
+}
+WAKING = "Nova is waking up. Sorry, the GPU sleeps when nobody's chatting (student budget). About 2 minutes."
+TURN_FAILED = "Nova couldn't answer just now. Please send that again in a moment."
+MODEL_IDLE_S = float(os.environ.get("MODEL_IDLE_S", "60"))   # the model endpoint sleeps after this long idle
+HEARTBEAT_S = 15                                              # an SSE comment keeps proxies from closing a long wait
+_MODEL = {"last_ok": float("-inf")}
+
+
+NO_ORDER_ID = {"get_order_status": "Looking at your order…", "get_tracking": "Checking the tracking…"}
+
+
+def status_text(tool: str, args: dict) -> str:
+    oid = args.get("order_id")
+    text = STATUS.get(tool, "Working on it…")
+    if "{order_id}" in text:
+        text = text.format(order_id=oid) if isinstance(oid, int) else NO_ORDER_ID[tool]
+    return text
+
+
+def _cards(trace: dict) -> tuple[list, dict | None]:
+    """The Confirm cards (one per return proposed this turn) and the hand-off, from the tool results.
+    A card carries the proposal id and what to show; Confirm sends back only the id."""
+    cards, handoff = [], None
+    for call in trace["tool_calls"]:
+        r = call["result"] if isinstance(call["result"], dict) else {}
+        if (call["name"] == "propose_return" and r.get("eligible") and r.get("proposal_id")
+                and all(c["proposal_id"] != r["proposal_id"] for c in cards)):     # asked twice: one card
+            cards.append({"proposal_id": r["proposal_id"], "order_id": r.get("order_id"), "item": r.get("item"),
+                          "refund_estimate_inr": None if r.get("refund_estimate_inr") is None
+                          else float(r["refund_estimate_inr"])})     # a Decimal from Postgres
+        if call["name"] == "escalate_to_human" and r.get("handed_off") and r.get("ticket_id"):
+            from agent.escalation import next_opening, support_open
+            t = now()
+            opens = next_opening(t)
+            handoff = {"ticket_id": r["ticket_id"], "support_open": support_open(t),
+                       "opens": None if support_open(t) else
+                       ("today" if opens.date() == t.astimezone(opens.tzinfo).date() else "tomorrow")}
+    return cards, handoff
+
+
+def _run(c: Chat, text: str, trace_id: str, emit) -> tuple[str, dict]:
+    """One turn through the shipping loop. The conversation is put back as it was if the turn fails."""
+    from agent import tools_v2
+    from agent.loop import run_turn
+    with c.lock, Conns() as conns:                     # one turn at a time per conversation
+        if time.monotonic() - _MODEL["last_ok"] > MODEL_IDLE_S and not model_endpoint.ready(timeout=2)[0]:
+            emit("status", {"text": WAKING, "waking": True})
+        session = tools_v2.Session(conns, c.customer_id, c.customer_name)
+        kept = len(c.messages)
+        c.messages.append({"role": "user", "content": text})
+        try:
+            reply, trace = run_turn(model_endpoint.client(), MODEL_NAME, c.messages, tools_v2.TOOLS,
+                                    tools_v2.DISPATCH, session, max_steps=MAX_CALLS, temperature=TEMPERATURE,
+                                    trace_id=trace_id, context=c.context, guard=c.guard, rules=c.rules,
+                                    on_event=lambda kind, d: emit(kind, {"text": status_text(d["tool"], d["args"]),
+                                                                         "tool": d["tool"]}))
+        except Exception:
+            del c.messages[kept:]
+            raise
+        _MODEL["last_ok"] = time.monotonic()
+        c.turns += 1
+        c.traces[trace_id] = c.turns
+        return reply, trace
+
+
+def turn_events(c: Chat, text: str):
+    """(event, data) pairs for one turn: status as each tool starts, then reply (after every check), confirm_card
+    and handoff if they happened, and done with the trace id. The turn runs in a worker thread so status events
+    leave while it is still going; a None event is a heartbeat."""
+    trace_id = uuid.uuid4().hex
+    t0 = time.perf_counter()
+    q: "queue.Queue" = queue.Queue()
+
+    def emit(kind, data):
+        q.put((kind, {**data, "t_ms": round(1000 * (time.perf_counter() - t0))}))
+
+    def work():
+        try:
+            q.put(("_result", _run(c, text, trace_id, emit)))
+        except Exception as e:                         # the customer sees a plain message; the log gets the type
+            q.put(("_error", e))
+
+    threading.Thread(target=work, daemon=True).start()
+    while True:
+        try:
+            kind, data = q.get(timeout=HEARTBEAT_S)
+        except queue.Empty:
+            yield None, None
+            continue
+        if kind == "_error":
+            log.error(json.dumps({"event": "turn_failed", "trace_id": trace_id, "error": type(data).__name__}))
+            yield "error", {"text": TURN_FAILED, "trace_id": trace_id}
+            return
+        if kind != "_result":
+            yield kind, data
+            continue
+        reply, trace = data
+        turn_s = time.perf_counter() - t0
+        reply_ms = round(1000 * turn_s)
+        yield "reply", {"text": reply, "t_ms": reply_ms}
+        cards, handoff = _cards(trace)
+        for card in cards:
+            yield "confirm_card", card
+        if handoff:
+            yield "handoff", handoff
+        model_s = sum(m["latency_s"] for m in trace["model_calls"])
+        final = trace["model_calls"][-1]["latency_s"] if trace["model_calls"] and not trace["format_errors"] else None
+        done = {"trace_id": trace_id, "turn_s": round(turn_s, 3), "model_s": round(model_s, 3),
+                "model_calls": len(trace["model_calls"]), "tools": [t["name"] for t in trace["tool_calls"]],
+                "escalated": trace["escalated"], "final_call_s": final, "checks_ms": trace.get("checks_ms")}
+        log.info(json.dumps({"event": "turn", **done}))
+        yield "done", done
+        return
+
+
 # Routes ----------------------------------------------------------------------------------------------
 
 class Login(BaseModel):
@@ -193,11 +350,39 @@ class Message(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
 
 
+class Feedback(BaseModel):
+    trace_id: str = Field(min_length=1, max_length=64)
+    rating: Literal["up", "down"]
+
+
+@app.get("/", include_in_schema=False)
+def page():
+    return FileResponse(UI / "index.html", headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/demo-customers")
+def demo_list():
+    """The picker: the scenario customers first, then every eval-partition customer that sign-in accepts, with
+    name, city and where their latest order is. Nothing else about a customer leaves."""
+    if not _DEMO_LIST:
+        rows = confirmer().execute("SELECT * FROM demo_customer_list()").fetchall()
+        _DEMO_LIST.extend({"customer_id": r["customer_id"], "name": r["full_name"], "city": r["city"],
+                           "latest": LATEST.get(r["latest_status"] or "", "no orders yet")} for r in rows)
+    allowed = demo_customers()
+    everyone = [c for c in _DEMO_LIST if allowed is None or c["customer_id"] in allowed]
+    by_id = {c["customer_id"]: c for c in everyone}
+    featured = [{**by_id[p["customer_id"]], **p} for p in DEMO_PERSONAS if p["customer_id"] in by_id]
+    return {"featured": featured, "customers": [{**c, "try": ANY_CUSTOMER_TRY} for c in everyone]}
+
+
 @app.post("/demo-login")
 def demo_login(body: Login, response: Response):
     allowed = demo_customers()
     if (allowed is not None and body.customer_id not in allowed) or partition_for(body.customer_id) != "eval":
         raise HTTPException(403, "not a demo account")
+    if os.environ.get("DEMO_RESET") == "1":         # every visitor starts from the seeded store (db/demo.sql)
+        removed = confirmer().execute("SELECT demo_reset(%s) AS n", (body.customer_id,)).fetchone()["n"]
+        log.info(json.dumps({"event": "demo_reset", "returns_removed": removed}))
     try:
         chat = new_chat(body.customer_id)
     except ValueError:
@@ -212,26 +397,45 @@ def demo_login(body: Login, response: Response):
     return {"customer_id": chat.customer_id, "name": chat.customer_name}
 
 
+@app.post("/chat/stream")
+def chat_stream(body: Message, c: Chat = Depends(current_chat)):
+    """One turn as server-sent events (see turn_events). The reply is held until every check has passed."""
+    def sse():
+        for kind, data in turn_events(c, body.message):
+            if kind is None:
+                yield ": keep-alive\n\n"
+            else:
+                yield f"event: {kind}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+    return StreamingResponse(sse(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
 @app.post("/chat")
 def chat(body: Message, response: Response, c: Chat = Depends(current_chat)):
-    from agent import tools_v2
-    from agent.loop import run_turn
-    t0 = time.perf_counter()
-    with c.lock, Conns() as conns:                     # one turn at a time per conversation
-        session = tools_v2.Session(conns, c.customer_id, c.customer_name)
-        c.messages.append({"role": "user", "content": body.message})
-        c.turns += 1
-        reply, trace = run_turn(model_endpoint.client(), MODEL_NAME, c.messages, tools_v2.TOOLS, tools_v2.DISPATCH, session,
-                                max_steps=MAX_CALLS, temperature=TEMPERATURE, context=c.context, guard=c.guard,
-                                rules=c.rules)
-    turn_s = time.perf_counter() - t0
-    model_s = sum(m["latency_s"] for m in trace["model_calls"])
-    tools = [t["name"] for t in trace["tool_calls"]]
-    log.info(json.dumps({"event": "turn", "turn_s": round(turn_s, 3), "model_s": round(model_s, 3),
-                         "model_calls": len(trace["model_calls"]), "tools": tools, "escalated": trace["escalated"]}))
-    response.headers["Server-Timing"] = f"turn;dur={turn_s * 1000:.0f}, model;dur={model_s * 1000:.0f}"
-    return {"reply": reply, "turn_s": round(turn_s, 3), "model_s": round(model_s, 3),
-            "model_calls": len(trace["model_calls"]), "tools": tools, "escalated": trace["escalated"]}
+    """The same turn as one JSON answer (the load test and scripts use it)."""
+    out = {"events": []}
+    for kind, data in turn_events(c, body.message):
+        if kind == "error":
+            raise HTTPException(502, data["text"])
+        if kind == "reply":
+            out["reply"] = data["text"]
+        elif kind == "done":
+            out.update(data)
+        elif kind is not None:
+            out["events"].append({"event": kind, **data})
+    response.headers["Server-Timing"] = f"turn;dur={out['turn_s'] * 1000:.0f}, model;dur={out['model_s'] * 1000:.0f}"
+    return out
+
+
+@app.post("/feedback")
+def feedback(body: Feedback, c: Chat = Depends(current_chat)):
+    """Thumbs up or down for one of this conversation's turns, by its trace id. The last click counts."""
+    if body.trace_id not in c.traces:
+        raise HTTPException(404, "no such turn in this conversation")
+    c.feedback[body.trace_id] = body.rating
+    log.info(json.dumps({"event": "feedback", "trace_id": body.trace_id, "rating": body.rating,
+                         "turn": c.traces[body.trace_id]}))
+    return {"trace_id": body.trace_id, "rating": body.rating}
 
 
 @app.get("/health")

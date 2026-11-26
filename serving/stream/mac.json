@@ -1,0 +1,415 @@
+{
+  "base_url_kind": "local",
+  "summary": {
+    "turns": 10,
+    "failed": 0,
+    "first_event_s": {
+      "p50": 1.706,
+      "p95": 2.097
+    },
+    "reply_s": {
+      "p50": 7.285,
+      "p95": 10.628
+    },
+    "hold_upper_bound_s": {
+      "p50": 3.4354,
+      "p95": 4.177899999999999
+    },
+    "checks_ms": {
+      "p50": 0.7,
+      "max": 4.1
+    },
+    "turns_with_status_before_reply": 10,
+    "mean_tools_per_turn": 2.6
+  },
+  "turns": [
+    {
+      "message": "Where is my order?",
+      "statuses": [
+        {
+          "t_s": 2.097,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.515,
+          "text": "Checking the tracking for order 12466…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 2.097,
+      "reply_s": 7.333,
+      "reply": "Your order 12466 for the Cable organiser is in transit with BlueLine (tracking BL70002564). The last scan was at the Vijayawada hub on 2026-11-20, and the estimated delivery date is 2026-11-23.",
+      "done": {
+        "trace_id": "9eef3fc4c9504af7aa51ced9bc7bd097",
+        "turn_s": 7.331,
+        "model_s": 6.905,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 3.796,
+        "checks_ms": 4.1
+      },
+      "customer_id": 57
+    },
+    {
+      "message": "I'd like to return the wireless mouse I got last week.",
+      "statuses": [
+        {
+          "t_s": 1.62,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.206,
+          "text": "Looking at order 12063…",
+          "waking": false
+        },
+        {
+          "t_s": 6.662,
+          "text": "Checking whether it can go back…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.62,
+      "reply_s": 9.919,
+      "reply": "You can return the Wireless mouse from order 12063. A return proposal has been created with an estimated refund of ₹699.00. Please press the Confirm button on the card that appears to proceed with the return.",
+      "confirm_card": {
+        "proposal_id": 906587,
+        "order_id": 12063,
+        "item": "Wireless mouse",
+        "refund_estimate_inr": 699.0
+      },
+      "done": {
+        "trace_id": "b95d9914fe1c49daa8ecbfe5b4a8c333",
+        "turn_s": 9.918,
+        "model_s": 9.866,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "get_order_status",
+          "propose_return"
+        ],
+        "escalated": false,
+        "final_call_s": 3.235,
+        "checks_ms": 0.4
+      },
+      "customer_id": 116
+    },
+    {
+      "message": "My phone case still hasn't arrived and it's been weeks.",
+      "statuses": [
+        {
+          "t_s": 1.641,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.075,
+          "text": "Checking the tracking for order 11343…",
+          "waking": false
+        },
+        {
+          "t_s": 3.084,
+          "text": "Passing this to a teammate…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.641,
+      "reply_s": 6.243,
+      "reply": "I've escalated your issue regarding the missing phone case (Order 11343) to a support teammate. Your ticket number is 902229, and they will reply to you shortly.",
+      "handoff": {
+        "ticket_id": 902229,
+        "support_open": true,
+        "opens": null
+      },
+      "done": {
+        "trace_id": "bb654152a7b34eb6a7c58781e5970e62",
+        "turn_s": 6.241,
+        "model_s": 6.21,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking",
+          "escalate_to_human"
+        ],
+        "escalated": true,
+        "final_call_s": 3.146,
+        "checks_ms": 0.9
+      },
+      "customer_id": 137
+    },
+    {
+      "message": "My order is late. When will it get here?",
+      "statuses": [
+        {
+          "t_s": 1.533,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.048,
+          "text": "Checking the tracking for order 11592…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.533,
+      "reply_s": 7.206,
+      "reply": "Your order 11592 (Coffee mug set, Steam iron, Noise-cancelling headphones) is in transit with BlueLine, tracking BL70001531. The estimated delivery date was 2026-11-14, and the last scan was at the Ahmedabad hub on 2026-11-16. It is still with the carrier.",
+      "done": {
+        "trace_id": "00d094d173bb461484b92277d928494d",
+        "turn_s": 7.202,
+        "model_s": 7.157,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 4.143,
+        "checks_ms": 0.3
+      },
+      "customer_id": 176
+    },
+    {
+      "message": "Can I return the induction cooktop I bought in October?",
+      "statuses": [
+        {
+          "t_s": 1.792,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.39,
+          "text": "Looking it up in the help center…",
+          "waking": false
+        },
+        {
+          "t_s": 6.54,
+          "text": "Passing this to a teammate…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.792,
+      "reply_s": 9.694,
+      "reply": "I cannot process the return directly. I have connected you to a teammate who will assist with your return request for the induction cooktop. Your ticket number is 902230, and they will reply shortly.",
+      "handoff": {
+        "ticket_id": 902230,
+        "support_open": true,
+        "opens": null
+      },
+      "done": {
+        "trace_id": "d5edf7044b7647d3988300824c6eacac",
+        "turn_s": 9.692,
+        "model_s": 9.606,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "search_help_center",
+          "escalate_to_human"
+        ],
+        "escalated": true,
+        "final_call_s": 3.135,
+        "checks_ms": 0.7
+      },
+      "customer_id": 372
+    },
+    {
+      "message": "Where is my order?",
+      "statuses": [
+        {
+          "t_s": 1.721,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.123,
+          "text": "Checking the tracking for order 12466…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.721,
+      "reply_s": 7.285,
+      "reply": "Your order 12466 for the Cable organiser is in transit with BlueLine (tracking BL70002564). The last scan was at the Vijayawada hub on 2026-11-20, and the estimated delivery date is 2026-11-23.",
+      "done": {
+        "trace_id": "f6063371945247c9b14a43dcc598fb51",
+        "turn_s": 7.282,
+        "model_s": 7.259,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 4.153,
+        "checks_ms": 0.8
+      },
+      "customer_id": 57
+    },
+    {
+      "message": "I'd like to return the wireless mouse I got last week.",
+      "statuses": [
+        {
+          "t_s": 1.727,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.327,
+          "text": "Looking at order 12063…",
+          "waking": false
+        },
+        {
+          "t_s": 7.159,
+          "text": "Checking whether it can go back…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.727,
+      "reply_s": 10.628,
+      "reply": "You can return the Wireless mouse from order 12063. A return proposal has been created with an estimated refund of ₹699.00. Please press the Confirm button on the card that appears to proceed with the return.",
+      "confirm_card": {
+        "proposal_id": 906588,
+        "order_id": 12063,
+        "item": "Wireless mouse",
+        "refund_estimate_inr": 699.0
+      },
+      "done": {
+        "trace_id": "cfadf2f8a9d9481cbbb9189d71d784ef",
+        "turn_s": 10.625,
+        "model_s": 10.543,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "get_order_status",
+          "propose_return"
+        ],
+        "escalated": false,
+        "final_call_s": 3.435,
+        "checks_ms": 0.4
+      },
+      "customer_id": 116
+    },
+    {
+      "message": "My phone case still hasn't arrived and it's been weeks.",
+      "statuses": [
+        {
+          "t_s": 1.706,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.16,
+          "text": "Checking the tracking for order 11343…",
+          "waking": false
+        },
+        {
+          "t_s": 3.167,
+          "text": "Passing this to a teammate…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.706,
+      "reply_s": 6.289,
+      "reply": "I've escalated your issue regarding the missing phone case (Order 11343) to a teammate. Your ticket number is 902231, and they will reply to you shortly.",
+      "handoff": {
+        "ticket_id": 902231,
+        "support_open": true,
+        "opens": null
+      },
+      "done": {
+        "trace_id": "30a2fa62a2f3409bac273ffc0bfeadb5",
+        "turn_s": 6.287,
+        "model_s": 6.255,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking",
+          "escalate_to_human"
+        ],
+        "escalated": true,
+        "final_call_s": 3.112,
+        "checks_ms": 0.3
+      },
+      "customer_id": 137
+    },
+    {
+      "message": "My order is late. When will it get here?",
+      "statuses": [
+        {
+          "t_s": 1.225,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 2.663,
+          "text": "Checking the tracking for order 11592…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.225,
+      "reply_s": 6.851,
+      "reply": "Your order 11592 (Coffee mug set, Steam iron, Noise-cancelling headphones) is in transit with BlueLine, tracking BL70001531. The estimated delivery date was 2026-11-14, and the last scan was at the Ahmedabad hub on 2026-11-16. It is still with the carrier.",
+      "done": {
+        "trace_id": "b3aaafc8913d4c809965c4923397dd06",
+        "turn_s": 6.85,
+        "model_s": 6.827,
+        "model_calls": 3,
+        "tools": [
+          "list_my_orders",
+          "get_tracking"
+        ],
+        "escalated": false,
+        "final_call_s": 4.177,
+        "checks_ms": 0.9
+      },
+      "customer_id": 176
+    },
+    {
+      "message": "Can I return the induction cooktop I bought in October?",
+      "statuses": [
+        {
+          "t_s": 1.772,
+          "text": "Checking your orders…",
+          "waking": false
+        },
+        {
+          "t_s": 3.283,
+          "text": "Looking it up in the help center…",
+          "waking": false
+        },
+        {
+          "t_s": 6.352,
+          "text": "Passing this to a teammate…",
+          "waking": false
+        }
+      ],
+      "first_event_s": 1.772,
+      "reply_s": 10.019,
+      "reply": "I cannot process the return yet. I have connected you to a teammate who will review your request for the induction cooktop from order 11156 or 10782. Your ticket number is 902232, and they will reply shortly.",
+      "handoff": {
+        "ticket_id": 902232,
+        "support_open": true,
+        "opens": null
+      },
+      "done": {
+        "trace_id": "a84bf421c64d4e659cb8d48c65161fa7",
+        "turn_s": 10.017,
+        "model_s": 9.97,
+        "model_calls": 4,
+        "tools": [
+          "list_my_orders",
+          "search_help_center",
+          "escalate_to_human"
+        ],
+        "escalated": true,
+        "final_call_s": 3.657,
+        "checks_ms": 0.8
+      },
+      "customer_id": 372
+    }
+  ]
+}
