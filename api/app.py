@@ -17,7 +17,7 @@ Configured only by environment variables, so the same code runs on a laptop, in 
     DEMO_RESET      1 on the public demo: signing in clears what earlier visitors did for that customer
     DB_POOL         conversations that can be mid-turn at once, each with its own connections (default 16)
     COOKIE_SECURE   1 (default): the session cookie is sent over https only; 0 for local http
-    MODEL_IDLE_S    seconds after which the model endpoint may be asleep (default 60, its scale-down window): the
+    MODEL_IDLE_S    seconds after which the model endpoint may be asleep (default 900, its scale-down window): the
                     next turn checks first and tells the customer it is waking
 
 A turn on /chat/stream sends events: status as each tool starts, then reply once the reply has passed the
@@ -266,7 +266,7 @@ STATUS = {
 }
 WAKING = "Nova is waking up. Sorry, the GPU sleeps when nobody's chatting (student budget). About 2 minutes."
 TURN_FAILED = "Nova couldn't answer just now. Please send that again in a moment."
-MODEL_IDLE_S = float(os.environ.get("MODEL_IDLE_S", "60"))   # the model endpoint sleeps after this long idle
+MODEL_IDLE_S = float(os.environ.get("MODEL_IDLE_S", "900"))  # the model endpoint sleeps after this long idle
 HEARTBEAT_S = 15                                              # an SSE comment keeps proxies from closing a long wait
 _MODEL: dict = {}                                             # endpoint -> when it last answered
 

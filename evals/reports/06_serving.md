@@ -66,7 +66,7 @@ flag stays as measured until vLLM is upgraded.
   model is awake, without failing when it is asleep), `/warmup` (wakes the model and waits until it answers: the
   "Waking Nova up..." button calls it), and the existing confirm route, now reading the customer from the session.
 - **Model endpoint** (`serving/modal_nova.py`): `launch_vllm.sh` in a Modal container on one L4, with up to 64
-  requests at once, a single container, and the GPU released after 60 s without a request. The weights come from a
+  requests at once, a single container, and the GPU released after 60 s without a request (raised to 15 minutes for the public demo, so a visitor waits for at most one cold start). The weights come from a
   Modal volume uploaded from this machine, so no Hub token goes to Modal. A single 4.4 GB upload failed halfway,
   so the weights went as five 1 GB shards, checked tensor by tensor against the original.
 

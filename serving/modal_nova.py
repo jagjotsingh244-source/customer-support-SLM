@@ -22,7 +22,9 @@ import subprocess
 import modal
 
 PORT = 8000
-SCALEDOWN = int(os.environ.get("NOVA_SCALEDOWN", "60"))   # idle seconds before the GPU is released
+# Idle seconds before the GPU is released. 15 minutes: a visitor waits for one cold start (about 2 minutes) on their
+# first message and never again in the same visit; the idle tail costs about $0.22 per visit (L4 at ~$0.89/h).
+SCALEDOWN = int(os.environ.get("NOVA_SCALEDOWN", "900"))
 # One deployed app per model, each under a permanent name (RUNBOOK.md, "Release a new model"). The defaults are
 # production; a canary is the same file deployed with other values, e.g.
 #   NOVA_APP=nova-next-serve NOVA_MODEL_DIR=nova-sft2b-v1-merged NOVA_SERVED=nova-next modal deploy serving/modal_nova.py

@@ -8,7 +8,7 @@ whoever is on call. Commands are Makefile targets (`make help`) unless shown in 
 | Part | Where | Settings | Look at it |
 |---|---|---|---|
 | Chat page and backend (`api/app.py`, `ui/index.html`) | Cloud Run `nova-backend`, project `nova-evals`, `us-east4`, public | environment variables on the service (list below) | `/health`; Cloud Run logs |
-| Model server (vLLM, the fine-tune in FP8) | Modal app `nova-serve`, one L4, scales to zero after 60 s | `serving/modal_nova.py`; key in Modal secret `nova-serve` | first request after idle takes about 2 minutes |
+| Model server (vLLM, the fine-tune in FP8) | Modal app `nova-serve`, one L4, scales to zero after 15 idle minutes | `serving/modal_nova.py`; key in Modal secret `nova-serve` | first request after idle takes about 2 minutes |
 | Store: orders, help center, vectors, three roles | Neon Postgres | owner URL in `.env` (`NEON_URL`), never in the backend | `make reindex DB_URL=...` checks retrieval |
 | Traces | Langfuse Cloud (US), project "My Project" | `LANGFUSE_*` on the backend | the Tracing page; filter by tag, user or time |
 | Local stand-in for all of the above | this machine: Docker Postgres, llama.cpp with the GGUF | `.claude/launch.json` | `http://localhost:8080` |
@@ -115,4 +115,4 @@ update `.env`, check one trace arrives, then delete the old pair in Langfuse.
   the trace id and error type), then the trace in Langfuse.
 - **A visitor reports a wrong answer:** find their turn in Langfuse (time, customer id), read the tool results and
   the retrieval scores, and add the case to the weekly review (`evals/reviews/`).
-- **The bill:** Modal and Google Cloud consoles. The Modal app releases its GPU after 60 s idle; the canary app too.
+- **The bill:** Modal and Google Cloud consoles. The Modal app releases its GPU after 15 idle minutes (about $0.22 of GPU per visit; `NOVA_SCALEDOWN` sets it at deploy time); the canary app too.
