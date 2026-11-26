@@ -111,6 +111,19 @@ def test_tool_names_are_said_in_plain_words():
     assert plain_tool_words("Your recent orders are below.") == ("Your recent orders are below.", False)
 
 
+def test_internal_names_are_said_in_plain_words():
+    assert plain_tool_words("The list_my_orders function does not take an id.")[0] == \
+        "Your recent orders does not take an id."
+    assert plain_tool_words("It shows status \"awaiting_bank_details\".")[0] == "It shows status awaiting bank details."
+    assert plain_tool_words("Rejected with reason 'opened_not_faulty', line_no 1.")[0] == \
+        "Rejected with reason opened not faulty, line no 1."
+    assert plain_tool_words("Per the orders_db and ticket_system, it is open.")[0] == \
+        "Per our order records and our support team, it is open."
+    cited = "Opened items cannot be returned [kb:returns-electronics#opened-electronics]."
+    assert plain_tool_words(cited) == (cited, False)
+    assert output_filter("Status: out_for_delivery.") == ("Status: out for delivery.", ["tool_name"])
+
+
 def test_redaction_masks_phones_and_removes_cards_and_emails():
     assert mask_phone("+91 98765 43210") == "••••••3210"
     line = "cust says 9876543210, card 4111 1111 1111 1111, mail x.y@gmail.com, order 10482, ₹1,299.00"

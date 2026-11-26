@@ -56,7 +56,14 @@ TOOL_NAMES = {   # what each tool means to a customer
 }
 _NAMES = "|".join(TOOL_NAMES)
 TOOL_CALL = re.compile(r"\b(?:call(?:ing)?|us(?:e|ing)|run(?:ning)?)\s+(?:the\s+)?`?(" + _NAMES + r")`?(?:\s+tool)?\b", re.I)
-TOOL_NAME = re.compile(r"`?\b(" + _NAMES + r")\b`?(?:\s+tool)?", re.I)
+TOOL_NAME = re.compile(r"(?:\bthe\s+)?`?\b(" + _NAMES + r")\b`?(?:\s+(?:tool|function|api))?", re.I)
+# The source labels the guard puts on tool results (agent/guardrails.py SOURCES), said the same way.
+SOURCE_NAMES = {"orders_db": "our order records", "help_center": "the help center",
+                "returns_service": "the returns process", "ticket_system": "our support team"}
+SOURCE_NAME = re.compile(r"(?:\bthe\s+)?`?\b(" + "|".join(SOURCE_NAMES) + r")\b`?", re.I)
+# Any other snake_case word is a field name or a status code from a tool result ("awaiting_bank_details",
+# "line_no", "opened_not_faulty"): said as words, without the quotes or backticks around it.
+SNAKE = re.compile(r"[\"'`]?\b([a-z]+(?:_[a-z0-9]+)+)\b[\"'`]?", re.I)
 
 SAFE_REPLY = "I can't share those details here. Is there anything else about your order I can help with?"
 
@@ -113,8 +120,15 @@ def plain_tool_words(reply: str) -> tuple[str, bool]:
     """The reply with tool names said in a customer's words: "I can call list_my_orders" -> "I can check your
     recent orders". The 2B models picked the phrase up from the tools' own error text (evals/reports/04_comparison.md)."""
     new = TOOL_CALL.sub(lambda m: TOOL_NAMES[m.group(1).lower()][0], reply)
-    new = TOOL_NAME.sub(lambda m: TOOL_NAMES[m.group(1).lower()][1], new)
+    new = TOOL_NAME.sub(lambda m: _cased(m, TOOL_NAMES[m.group(1).lower()][1]), new)
+    new = SOURCE_NAME.sub(lambda m: _cased(m, SOURCE_NAMES[m.group(1).lower()]), new)
+    new = SNAKE.sub(lambda m: _cased(m, m.group(1).replace("_", " ")), new)
     return new, new != reply
+
+
+def _cased(m: re.Match, words: str) -> str:
+    """The replacement, capitalised when what it replaces was ("The list_my_orders function" -> "Your recent...")."""
+    return words[:1].upper() + words[1:] if m.group(0).lstrip("\"'`")[:1].isupper() else words
 
 
 def output_filter(reply: str, own_email: str | None = None) -> tuple[str, list[str]]:
