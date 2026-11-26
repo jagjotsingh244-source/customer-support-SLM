@@ -12,7 +12,8 @@ Shipping is free when the items in your order total more than ₹499.
 
 ## Orders of ₹499 or less
 Orders whose items total ₹499 or less have a ₹49 shipping charge. An order of
-exactly ₹499 pays the ₹49 shipping charge, so its total is ₹548.
+exactly ₹499 pays the ₹49 shipping charge, so its total is ₹548. If you were
+charged ₹49 extra on an order, this shipping charge is the reason.
 
 ## One charge per order
 The shipping charge is added once per order, even if the order arrives in more

@@ -342,8 +342,18 @@ class HandoffRules:
 
     def note(self, result):
         if isinstance(result, dict) and result.get("handed_off"):
-            return {**result, "note": handoff_note(self.now(), result["ticket_id"])}
+            return {**result, "note": handoff_note(self.now(), result["ticket_id"]) + self._found()}
         return result
+
+    def _found(self) -> str:
+        """What the lookups showed about the order in focus, from the state, for the hand-off reply. Without it the
+        reply after a forced hand-off said only "a teammate will reply" and dropped the last scan the customer
+        needs to hear (esc-002, esc-003 and esc-005 failed on it in every served run)."""
+        oid = self.state.focus_order
+        facts = self.state.facts.get(oid, {}) if oid else {}
+        line = facts.get("get_tracking") or facts.get("get_order_status")
+        return f" Also tell the customer, in one sentence, what was found: {self.state.label(oid)}: {line}." \
+            if line else ""
 
     def end_turn(self, msg: str, calls: list[dict], reply: str | None = None) -> None:
         self.progress.end_turn(msg, calls, reply)

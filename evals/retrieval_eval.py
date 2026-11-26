@@ -129,7 +129,7 @@ def main() -> None:
     (out_dir / f"{slug}.json").write_text(json.dumps(
         {"model": args.model, "query_prefix": args.prefix, "file": Path(args.file).name,
          "query_ms_median": statistics.median(times), "summary": summary, "questions": per_q},
-        indent=1, ensure_ascii=False))
+        indent=1, ensure_ascii=False, default=str))      # effective_date comes back as a date
     print(f"\nrankings: {(out_dir / f'{slug}.json').relative_to(ROOT)}")
     if args.min_recall3 is not None and summary["vector"]["recall@3"] < args.min_recall3:
         sys.exit(f"FAILED: vector recall@3 {summary['vector']['recall@3']:.2f} is under {args.min_recall3:.2f}")

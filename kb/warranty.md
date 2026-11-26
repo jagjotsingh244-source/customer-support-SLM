@@ -15,8 +15,9 @@ Each product page shows its warranty length, from 0 to 36 months. Items with a
 The warranty starts on the delivery date of the shipment the item arrived in.
 
 ## What the warranty covers
-The warranty covers manufacturing faults. It does not cover physical damage,
-liquid damage or wear from normal use.
+The warranty covers manufacturing faults. It does not cover physical damage
+(such as a cracked screen after the phone or device falls), liquid damage or wear
+from normal use.
 
 ## Warranty or return
 Inside the return window, a faulty item is returned for a refund (see "Returning

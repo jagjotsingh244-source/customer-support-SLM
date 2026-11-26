@@ -8,14 +8,17 @@ tags: [returns]
 # Returning an item
 
 ## Return window
-You can return home and accessories items within 15 days of delivery.
+You can return home and accessories items within 15 days of delivery. Home
+items include bedsheets, towels, pillows, cushion covers, kitchenware and
+kitchen appliances, fans, lamps and clocks. Accessories include bags, wallets,
+belts, caps, sunglasses, phone cases, cables, chargers and adapters.
 Electronics have a 7-day return window and must be unopened. Opened electronics
 can be returned only if they are faulty (see "Returning electronics").
 
 ## When the return window starts
 The return window starts on the delivery date of the shipment the item arrived
-in. If your order arrived in more than one shipment, each item has its own
-return window.
+in. If your order arrived in more than one shipment, on different days, each item
+has its own return window, counted from the day its own shipment was delivered.
 
 ## Items you cannot return
 Some items are marked "Not returnable" on the product page. Once unsealed,

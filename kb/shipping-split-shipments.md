@@ -24,7 +24,8 @@ shipment does not mean the whole order has arrived.
 
 ## Return window for split orders
 Each item's return window starts on the delivery date of the shipment it arrived
-in.
+in. If your order came in two shipments on different days, the date that counts
+for returning each item is the day its own shipment was delivered.
 
 ## Shipping charge
 The shipping charge is added once per order, not once per shipment.

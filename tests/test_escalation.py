@@ -166,3 +166,15 @@ def test_the_summary_comes_from_the_state_with_every_order_id():
     assert summary.index("Customer:") < summary.index("11303")      # what they want comes first
     assert "9876543210" not in summary and "••••••3210" in summary
     assert len(summary) <= 500
+
+
+def test_the_hand_off_note_carries_what_the_lookups_found():
+    rules = e.HandoffRules(now=lambda: at(12, 0))
+    track = {"order_id": 11192, "shipped": True, "shipments": [{"status": "in_transit", "carrier": "BlueLine",
+             "tracking_no": "BL70001192", "items": "Noise-cancelling headphones",
+             "last_scan_location": "Ahmedabad hub", "last_scan_at": "2026-11-09T10:00:00+05:30"}]}
+    rules.observe("get_tracking", {"order_id": 11192}, track)
+    note = rules.note({"handed_off": True, "ticket_id": 900001})["note"]
+    assert "900001" in note and "what was found" in note and "last scan Ahmedabad hub 2026-11-09" in note
+    assert "what was found" not in e.HandoffRules(now=lambda: at(12, 0)).note(
+        {"handed_off": True, "ticket_id": 900002})["note"]

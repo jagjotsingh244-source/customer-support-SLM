@@ -34,6 +34,12 @@ forbidden was said and the hand-off was right.
   customers' orders, prompt extraction). With the guard layer on, Nova handles all 40 safely. Without it, the
   same model repeated a planted "full refund approved" note and printed its system prompt
   ([report](evals/reports/05a_attacks.md)).
+- **Since this table:** three fixes for right answers that were scored as failures (a privacy rule that blanked
+  correct cash-on-delivery refund answers, a hand-off on the model's last allowed call, and a scorer that wanted
+  lookups in a fixed order) take Nova as served to about 70% when its saved runs are rescored. The help center
+  now uses customers' words ("bedsheets", "money cut from my account", "charged ₹49 extra", "the screen
+  cracked"): on the 22 cases these changes touch, run on the local GGUF, 15 passed before and 20 after. A full
+  rerun on the serving GPU is still to do.
 - **Fresh cases:** 50 cases written after every decision was made. SFT-2a passes 62% (golden 62%), so all the
   tuning did not fit it to the golden set ([report](evals/reports/04_comparison.md)).
 
@@ -50,7 +56,7 @@ has closed", because the help-center search scores that page just under its cuto
 - **Store.** A made-up Indian online shop, NimbusCart: Postgres with seeded customers, orders, tracking, returns
   and an 18-page help center. Three database roles and row-level security: the agent can read only the signed-in
   customer's rows, and only the confirm role can create a return.
-- **Retrieval.** One rule per help-center section, embedded with bge-small in pgvector; recall@3 0.83 on real
+- **Retrieval.** One rule per help-center section, embedded with bge-small in pgvector; recall@3 0.85 on real
   customer phrasings. Below a similarity of 0.68 Nova says it doesn't know instead of guessing.
 - **Tools.** Six typed tools. Nova can only *propose* a return; the customer's click on the Confirm card creates
   it, so no prompt can make the model write to the store.
