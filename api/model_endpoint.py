@@ -1,6 +1,6 @@
-"""The backend's one way out: the model server. Kept apart from api/app.py and the tools, which reach only
-Postgres (tests/test_guardrails.py checks they import no network library), so the code that touches customer
-data cannot send it anywhere but the model.
+"""One of the backend's two ways out: the model server. The other is the tracer (api/tracing.py); both have fixed
+destinations. Kept apart from api/app.py and the tools, which reach only Postgres (tests/test_guardrails.py
+checks they import no network library), so the code that touches customer data cannot send it anywhere but these.
 
     MODEL_BASE_URL  the model server's OpenAI-compatible URL, e.g. https://.../v1
     NOVA_KEY        its API key

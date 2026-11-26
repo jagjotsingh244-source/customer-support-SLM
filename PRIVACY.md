@@ -57,9 +57,16 @@ like instructions cut out before the model sees it, and each result is labelled 
 - **Tool-call log lines** (`nova.tools` logger, `agent/loop.py`): trace id, turn, tool, arguments passed through
   `redact()`, success, latency, result size. Guard hits are logged by name, without the text.
 - **Traces**: every message, tool call, result and timing. Eval runs write them to
-  `evals/runs/<run>/traces.jsonl`, raw. Production traces are to be written one file per day to
-  `logs/traces/raw/`, with a copy in `logs/traces/redacted/` where every string has gone through
-  `redact_obj()`: phone numbers masked to the last four digits, card numbers and email addresses replaced.
+  `evals/runs/<run>/traces.jsonl`, raw. The deployed backend sends one trace per chat turn to Langfuse Cloud
+  (US region; `api/tracing.py`), and only a redacted one: the SDK's mask hook passes everything through
+  `redact_obj()` first (phone numbers masked to the last four digits, card numbers and email addresses
+  replaced). A trace holds the customer's message and Nova's reply, each step's timing, the tools' arguments and
+  a compact result (top-level fields, long text cut, lists counted), the help-center section ids and scores, and
+  the checks' outcomes. It never holds the system prompt or the conversation sent to the model, so not the
+  customer's name; the customer appears as `customer-<id>`. Thumbs clicks become a score on the turn's trace.
+  Langfuse's free plan shows 30 days of data. No raw production trace is kept anywhere. Without the
+  `LANGFUSE_*` keys nothing is sent (tests, evals, local runs). `tests/test_tracing.py` exports to memory and
+  checks that a phone number and an email in the message, and the customer's name, never appear.
 - **Retention** (`scripts/prune_traces.py`): a raw file older than 30 days is deleted, but only after its redacted
   copy exists with every line; redacted copies are deleted after 365 days. Dry run by default; `--apply` acts.
   It refuses any directory not named `traces`, and never follows a link out of it.
@@ -77,11 +84,16 @@ email, posts a message, calls a webhook or fetches a URL; `tests/test_guardrails
 imports no network library and that no tool schema mentions email, URLs or webhooks. The link guard closes the
 last route, a reply that carries data in a link the customer's browser would load.
 
+The backend itself has two ways out, both to destinations fixed at deploy time: the model server
+(`api/model_endpoint.py`) and the tracer (`api/tracing.py`). Neither takes an address from the model, a tool
+result or a customer, so neither can be steered into sending data elsewhere. The tools and the loop import
+neither; the loop only receives a span opener from the backend.
+
 ## Not done yet
 
-- **Production traces are not written yet.** The retention script is ready for the layout above; the serving API
-  that will write it comes next. The eval runs' `traces.jsonl` files are kept raw (synthetic data), including the
-  original of any reply a guard replaced, for debugging.
+- **Production traces live with Langfuse, not in our own storage**, so their retention is the plan's, not
+  `scripts/prune_traces.py`'s (which stays for eval and local trace files). The eval runs' `traces.jsonl` files
+  are kept raw (synthetic data), including the original of any reply a guard replaced, for debugging.
 - **The checks run where they are switched on**: `--guards` and `--handoff-rules` in `evals/run_eval.py`. The
   serving path must construct `Guard` and `HandoffRules` for every conversation; `agent/chat.py`, the early
   developer console on the first tools, passes neither.

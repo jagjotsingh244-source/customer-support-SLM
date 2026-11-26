@@ -29,7 +29,7 @@ import json
 import logging
 import sys
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
 from typing import Literal, NamedTuple, get_args
@@ -137,6 +137,17 @@ def connect(owner_url: str, search: bool = True) -> Conns:
     return conns
 
 
+class _NoStep:
+    def update(self, **_):
+        return self
+
+
+@contextmanager
+def no_span():
+    """What Session.span gives when no trace is being recorded (evals, tests, scripts)."""
+    yield _NoStep()
+
+
 @contextmanager
 def as_customer(conn: psycopg.Connection, customer_id: int):
     """One transaction in which row-level security sees only this customer. The final `true` makes the
@@ -152,6 +163,12 @@ class Session:
     conns: Conns
     customer_id: int
     customer_name: str
+    # Opens a step in the turn's trace (api/tracing.py); a no-op unless the backend sets one. The help-center
+    # search uses it to record its query, the sections' scores and the cutoff, none of which the model is shown.
+    spans: object = field(default=None, repr=False)
+
+    def span(self, name: str, **kw):
+        return self.spans(name, **kw) if self.spans else no_span()
 
     @classmethod
     def open(cls, conns: Conns, customer_id: int) -> "Session":
@@ -232,8 +249,14 @@ def get_tracking(session: Session, order_id: int) -> dict:
 def search_help_center(session: Session, query: str) -> dict:
     """Up to 3 help-center sections at or above the score cutoff, best first (as agent/tools_v1.py)."""
     from rag import search
-    with session.read() as c:
-        hits = [h for h in search.vector(c, _embedder().query(query), TOP_K) if h["score"] >= MIN_SCORE]
+    opener = getattr(session, "span", None) or (lambda *_a, **_k: no_span())
+    with opener("retrieval", as_type="retriever", input={"query": query}) as step:
+        with session.read() as c:
+            found = search.vector(c, _embedder().query(query), TOP_K)
+        hits = [h for h in found if h["score"] >= MIN_SCORE]
+        step.update(output={"chunks": [{"id": h["chunk_id"], "score": round(h["score"], 3)} for h in found],
+                            "kept": len(hits)},
+                    metadata={"top_k": TOP_K, "min_score": MIN_SCORE, "below_cutoff": not hits})
     if not hits:
         return {"note": NO_MATCH}
     return {"results": [{"id": h["chunk_id"], "title": h["path"], "text": h["body"],

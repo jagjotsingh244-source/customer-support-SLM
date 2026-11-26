@@ -16,6 +16,7 @@ dependencies = [
 [dependency-groups]
 api = [
     "fastapi>=0.165.0",
+    "langfuse>=5",
     "uvicorn>=0.38",
 ]
 data = [

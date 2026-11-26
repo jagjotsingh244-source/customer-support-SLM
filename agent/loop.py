@@ -10,6 +10,7 @@ import json
 import logging
 import time
 import uuid
+from contextlib import contextmanager
 
 from agent.grounding import grounding_issues, tool_contents_before
 from agent.privacy import redact
@@ -37,6 +38,30 @@ def unusable(msg) -> bool:
     return has_tool_markup(msg.content) or (not msg.tool_calls and not (msg.content or "").strip())
 
 
+class _NoStep:
+    def update(self, **_):
+        return self
+
+
+@contextmanager
+def _no_span(*_args, **_kw):
+    yield _NoStep()
+
+
+def compact(result, width: int = 80):
+    """A tool result as a trace keeps it: top-level fields, long text cut, lists and nested objects counted. Enough
+    to see what came back without copying database rows into the tracer."""
+    def one(v):
+        if isinstance(v, str):
+            return v if len(v) <= width else v[:width] + "…"
+        if isinstance(v, list):
+            return f"[{len(v)} items]"
+        if isinstance(v, dict):
+            return "{" + ", ".join(list(v)[:8]) + "}"
+        return v if isinstance(v, (int, float, bool)) or v is None else str(v)[:width]
+    return {k: one(v) for k, v in list(result.items())[:16]} if isinstance(result, dict) else one(result)
+
+
 def legacy_dispatch(registry: dict):
     """The first tools' calling convention (agent/tools_v0.py, tools_v1.py): a name -> function map, raw
     exceptions recorded as they are. Kept so old runs can be repeated exactly."""
@@ -53,7 +78,7 @@ def legacy_dispatch(registry: dict):
 
 
 def run_turn(client, model, messages, tools, registry, session, max_steps=4, temperature=0.2, sampling=None,
-             trace_id=None, context=None, guard=None, rules=None, on_event=None):
+             trace_id=None, context=None, guard=None, rules=None, on_event=None, spans=None):
     """Answer the last user message in `messages` (appended to in place).
 
     Returns (reply, trace). The trace keeps what the scorecard needs: every tool
@@ -98,6 +123,11 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
     runs, the model's and the forced ones alike, so a chat page can say "Checking your orders..." while the
     turn is still going. Nothing of the reply is sent this way: the reply leaves only as the return value,
     after every check above. trace["checks_ms"] is how long those reply checks took.
+
+    `spans(name, **attrs)`, when given, opens one step of the turn's trace (api/tracing.py) as a context manager:
+    each model call (prompt size, tokens, what it asked for), each tool call (arguments, a compact result, errors),
+    the help-center search inside it (through session.span), the hand-off rules that act on their own, the input
+    check and the reply checks. Without it nothing is recorded and nothing changes.
     """
     trace = {"trace_id": trace_id or uuid.uuid4().hex[:8], "tool_calls": [], "model_calls": [], "escalated": False,
              "format_errors": 0}
@@ -105,6 +135,9 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
     attempts = {}                                   # failed calls per tool in this turn (agent/tools_v2.call_tool)
     turn = sum(1 for m in messages if m.get("role") == "user")
     user_msg = messages[-1].get("content") or ""
+    span = spans or _no_span
+    if spans and hasattr(session, "spans"):        # lets the help-center search record its own step
+        session.spans = spans
 
     def run_call(call_id, name, raw, forced=False):
         """Run one tool call and append its result; the same path for the model's calls and forced ones."""
@@ -116,11 +149,16 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             parsed = False
         if on_event:
             on_event("status", {"tool": name, "args": parse_args(raw) or {}})
-        t0 = time.perf_counter()
-        repeat = rules.repeat_handoff(name) if rules else None
-        result = repeat or dispatch(name, raw, session, attempts)
-        latency_ms = round(1000 * (time.perf_counter() - t0))
-        ok = not (isinstance(result, dict) and "error" in result)
+        args = parse_args(raw)
+        with span(f"tool:{name}", as_type="tool", input=args if args is not None else {"unparsed": raw},
+                  metadata={"by": "rule" if forced else "model"}) as step:
+            t0 = time.perf_counter()
+            repeat = rules.repeat_handoff(name) if rules else None
+            result = repeat or dispatch(name, raw, session, attempts)
+            latency_ms = round(1000 * (time.perf_counter() - t0))
+            ok = not (isinstance(result, dict) and "error" in result)
+            step.update(output=compact(result), level=None if ok else "ERROR",
+                        status_message=None if ok else str(result.get("error")))
         if name == "escalate_to_human" and ok:
             trace["escalated"] = True
         if rules and not repeat:
@@ -154,7 +192,8 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
         messages.append({"role": "assistant", "content": "", "tool_calls": [
             {"id": call_id, "type": "function", "function": {"name": "get_tracking", "arguments": raw}}]})
         trace.setdefault("forced_tracking", []).append(order_id)
-        return run_call(call_id, "get_tracking", raw, forced=True)
+        with span("rule:check_tracking", as_type="guardrail", input={"order_id": order_id}):
+            return run_call(call_id, "get_tracking", raw, forced=True)
 
     def force_handoff(esc):
         """escalate_to_human called by the loop, shown to the model as a call it made, so it only has to tell
@@ -165,7 +204,8 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
             {"id": call_id, "type": "function", "function": {"name": "escalate_to_human", "arguments": raw}}]})
         trace["forced_handoff"] = esc.reason
         log.warning(json.dumps({"trace_id": trace["trace_id"], "turn": turn, "forced_handoff": esc.reason}))
-        run_call(call_id, "escalate_to_human", raw, forced=True)
+        with span("rule:handoff", as_type="guardrail", input={"reason": esc.reason}):
+            run_call(call_id, "escalate_to_human", raw, forced=True)
 
     def finish(reply):
         if rules:
@@ -173,17 +213,30 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
         return reply, trace
 
     if guard:
-        trace["input_flags"] = guard.incoming(user_msg)
+        with span("input_check", as_type="guardrail") as step:
+            trace["input_flags"] = guard.incoming(user_msg)
+            step.update(output={"flags": trace["input_flags"]}, level="WARNING" if trace["input_flags"] else None)
         trace["scrubbed"] = []
         if trace["input_flags"]:
             log.warning(json.dumps({"trace_id": trace["trace_id"], "turn": turn, "input_flags": trace["input_flags"]}))
     if rules and (esc := rules.at_turn_start(user_msg)):
         force_handoff(esc)
-    for _ in range(max_steps):
+    for step_no in range(max_steps):
         sent = context.prepare(messages) if context else messages
         t0 = time.perf_counter()
-        r = client.chat.completions.create(model=model, messages=sent, tools=tools,
-                                           temperature=temperature, max_tokens=512, **(sampling or {}))
+        with span("model_call", as_type="generation", model=model, metadata={"step": step_no + 1},
+                  model_parameters={"temperature": temperature, "max_tokens": 512},
+                  input={"messages_sent": len(sent), "messages_in_conversation": len(messages)}) as gen:
+            r = client.chat.completions.create(model=model, messages=sent, tools=tools,
+                                               temperature=temperature, max_tokens=512, **(sampling or {}))
+            m = r.choices[0].message
+            gen.update(output={"tool_calls": [c.function.name for c in (m.tool_calls or [])],
+                               "reply_chars": len(m.content or "")},
+                       usage_details={"input": r.usage.prompt_tokens, "output": r.usage.completion_tokens}
+                       if r.usage else None,
+                       metadata={"served_model": r.model, "finish_reason": r.choices[0].finish_reason,
+                                 "format_error": unusable(m)},
+                       level="WARNING" if unusable(m) else None)
         if context:
             trace.setdefault("sent", []).append({"messages": len(sent), "of": len(messages),
                                                  "budget_tokens": context.count_tokens(sent),
@@ -206,13 +259,17 @@ def run_turn(client, model, messages, tools, registry, session, max_steps=4, tem
         if not msg.tool_calls:
             reply = msg.content
             t_checks = time.perf_counter()
-            if guard:
-                reply, hits = guard.outgoing(reply, messages)
-                if hits:
-                    trace["output_guard"] = {"hits": hits, "original": msg.content}
-                    messages[-1]["content"] = reply      # the history holds what the customer saw
-                    log.warning(json.dumps({"trace_id": trace["trace_id"], "turn": turn, "output_guard": hits}))
-            trace["grounding"] = grounding_issues(reply, tool_contents_before(messages, len(messages)))
+            with span("reply_checks", as_type="guardrail") as step:
+                hits = []
+                if guard:
+                    reply, hits = guard.outgoing(reply, messages)
+                    if hits:
+                        trace["output_guard"] = {"hits": hits, "original": msg.content}
+                        messages[-1]["content"] = reply      # the history holds what the customer saw
+                        log.warning(json.dumps({"trace_id": trace["trace_id"], "turn": turn, "output_guard": hits}))
+                trace["grounding"] = grounding_issues(reply, tool_contents_before(messages, len(messages)))
+                step.update(output={"output_filter_hits": hits, "grounding_issues": trace["grounding"]},
+                            level="WARNING" if hits or trace["grounding"] else None)
             trace["checks_ms"] = round(1000 * (time.perf_counter() - t_checks), 1)
             return finish(reply)
         results = []

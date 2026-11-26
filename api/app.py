@@ -53,7 +53,7 @@ from psycopg.rows import dict_row
 from pydantic import BaseModel, Field
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from api import model_endpoint  # noqa: E402
+from api import model_endpoint, tracing  # noqa: E402
 from api.returns import confirm_return  # noqa: E402
 from config import now, partition_for  # noqa: E402
 from db.roles import role_url  # noqa: E402
@@ -157,6 +157,7 @@ class Chat:
     turns: int = 0
     traces: dict = field(default_factory=dict)       # trace id -> turn number, for feedback
     feedback: dict = field(default_factory=dict)     # trace id -> "up" | "down"
+    conversation_id: str = field(default_factory=lambda: uuid.uuid4().hex)   # the traces' session id
 
 
 SESSIONS: "OrderedDict[str, Chat]" = OrderedDict()
@@ -304,26 +305,51 @@ def _cards(trace: dict) -> tuple[list, dict | None]:
 def _run(c: Chat, text: str, trace_id: str, emit) -> tuple[str, dict]:
     """One turn through the shipping loop. The conversation is put back as it was if the turn fails."""
     from agent import tools_v2
-    from agent.loop import run_turn
+    from agent.loop import FALLBACK_REPLY, run_turn
     with c.lock, Conns() as conns:                     # one turn at a time per conversation
         if time.monotonic() - _MODEL["last_ok"] > MODEL_IDLE_S and not model_endpoint.ready(timeout=2)[0]:
             emit("status", {"text": WAKING, "waking": True})
         session = tools_v2.Session(conns, c.customer_id, c.customer_name)
         kept = len(c.messages)
         c.messages.append({"role": "user", "content": text})
-        try:
-            reply, trace = run_turn(model_endpoint.client(), MODEL_NAME, c.messages, tools_v2.TOOLS,
-                                    tools_v2.DISPATCH, session, max_steps=MAX_CALLS, temperature=TEMPERATURE,
-                                    trace_id=trace_id, context=c.context, guard=c.guard, rules=c.rules,
-                                    on_event=lambda kind, d: emit(kind, {"text": status_text(d["tool"], d["args"]),
-                                                                         "tool": d["tool"]}))
-        except Exception:
-            del c.messages[kept:]
-            raise
+        with tracing.turn(trace_id, customer_id=c.customer_id, conversation_id=c.conversation_id, message=text,
+                          tags=trace_tags(conns.reader)) as (root, spans):
+            try:
+                reply, trace = run_turn(model_endpoint.client(), MODEL_NAME, c.messages, tools_v2.TOOLS,
+                                        tools_v2.DISPATCH, session, max_steps=MAX_CALLS, temperature=TEMPERATURE,
+                                        trace_id=trace_id, context=c.context, guard=c.guard, rules=c.rules,
+                                        spans=spans,
+                                        on_event=lambda kind, d: emit(kind, {"text": status_text(d["tool"], d["args"]),
+                                                                             "tool": d["tool"]}))
+            except Exception:
+                del c.messages[kept:]
+                raise
+            cards, handoff = _cards(trace)
+            root.update(output={"reply": reply,
+                                "events": ["reply"] + ["confirm_card"] * len(cards) + (["handoff"] if handoff else [])},
+                        metadata={"turn": c.turns + 1, "tools": [t["name"] for t in trace["tool_calls"]],
+                                  "rule_handoff": trace.get("forced_handoff"), "fallback": reply == FALLBACK_REPLY})
+        tracing.score_turn(trace_id, tracing.turn_scores(trace_id, trace))
         _MODEL["last_ok"] = time.monotonic()
         c.turns += 1
         c.traces[trace_id] = c.turns
         return reply, trace
+
+
+_TAGS: list = []
+
+
+def trace_tags(reader) -> list[str]:
+    """What every trace is tagged with: which model, prompt, help-center index and clock answered. A canary is
+    then a filter on the adapter tag. Read once, on the turn's own reader connection."""
+    if not _TAGS:
+        try:
+            kb = tracing.kb_version(reader)
+        except psycopg.Error:
+            kb = "unknown"
+        _TAGS.extend([f"adapter:{tracing.MODEL_VERSION}", f"prompt:{PROMPT}", f"kb:{kb}",
+                      f"now:{os.environ.get('NOW_MODE', 'frozen')}"])
+    return _TAGS
 
 
 def turn_events(c: Chat, text: str):
@@ -373,6 +399,7 @@ def turn_events(c: Chat, text: str):
                 "escalated": trace["escalated"], "final_call_s": final, "checks_ms": trace.get("checks_ms")}
         log.info(json.dumps({"event": "turn", **done}))
         yield "done", {**done, "steps": _steps(trace, reply)}
+        tracing.flush()                                # after the page has its answer: not in the visitor's wait
         return
 
 
@@ -501,6 +528,8 @@ def feedback(body: Feedback, c: Chat = Depends(current_chat)):
     c.feedback[body.trace_id] = body.rating
     log.info(json.dumps({"event": "feedback", "trace_id": body.trace_id, "rating": body.rating,
                          "turn": c.traces[body.trace_id]}))
+    tracing.feedback(body.trace_id, body.rating)
+    tracing.flush()
     return {"trace_id": body.trace_id, "rating": body.rating}
 
 

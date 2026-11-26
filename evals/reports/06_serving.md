@@ -246,6 +246,44 @@ Nova searched the returns policy but never looked at the delivery date, and hand
 15-day window had closed (both runs). It is a model behaviour, not a page bug, so it goes to the first weekly
 review of traces as a candidate golden case.
 
+## 7. Traces and the operations dashboard
+
+A request log says a turn took 4 s and returned 200. It cannot say which order Nova looked up, what the tool
+returned, or whether a check fired, so a bug report from a visitor could not be reproduced. Now every chat turn
+on the demo is one **trace** in Langfuse Cloud (US region, free plan), sent by `api/tracing.py`:
+
+    turn (the customer's message, Nova's reply, the cards the page showed)
+      input_check            flags on the message
+      model_call ×n          sizes, tokens, what the model asked for (never the prompt itself)
+      tool:<name> ×n         arguments, a compact result, errors
+        retrieval            help-center query, section ids and scores, whether the cutoff kept any
+      rule:<name>            a hand-off or tracking check the code rules made on their own
+      reply_checks           output-filter hits, grounding issues
+
+Each trace is tagged with the model version, prompt version, help-center index version (`kb:104-dcbb2bdc`, a
+fingerprint of every chunk) and clock mode, so comparing a new model with the current one is a filter. Each turn
+also gets five scores (escalated, tool errors, grounding issues, filter hits, input flags), and a thumbs click
+becomes a sixth score on the same trace, by its id. Everything is redacted before it leaves (PRIVACY.md);
+`tests/test_tracing.py` checks the nesting, tags, scores and redaction with an in-memory exporter. Without the
+keys nothing is sent, so tests and evals are unchanged.
+
+**The dashboard** ("Nova operations" in the Langfuse project, demo environment only, past 7 days):
+
+| Panel | Widgets |
+|---|---|
+| Hand-offs and feedback, per day, one line per model version | escalation rate; thumbs-up rate (thumbs-down = 1 − it) |
+| Tool errors and grounding issues | average per reply, per day (×100 = per 100 replies) |
+| Output-filter hits and flagged messages | count per day; both should be rare |
+| Latency per step | p50 and p95 of the turn, model calls, each tool, retrieval, checks |
+
+**First trace, first finding.** The first test turn (customer 372, "Can I return the induction cooktop I bought in
+October?") shows why Nova hands off there: the help-center search found the right section, `returns-general#
+return-window`, but scored it 0.631, under the 0.68 cutoff, so Nova had no policy to quote and passed the customer
+to a person. The request log could never have shown that.
+
+The weekly review of traces (thumbs-down and random turns, each failure tagged and routed to a fix) starts once
+the demo has real visitors.
+
 ## Reproduce
 
     NOVA_KEY=... HF_TOKEN=... DATE=2026-11-26 bash serving/check_server.sh              # on the GPU machine
