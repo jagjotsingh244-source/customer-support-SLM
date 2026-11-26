@@ -103,7 +103,7 @@ jobs:
           uv run --frozen python db/load_kb.py
           uv run --frozen --group rag python rag/index.py --model BAAI/bge-small-en-v1.5
       - name: Unit and integration tests (tools, guards, backend routes, streaming, tracing, canary routing)
-        run: uv run --frozen --group api --group rag --group dev pytest -q tests/
+        run: uv run --frozen --group api --group rag --group dev --with pandas pytest -q tests/
       - name: Is a model server configured?
         id: smoke
         env:
