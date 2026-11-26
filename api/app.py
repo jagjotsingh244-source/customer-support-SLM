@@ -339,41 +339,57 @@ def _cards(trace: dict) -> tuple[list, dict | None]:
     return cards, handoff
 
 
+def _wait_until_awake(route: "Route", emit) -> None:
+    """If the model may be asleep, say so and wait for it here, before the turn takes its database connections.
+    A cold start can take minutes, and a managed database that scales to zero closes connections idle that long
+    (Neon after about five minutes); a turn that held its connections through the wait found them closed."""
+    if time.monotonic() - _MODEL.get(route.base_url, float("-inf")) <= MODEL_IDLE_S:
+        return
+    if model_endpoint.ready(timeout=2, base_url=route.base_url)[0]:
+        return
+    emit("status", {"text": WAKING, "waking": True})
+    t0 = time.monotonic()
+    while time.monotonic() - t0 < 15 * 60:             # each check also asks the server for its models: it wakes it
+        if model_endpoint.ready(timeout=10, base_url=route.base_url)[0]:
+            return
+        time.sleep(3)
+    raise TimeoutError("the model endpoint did not wake within 15 minutes")
+
+
 def _run(c: Chat, text: str, trace_id: str, emit) -> tuple[str, dict]:
     """One turn through the shipping loop. The conversation is put back as it was if the turn fails."""
     from agent import tools_v2
     from agent.loop import FALLBACK_REPLY, run_turn
-    with c.lock, Conns() as conns:                     # one turn at a time per conversation
+    with c.lock:                                       # one turn at a time per conversation
         route = c.route or production_route()
-        if (time.monotonic() - _MODEL.get(route.base_url, float("-inf")) > MODEL_IDLE_S
-                and not model_endpoint.ready(timeout=2, base_url=route.base_url)[0]):
-            emit("status", {"text": WAKING, "waking": True})
-        session = tools_v2.Session(conns, c.customer_id, c.customer_name)
-        kept = len(c.messages)
-        c.messages.append({"role": "user", "content": text})
-        with tracing.turn(trace_id, customer_id=c.customer_id, conversation_id=c.conversation_id, message=text,
-                          tags=[f"adapter:{route.version}", *trace_tags(conns.reader)],
-                          version=route.version) as (root, spans):
-            try:
-                reply, trace = run_turn(model_endpoint.client(route.base_url), route.name, c.messages, tools_v2.TOOLS,
-                                        tools_v2.DISPATCH, session, max_steps=MAX_CALLS, temperature=TEMPERATURE,
-                                        trace_id=trace_id, context=c.context, guard=c.guard, rules=c.rules,
-                                        spans=spans,
-                                        on_event=lambda kind, d: emit(kind, {"text": status_text(d["tool"], d["args"]),
-                                                                             "tool": d["tool"]}))
-            except Exception:
-                del c.messages[kept:]
-                raise
-            cards, handoff = _cards(trace)
-            root.update(output={"reply": reply,
-                                "events": ["reply"] + ["confirm_card"] * len(cards) + (["handoff"] if handoff else [])},
-                        metadata={"turn": c.turns + 1, "tools": [t["name"] for t in trace["tool_calls"]],
-                                  "rule_handoff": trace.get("forced_handoff"), "fallback": reply == FALLBACK_REPLY})
-        tracing.score_turn(trace_id, tracing.turn_scores(trace_id, trace))
-        _MODEL[route.base_url] = time.monotonic()
-        c.turns += 1
-        c.traces[trace_id] = c.turns
-        return reply, trace
+        _wait_until_awake(route, emit)                 # no database connection is held while the model wakes
+        with Conns() as conns:
+            session = tools_v2.Session(conns, c.customer_id, c.customer_name)
+            kept = len(c.messages)
+            c.messages.append({"role": "user", "content": text})
+            with tracing.turn(trace_id, customer_id=c.customer_id, conversation_id=c.conversation_id, message=text,
+                              tags=[f"adapter:{route.version}", *trace_tags(conns.reader)],
+                              version=route.version) as (root, spans):
+                try:
+                    reply, trace = run_turn(model_endpoint.client(route.base_url), route.name, c.messages, tools_v2.TOOLS,
+                                            tools_v2.DISPATCH, session, max_steps=MAX_CALLS, temperature=TEMPERATURE,
+                                            trace_id=trace_id, context=c.context, guard=c.guard, rules=c.rules,
+                                            spans=spans,
+                                            on_event=lambda kind, d: emit(kind, {"text": status_text(d["tool"], d["args"]),
+                                                                                 "tool": d["tool"]}))
+                except Exception:
+                    del c.messages[kept:]
+                    raise
+                cards, handoff = _cards(trace)
+                root.update(output={"reply": reply,
+                                    "events": ["reply"] + ["confirm_card"] * len(cards) + (["handoff"] if handoff else [])},
+                            metadata={"turn": c.turns + 1, "tools": [t["name"] for t in trace["tool_calls"]],
+                                      "rule_handoff": trace.get("forced_handoff"), "fallback": reply == FALLBACK_REPLY})
+            tracing.score_turn(trace_id, tracing.turn_scores(trace_id, trace))
+            _MODEL[route.base_url] = time.monotonic()
+            c.turns += 1
+            c.traces[trace_id] = c.turns
+            return reply, trace
 
 
 _TAGS: list = []

@@ -63,7 +63,13 @@ def model(monkeypatch):
     def use(*steps, awake=True):
         fake = Scripted(*steps)
         monkeypatch.setattr(backend.model_endpoint, "client", lambda base_url=None: fake)
-        monkeypatch.setattr(backend.model_endpoint, "ready", lambda timeout, base_url=None: (awake, "ready" if awake else "asleep"))
+        checks = {"n": 0}
+
+        def ready(timeout, base_url=None):                  # asleep: the first check fails, the next one is awake
+            checks["n"] += 1
+            return (True, "ready") if awake or checks["n"] > 1 else (False, "asleep")
+        monkeypatch.setattr(backend.model_endpoint, "ready", ready)
+        monkeypatch.setattr(backend.time, "sleep", lambda s: None)
         monkeypatch.setattr(backend, "_MODEL", {} if not awake else {backend.model_endpoint.MODEL_BASE_URL: 1e18})
         return fake
     return use
