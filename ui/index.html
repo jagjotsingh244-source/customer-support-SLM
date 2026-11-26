@@ -3,229 +3,278 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark">
 <title>Nova support demo</title>
 <!--
   Nova's chat page. One file, no build step, served by the backend at / (api/app.py), so every request goes to
   the backend, which holds the session, the tools and the checks. The page never talks to the model.
   Events from POST /chat/stream: status (a tool started), reply (passed every check), confirm_card, handoff,
-  done (trace id for the thumbs), error. The look follows a phone messaging app: a contact list, then a thread.
+  done (trace id for the thumbs, the steps), error. Layout: NOVA and a short summary on the left, the chat as a
+  floating window on the right; on a phone the window fills the screen and the summary opens from a button.
 -->
 <style>
   :root {
-    --bg: #ffffff; --grouped: #f2f2f7; --ink: #000000; --ink-2: #3c3c4399; --ink-3: #3c3c434d;
-    --sep: #3c3c4329; --blue: #007aff; --on-blue: #ffffff; --bubble: #e9e9eb; --fill: #7676801f;
-    --green: #248a3d; --red: #d70015; --amber-bg: #fff4e0; --amber-ink: #8a5300; --avatar: #a2a2ab;
-    --bar: #f9f9f9e6;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #000000; --grouped: #000000; --ink: #ffffff; --ink-2: #ebebf599; --ink-3: #ebebf54d;
-      --sep: #54545899; --blue: #0a84ff; --on-blue: #ffffff; --bubble: #26252a; --fill: #7676803d;
-      --green: #30d158; --red: #ff6961; --amber-bg: #3a2a0c; --amber-ink: #ffd60a; --avatar: #636366;
-      --bar: #1d1d1fe6;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #000000; --grouped: #000000; --ink: #ffffff; --ink-2: #ebebf599; --ink-3: #ebebf54d;
-    --sep: #54545899; --blue: #0a84ff; --on-blue: #ffffff; --bubble: #26252a; --fill: #7676803d;
-    --green: #30d158; --red: #ff6961; --amber-bg: #3a2a0c; --amber-ink: #ffd60a; --avatar: #636366;
-    --bar: #1d1d1fe6;
+    --bg: #0b0b0c; --ink: #f2f2f3; --ink-2: #a1a1a6; --ink-3: #6b6b70; --line: rgba(255,255,255,.08);
+    --line-2: rgba(255,255,255,.14); --glass: rgba(255,255,255,.035); --glass-2: rgba(255,255,255,.06);
+    --ok: #7ee2a8; --bad: #ff8a80; --warn: #ffd27a; --white: #ffffff;
+    --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; min-height: 100%; }
+  html, body { margin: 0; height: 100%; }
   body {
-    background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased;
-    font: 17px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
-    letter-spacing: -0.01em;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% -8%, rgba(255,255,255,.10), transparent 70%),
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.2px) 0 0 / 22px 22px,
+      var(--bg);
+    color: var(--ink); font: 15px/1.5 var(--font); -webkit-font-smoothing: antialiased; overflow: hidden;
   }
   button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-  .wrap { max-width: 680px; margin: 0 auto; }
   [hidden] { display: none !important; }
 
-  /* Contact list */
-  .list-top { padding: 20px 16px 8px; }
-  .eyebrow { font-size: 13px; color: var(--ink-2); }
-  .large-title { font-size: 34px; font-weight: 700; letter-spacing: 0.01em; margin: 2px 0 10px; }
+  /* Left: NOVA */
+  .hero {
+    position: fixed; left: 0; top: 0; bottom: 0; width: calc(100% - 520px); display: flex; flex-direction: column;
+    justify-content: center; padding: 0 6vw;
+  }
+  .hero h1 {
+    margin: 0; font-size: clamp(88px, 13vw, 200px); line-height: .88; font-weight: 800; letter-spacing: -.055em;
+    background: linear-gradient(180deg, #fff 30%, rgba(255,255,255,.55)); -webkit-background-clip: text;
+    background-clip: text; color: transparent;
+  }
+  .hero p { max-width: 520px; color: var(--ink-2); font-size: 17px; line-height: 1.6; margin: 28px 0 22px; }
+  .hero .links { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill-link {
+    border: 1px solid var(--line-2); border-radius: 999px; padding: 7px 14px; font-size: 13px; color: var(--ink);
+    text-decoration: none; background: var(--glass);
+  }
+  .pill-link:hover { border-color: rgba(255,255,255,.3); }
+  .hero .fine { color: var(--ink-3); font-size: 12px; margin-top: 26px; max-width: 520px; }
+
+  /* Right: the floating window */
+  .win {
+    position: fixed; right: 40px; top: 50%; transform: translateY(-50%); width: 460px; height: min(760px, 92vh);
+    display: flex; flex-direction: column; border-radius: 30px; border: 1px solid var(--line);
+    background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.015) 40%, rgba(255,255,255,.03));
+    -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+    box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06); overflow: hidden;
+  }
+  .win-top { display: flex; align-items: center; gap: 8px; padding: 18px 20px 10px; }
+  .who-btn { display: flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 14px; padding: 4px 0; }
+  .who-btn:hover { color: var(--ink); }
+  .spacer { flex: 1; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line-2); border-radius: 999px;
+    padding: 5px 12px; font-size: 12.5px; color: var(--ink-2); background: var(--glass);
+  }
+  .chip .led { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-2); }
+  .chip.awake .led { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .chip.waking .led { background: var(--warn); animation: pulse 1.2s infinite; }
+  button.chip:hover { color: var(--ink); border-color: rgba(255,255,255,.3); }
+  .info-btn { display: none; }
+  .body { flex: 1; overflow-y: auto; padding: 6px 20px 14px; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+
+  /* Picker */
+  .eyebrow { color: var(--ink-3); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; margin: 14px 2px 8px; }
   .search {
-    display: flex; align-items: center; gap: 6px; background: var(--fill); border-radius: 10px;
-    padding: 0 8px; height: 36px; color: var(--ink-2);
+    display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 14px;
+    padding: 0 12px; height: 40px; background: rgba(0,0,0,.25); color: var(--ink-3); margin: 6px 0;
   }
-  .search input { flex: 1; border: 0; background: none; font: inherit; font-size: 17px; color: var(--ink); outline: none; min-width: 0; }
-  .search input::placeholder { color: var(--ink-2); }
-  .section { font-size: 13px; color: var(--ink-2); text-transform: none; padding: 18px 16px 6px; }
-  .row {
-    width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
-    padding: 9px 16px; position: relative; min-height: 60px;
+  .search input { flex: 1; min-width: 0; border: 0; outline: none; background: none; color: var(--ink); font: inherit; }
+  .search input::placeholder { color: var(--ink-3); }
+  .person {
+    width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px 12px; border-radius: 16px;
+    border: 1px solid transparent;
   }
-  .row:active, .row:focus-visible { background: var(--fill); outline: none; }
-  .row::after { content: ""; position: absolute; left: 68px; right: 0; bottom: 0; border-bottom: 0.5px solid var(--sep); }
-  .row:last-child::after { display: none; }
+  .person:hover, .person:focus-visible { background: var(--glass-2); border-color: var(--line); outline: none; }
+  .scen .person { border-color: var(--line); background: var(--glass); margin-bottom: 8px; }
   .avatar {
-    width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center;
-    background: var(--avatar); color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.02em;
+    width: 34px; height: 34px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 12px;
+    font-weight: 600; color: var(--ink); background: radial-gradient(circle at 35% 30%, #4a4a50, #1f1f23);
+    border: 1px solid var(--line-2);
   }
-  .row .text { flex: 1; min-width: 0; }
-  .row .name { font-size: 17px; font-weight: 600; }
-  .row .sub { font-size: 15px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .chev { color: var(--ink-3); flex: none; }
-  .foot { font-size: 13px; color: var(--ink-2); padding: 16px 16px 32px; }
-  .empty { font-size: 15px; color: var(--ink-2); padding: 12px 16px; }
+  .person .t { flex: 1; min-width: 0; }
+  .person .n { font-size: 14.5px; }
+  .person .s { font-size: 12.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .person .go { color: var(--ink-3); }
+  .empty { color: var(--ink-3); font-size: 13px; padding: 10px 4px; }
 
   /* Thread */
-  .bar {
-    position: sticky; top: 0; z-index: 2; background: var(--bar); border-bottom: 0.5px solid var(--sep);
-    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 8px 8px 6px;
+  .thread { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
+  .me {
+    align-self: flex-end; max-width: 82%; background: rgba(255,255,255,.07); border: 1px solid var(--line-2);
+    border-radius: 20px; padding: 9px 16px; font-size: 14.5px; white-space: pre-wrap; overflow-wrap: anywhere;
   }
-  .back { color: var(--blue); display: flex; align-items: center; gap: 2px; font-size: 17px; justify-self: start; padding: 4px; }
-  .who { text-align: center; }
-  .who .avatar { width: 36px; height: 36px; margin: 0 auto 2px; font-size: 14px; background: var(--blue); }
-  .who .t { font-size: 11px; color: var(--ink); }
-  .who .s { font-size: 11px; color: var(--ink-2); }
-  .thread { display: flex; flex-direction: column; gap: 2px; padding: 12px 12px 8px; min-height: calc(100vh - 160px); }
-  .stamp { text-align: center; font-size: 11px; color: var(--ink-2); margin: 6px 0 10px; }
-  .bubble {
-    max-width: 78%; padding: 7px 12px; border-radius: 18px; font-size: 17px; line-height: 1.3;
-    white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 8px;
+  .nova { align-self: stretch; }
+  .meta { display: flex; align-items: center; gap: 8px; color: var(--ink-3); font-size: 12.5px; margin-bottom: 6px; }
+  .meta .how { color: var(--ink-3); font-size: 12.5px; }
+  .meta .how:hover, .meta .how[aria-expanded="true"] { color: var(--ink); }
+  .mini-orb {
+    width: 18px; height: 18px; border-radius: 50%; flex: none;
+    background: radial-gradient(circle at 35% 30%, #fff 0 18%, #c9d2e6 35%, #5b6170 75%, #2a2c33);
+    box-shadow: 0 0 10px rgba(200,210,235,.35);
   }
-  .me { align-self: flex-end; background: var(--blue); color: var(--on-blue); border-bottom-right-radius: 5px; }
-  .nova { align-self: flex-start; background: var(--bubble); color: var(--ink); border-bottom-left-radius: 5px; }
-  .note {
-    align-self: center; max-width: 88%; text-align: center; font-size: 13px; color: var(--ink-2); margin: 8px 0 2px;
+  .reply { font-size: 15.5px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .greet { color: var(--ink-2); }
+  .steps {
+    list-style: none; margin: 8px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px;
+    background: rgba(0,0,0,.25); font-size: 12.5px; color: var(--ink-2);
   }
-  .note.err { color: var(--red); }
-  .waking {
-    align-self: stretch; background: var(--amber-bg); color: var(--amber-ink); border-radius: 14px;
-    padding: 10px 12px; font-size: 15px; line-height: 1.35; margin: 4px 0 6px; display: flex; gap: 8px;
-  }
-  .waking b { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .typing { align-self: flex-start; display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-  .typing .dots { background: var(--bubble); border-radius: 18px; padding: 11px 13px; display: flex; gap: 4px; }
-  .typing .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-2); animation: blink 1.2s infinite; }
-  .typing .dots i:nth-child(2) { animation-delay: .2s; } .typing .dots i:nth-child(3) { animation-delay: .4s; }
-  .typing .what { font-size: 13px; color: var(--ink-2); }
-  @keyframes blink { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .typing .dots i { animation: none; opacity: .6; } }
+  .steps li { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--line); }
+  .steps li:last-child { border-bottom: 0; }
+  .steps .ic { width: 14px; text-align: center; flex: none; }
+  .steps .ok { color: var(--ok); } .steps .no { color: var(--bad); }
+  .steps .ms { margin-left: auto; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .thumbs { display: flex; gap: 2px; margin-top: 6px; }
+  .thumbs button { color: var(--ink-3); padding: 3px 5px; border-radius: 8px; }
+  .thumbs button:hover { color: var(--ink-2); }
+  .thumbs button[aria-pressed="true"] { color: var(--ink); }
+  .thumbs svg { width: 15px; height: 15px; }
+  .note { color: var(--ink-3); font-size: 12.5px; text-align: center; }
+  .note.err { color: var(--bad); }
+
+  /* Glass cards */
   .card {
-    align-self: flex-start; width: min(78%, 300px); border: 0.5px solid var(--sep); border-radius: 18px;
-    padding: 12px 14px; margin-top: 8px; background: var(--bg);
+    border: 1px solid var(--line-2); border-radius: 18px; padding: 14px 16px; margin-top: 10px;
+    background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
   }
-  .card .h { font-size: 15px; font-weight: 600; }
-  .card .d { font-size: 13px; color: var(--ink-2); margin: 2px 0 10px; }
-  .card .d:last-child { margin-bottom: 0; }
-  .pill {
-    width: 100%; background: var(--blue); color: var(--on-blue); border-radius: 12px; padding: 9px; font-size: 15px;
-    font-weight: 600;
+  .card .k { color: var(--ink-3); font-size: 12px; }
+  .card .h { font-size: 15px; margin: 2px 0 10px; }
+  .card .row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .card .big { display: flex; align-items: flex-end; gap: 6px; color: var(--ink-2); font-size: 13px; }
+  .btn-white {
+    background: var(--white); color: #0b0b0c; border-radius: 999px; padding: 9px 16px; font-size: 13.5px; font-weight: 600;
   }
-  .pill:disabled { opacity: .45; }
-  .card .result { font-size: 13px; margin-top: 8px; }
-  .card .result.ok { color: var(--green); } .card .result.bad { color: var(--red); }
-  .thumbs { align-self: flex-start; display: flex; gap: 2px; margin: 2px 0 0 4px; }
-  .thumbs button { color: var(--ink-3); padding: 4px 6px; border-radius: 8px; display: grid; place-items: center; }
-  .thumbs button[aria-pressed="true"] { color: var(--blue); }
-  .thumbs svg { width: 17px; height: 17px; }
-  .try { padding: 0 0 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn-white:disabled { opacity: .4; }
+  .card .result { font-size: 13px; margin-top: 10px; }
+  .card .result.ok { color: var(--ok); } .card .result.bad { color: var(--bad); }
+  svg.dots { display: block; }
+
+  /* Thinking: the orb and the tools around it */
+  .think { display: flex; flex-direction: column; align-items: center; padding: 14px 0 6px; }
+  .orbit { position: relative; width: 250px; height: 150px; }
+  .ring { position: absolute; inset: 22px 10px; border: 1px solid rgba(255,255,255,.09); border-radius: 50%; }
+  .ring.r2 { inset: 42px 52px; border-color: rgba(255,255,255,.06); }
+  .orb {
+    position: absolute; left: 50%; top: 50%; width: 62px; height: 62px; margin: -31px 0 0 -31px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #fff 0 12%, #dfe5f3 26%, #9ba4b8 55%, #3b3e47 85%);
+    box-shadow: 0 0 40px rgba(220,228,245,.45), 0 0 90px rgba(220,228,245,.18), inset 0 -6px 14px rgba(0,0,0,.35);
+    animation: breathe 2.4s ease-in-out infinite;
+  }
+  .think.waking .orb { filter: grayscale(1) brightness(.55); animation-duration: 4s; }
+  .tool {
+    position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; display: grid;
+    place-items: center; color: #2a2a2e; background: rgba(255,255,255,.55); box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    transition: transform .3s, background .3s, box-shadow .3s, opacity .3s; opacity: .55;
+  }
+  .tool svg { width: 17px; height: 17px; }
+  .tool.on { background: #fff; opacity: 1; transform: scale(1.18); box-shadow: 0 0 22px rgba(255,255,255,.55); }
+  .think .what { margin-top: 10px; font-size: 14px; text-align: center; min-height: 21px; }
+  .shimmer {
+    background: linear-gradient(90deg, var(--ink-3) 0%, var(--ink) 50%, var(--ink-3) 100%) 0 0 / 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 2.2s linear infinite;
+  }
+  .think .wake-t { margin-top: 4px; font-size: 12.5px; color: var(--ink-3); text-align: center; max-width: 320px; }
+  @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  @keyframes shine { to { background-position: -200% 0; } }
+  @keyframes pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .orb, .shimmer, .chip.waking .led { animation: none; } }
+
+  /* Composer */
+  .compose { padding: 10px 16px 16px; }
+  .try { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 4px 8px; }
   .try:empty { display: none; }
   .try button {
-    border: 0.5px solid var(--sep); border-radius: 16px; padding: 6px 12px; font-size: 15px; color: var(--blue);
-    text-align: left;
+    border: 1px solid var(--line-2); border-radius: 999px; padding: 5px 12px; font-size: 12.5px; color: var(--ink-2);
+    background: var(--glass); text-align: left;
   }
-
-  /* Input */
-  .composer {
-    position: sticky; bottom: 0; background: var(--bar); border-top: 0.5px solid var(--sep);
-    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
-    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  .try button:hover { color: var(--ink); }
+  .field {
+    display: flex; align-items: flex-end; gap: 8px; border: 1px solid var(--line); border-radius: 22px;
+    padding: 6px 6px 6px 16px; background: rgba(0,0,0,.35);
   }
-  .field { display: flex; align-items: flex-end; gap: 6px; border: 0.5px solid var(--ink-3); border-radius: 19px; padding: 3px 3px 3px 14px; background: var(--bg); }
   .field textarea {
-    flex: 1; border: 0; outline: none; resize: none; background: none; color: var(--ink); font: inherit; font-size: 17px;
-    line-height: 1.3; padding: 5px 0; max-height: 120px; min-width: 0;
+    flex: 1; min-width: 0; border: 0; outline: none; resize: none; background: none; color: var(--ink); font: inherit;
+    font-size: 15px; line-height: 1.4; padding: 8px 0; max-height: 120px;
   }
   .field textarea::placeholder { color: var(--ink-3); }
   .send {
-    width: 30px; height: 30px; border-radius: 50%; background: var(--blue); color: var(--on-blue);
-    display: grid; place-items: center; flex: none;
+    width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none;
+    background: var(--white); color: #0b0b0c; box-shadow: 0 0 18px rgba(255,255,255,.18);
   }
-  .send:disabled { background: var(--ink-3); }
-  .send svg { width: 16px; height: 16px; }
-  .intro { font-size: 15px; color: var(--ink-2); margin: 0 0 12px; line-height: 1.4; }
-  .intro a { color: var(--blue); text-decoration: none; }
-  .bar-btn { justify-self: end; color: var(--blue); font-size: 17px; padding: 4px 8px; }
-  .meta { align-self: flex-start; display: flex; align-items: center; gap: 2px; margin: 2px 0 0 4px; }
-  .meta .how { color: var(--ink-2); font-size: 13px; padding: 4px 6px; border-radius: 8px; }
-  .meta .how[aria-expanded="true"] { color: var(--blue); }
-  .steps {
-    align-self: flex-start; width: min(78%, 360px); margin: 2px 0 0 4px; padding: 8px 12px;
-    border-radius: 14px; background: var(--grouped); font-size: 13px; color: var(--ink-2); list-style: none;
+  .send:disabled { background: #3a3a3f; color: #8a8a90; box-shadow: none; }
+  .send svg { width: 17px; height: 17px; }
+
+  /* Panels inside the window: orders, and the summary on a phone */
+  .panel {
+    position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column;
+    background: linear-gradient(160deg, #18181b, #0f0f11); border-radius: inherit;
   }
-  :root:not([data-theme="light"]) .steps { background: var(--bubble); }
-  .steps li { display: flex; gap: 8px; padding: 3px 0; }
-  .steps li .ic { width: 14px; flex: none; text-align: center; }
-  .steps li .ok { color: var(--green); } .steps li .no { color: var(--red); }
-  .steps li .ms { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .scrim { position: fixed; inset: 0; background: #0006; z-index: 10; display: flex; align-items: flex-end; justify-content: center; }
-  .sheet {
-    background: var(--grouped); width: 100%; max-width: 680px; max-height: 82vh; overflow: auto;
-    border-radius: 14px 14px 0 0; padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+  .panel .ptop { display: flex; align-items: center; padding: 18px 20px 8px; gap: 8px; }
+  .panel .ptitle { font-size: 15px; }
+  .panel .pbody { flex: 1; overflow-y: auto; padding: 4px 20px 20px; }
+  .order { border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-top: 10px; background: var(--glass); }
+  .order .top { display: flex; justify-content: space-between; font-size: 14px; }
+  .order .st { color: var(--ink-3); font-size: 12.5px; margin: 2px 0 6px; }
+  .order .it { font-size: 14px; color: var(--ink-2); }
+  .order .ask { color: var(--ink); font-size: 13px; margin-top: 8px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--ink-3); }
+  .panel .hero-mini h1 { font-size: 64px; margin: 10px 0 0; font-weight: 800; letter-spacing: -.05em; }
+  .panel .hero-mini p { color: var(--ink-2); line-height: 1.6; }
+
+  /* Phone: the window is the page; NOVA opens from the info button */
+  @media (max-width: 899px) {
+    .hero { display: none; }
+    .win { left: 0; right: 0; top: 0; bottom: 0; transform: none; width: auto; height: auto; border-radius: 0; border: 0; }
+    .info-btn { display: inline-flex; }
+    .win-top { padding-top: calc(14px + env(safe-area-inset-top)); }
+    .compose { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
   }
-  :root:not([data-theme="light"]) .sheet { background: #1c1c1e; }
-  .sheet-top { position: sticky; top: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 12px 8px; background: inherit; }
-  .sheet-top .t { font-weight: 600; text-align: center; }
-  .sheet-top button { justify-self: end; color: var(--blue); font-weight: 600; padding: 4px 8px; }
-  .order { background: var(--bg); margin: 0 16px 10px; border-radius: 12px; padding: 12px 14px; }
-  .order .top { display: flex; justify-content: space-between; gap: 8px; font-size: 15px; }
-  .order .top b { font-weight: 600; }
-  .order .st { font-size: 13px; color: var(--ink-2); margin: 2px 0 6px; }
-  .order .it { font-size: 15px; }
-  .order .ask { color: var(--blue); font-size: 15px; margin-top: 8px; }
-  @media (min-width: 700px) { .scrim { align-items: center; } .sheet { border-radius: 14px; } }
-  @media (min-width: 700px) { .thread { padding: 16px 20px 8px; } .composer { padding-left: 20px; padding-right: 20px; } }
 </style>
 </head>
 <body>
-<!-- Contact list -->
-<main class="wrap" id="picker">
-  <div class="list-top">
-    <div class="eyebrow">NimbusCart support demo</div>
-    <div class="large-title">Choose a customer</div>
-    <p class="intro">Nova is a small open model (2 billion parameters) fine-tuned to do customer support for a
-      made-up shop. It looks up orders, explains the shop's policies, starts returns and hands you to a person when
-      it should. Pick a customer and chat as them. <a href="https://github.com/jagjotsingh244-source/customer-support-SLM"
-      target="_blank" rel="noopener">How it's built</a></p>
-    <label class="search">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="search" type="search" placeholder="Search customers" autocomplete="off" aria-label="Search customers">
-    </label>
+<section class="hero" aria-label="About Nova">
+  <h1>NOVA</h1>
+  <p id="summary">A fine-tuned model that works as a customer support agent. It follows the shop's policies and can
+    only see the signed-in customer's own orders and details. It checks orders and deliveries, explains the return
+    rules and cites the help-center page they come from, starts a return you confirm with one tap, and hands you to a
+    person when a problem needs one.</p>
+  <div class="links">
+    <a class="pill-link" href="https://github.com/jagjotsingh244-source/customer-support-SLM" target="_blank" rel="noopener">How it's built</a>
   </div>
-  <div id="featured-wrap">
-    <div class="section">Try a scenario</div>
-    <div id="featured"></div>
-  </div>
-  <div class="section" id="all-title">All customers</div>
-  <div id="all"><div class="empty">Loading…</div></div>
-  <p class="foot" id="about">These customers and orders are made up. Pick one to chat with Nova, NimbusCart's support
-    assistant.</p>
-</main>
+  <p class="fine" id="fine">The shop, its customers and their orders are made up.</p>
+</section>
 
-<!-- Thread -->
-<main class="wrap" id="chat" hidden>
-  <header class="bar">
-    <button class="back" id="back" type="button" aria-label="Back to customers">
-      <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2 2 10l8 8"/></svg>
-      Customers
+<main class="win" aria-label="Chat with Nova">
+  <div class="win-top">
+    <button class="who-btn" id="who" type="button" aria-label="Choose a customer">
+      <span id="who-t">Choose a customer</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
-    <div class="who"><div class="avatar" aria-hidden="true">N</div><div class="t">Nova</div><div class="s" id="as"></div></div>
-    <button class="bar-btn" id="orders-btn" type="button">Orders</button>
-  </header>
-  <section class="thread" id="thread" aria-live="polite"></section>
-  <form class="composer" id="form">
+    <span class="spacer"></span>
+    <button class="chip" id="orders-btn" type="button" hidden>Orders</button>
+    <span class="chip" id="state"><span class="led"></span><span id="state-t">Checking</span></span>
+    <button class="chip info-btn" id="info-btn" type="button" aria-label="About Nova">NOVA</button>
+  </div>
+
+  <div class="body" id="body">
+    <section id="picker">
+      <div class="eyebrow">Try a scenario</div>
+      <div class="scen" id="featured"></div>
+      <div class="eyebrow" id="all-title">All customers</div>
+      <label class="search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Search by name or city" autocomplete="off" aria-label="Search customers">
+      </label>
+      <div id="all"><div class="empty">Loading…</div></div>
+    </section>
+    <section class="thread" id="thread" hidden aria-live="polite"></section>
+  </div>
+
+  <form class="compose" id="form" hidden>
     <div class="try" id="try"></div>
     <div class="field">
-      <textarea id="input" rows="1" maxlength="4000" placeholder="Message" aria-label="Message Nova"></textarea>
+      <textarea id="input" rows="1" maxlength="4000" placeholder="Ask anything…" aria-label="Message Nova"></textarea>
       <button class="send" id="send" type="submit" aria-label="Send">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
       </button>
     </div>
   </form>
@@ -234,11 +283,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const WAKING = "Nova is waking up. Sorry, the GPU sleeps when nobody's chatting (student budget). About 2 minutes.";
-const state = { ready: false, busy: false, warming: null, list: { featured: [], customers: [] } };
-const THUMB = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
-  + 'stroke-linejoin="round" aria-hidden="true"><path d="M7 11v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3a4 4 0 0 0 4-4V6a2 2 0 0 1 4 0v5h3a2 2 0 0 1 2 2l-1 5a2 3 0 0 1-2 2h-7a3 3 0 0 1-3-3"/></svg>';
-const CHEV = '<svg class="chev" width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" '
-  + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m1 1 6 6-6 6"/></svg>';
+const state = { ready: false, busy: false, warming: null, list: { featured: [], customers: [] }, customer: null };
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -246,98 +291,112 @@ function el(tag, cls, text) {
   if (text !== undefined) e.textContent = text;     // always text, never HTML: replies are model output
   return e;
 }
+const svg = (inner, size = 17) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+const ICON = {
+  orders: svg('<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>'),
+  truck: svg('<path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>'),
+  book: svg('<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/><path d="M9 7h6"/>'),
+  ret: svg('<path d="M9 14l-5-5 5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>'),
+  person: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+};
+// Which orbiting icon lights up for each tool
+const TOOL_ICON = { list_my_orders: "orders", get_order_status: "orders", get_tracking: "truck",
+  search_help_center: "book", propose_return: "ret", escalate_to_human: "person" };
+const THUMB = svg('<path d="M7 11v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3a4 4 0 0 0 4-4V6a2 2 0 0 1 4 0v5h3a2 2 0 0 1 2 2l-1 5a2 3 0 0 1-2 2h-7a3 3 0 0 1-3-3"/>', 15);
+const CHEV = svg('<path d="m9 6 6 6-6 6"/>', 15);
+
 const initials = (name) => name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-const rupees = (n) => "₹" + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 });
 const day = (iso) => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long" });
 const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-const scrollDown = () => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+const rupees = (n) => "₹" + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+const scrollDown = () => { const b = $("body"); b.scrollTo({ top: b.scrollHeight, behavior: "smooth" }); };
 
-function canSend() {                                // typing and sending work while Nova wakes: the turn waits
+// Dot-matrix digits, like the counters in the design: a 5x7 grid per character, unlit dots faint.
+const GLYPH = {
+  "0": ["01110","10001","10011","10101","11001","10001","01110"], "1": ["00100","01100","00100","00100","00100","00100","01110"],
+  "2": ["01110","10001","00001","00010","00100","01000","11111"], "3": ["11110","00001","00001","01110","00001","00001","11110"],
+  "4": ["00010","00110","01010","10010","11111","00010","00010"], "5": ["11111","10000","11110","00001","00001","10001","01110"],
+  "6": ["00110","01000","10000","11110","10001","10001","01110"], "7": ["11111","00001","00010","00100","01000","01000","01000"],
+  "8": ["01110","10001","10001","01110","10001","10001","01110"], "9": ["01110","10001","10001","01111","00001","00010","01100"],
+};
+function dots(text, size = 3.6) {
+  const chars = [...String(text)].filter((c) => GLYPH[c]);
+  const w = chars.length * 6 * size, h = 7 * size;
+  let out = "";
+  chars.forEach((c, i) => GLYPH[c].forEach((row, y) => [...row].forEach((bit, x) => {
+    const cx = (i * 6 + x) * size + size / 2, cy = y * size + size / 2;
+    out += `<circle cx="${cx}" cy="${cy}" r="${size * 0.34}" fill="${bit === "1" ? "#fff" : "rgba(255,255,255,.08)"}"/>`;
+  })));
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("class", "dots"); s.setAttribute("width", w); s.setAttribute("height", h);
+  s.setAttribute("viewBox", `0 0 ${w} ${h}`); s.setAttribute("role", "img"); s.setAttribute("aria-label", String(text));
+  s.innerHTML = out;                                  // built from digits only
+  return s;
+}
+
+function setState(kind, text) {
+  const c = $("state");
+  c.classList.toggle("awake", kind === "awake");
+  c.classList.toggle("waking", kind === "waking");
+  $("state-t").textContent = text;
+}
+function canSend() {                                  // typing and sending work while Nova wakes: the turn waits
   const ok = !state.busy;
   $("send").disabled = !ok || !$("input").value.trim();
-  $("input").placeholder = state.ready ? "Message" : "Type now. Nova answers once it's awake";
   return ok;
 }
 
-// The contact list ---------------------------------------------------------------------------------
-function row(c, sub, onPick) {
-  const b = el("button", "row");
+// The picker ---------------------------------------------------------------------------------------
+function personRow(c, sub) {
+  const b = el("button", "person");
   b.type = "button";
-  const av = el("div", "avatar", initials(c.name));
-  av.setAttribute("aria-hidden", "true");
-  const text = el("div", "text");
-  text.append(el("div", "name", c.name), el("div", "sub", sub));
-  b.append(av, text);
-  b.insertAdjacentHTML("beforeend", CHEV);
-  b.addEventListener("click", () => onPick(c));
+  const av = el("div", "avatar", initials(c.name)); av.setAttribute("aria-hidden", "true");
+  const t = el("div", "t"); t.append(el("div", "n", c.name), el("div", "s", sub));
+  const go = el("span", "go"); go.innerHTML = CHEV;
+  b.append(av, t, go);
+  b.addEventListener("click", () => signIn(c));
   return b;
 }
-
 function renderList() {
   const q = $("search").value.trim().toLowerCase();
   const match = (c) => !q || `${c.name} ${c.city}`.toLowerCase().includes(q);
-  const featured = state.list.featured.filter(match);
-  $("featured-wrap").hidden = featured.length === 0;
-  $("featured").replaceChildren(...featured.map((c) => row(c, c.scenario, signIn)));
+  $("featured").replaceChildren(...state.list.featured.filter(match).map((c) => personRow(c, c.scenario)));
   const all = state.list.customers.filter(match);
-  $("all-title").textContent = q ? `Customers matching “${$("search").value.trim()}”` : `All customers (${state.list.customers.length})`;
-  $("all").replaceChildren(...(all.length ? all.map((c) => row(c, `${c.city} · latest order ${c.latest}`, signIn))
+  $("all-title").textContent = `All customers (${state.list.customers.length})`;
+  $("all").replaceChildren(...(all.length ? all.map((c) => personRow(c, `${c.city} · latest order ${c.latest}`))
     : [el("div", "empty", "No customers match that search.")]));
 }
-
 async function loadList() {
   try {
     const r = await fetch("/demo-customers");
     if (!r.ok) throw new Error(String(r.status));
-    state.list = await r.json();
-    renderList();
-  } catch (e) {
-    $("all").replaceChildren(el("div", "empty", "Couldn't load the customers. Reload the page to try again."));
-  }
+    state.list = await r.json(); renderList();
+  } catch (e) { $("all").replaceChildren(el("div", "empty", "Couldn't load the customers. Reload the page to try again.")); }
 }
+function showPicker() {
+  $("picker").hidden = false; $("thread").hidden = true; $("form").hidden = true; $("orders-btn").hidden = true;
+  $("who-t").textContent = "Choose a customer"; $("body").scrollTo({ top: 0 });
+}
+$("who").addEventListener("click", showPicker);
+$("search").addEventListener("input", renderList);
 
-// Cold start: the model sleeps when nobody is chatting. Wake it as soon as the page opens. -----------
-let wakeNote = null;
-function showWaking() {
-  if (wakeNote || state.ready || $("chat").hidden) return;
-  wakeNote = el("div", "waking");
-  wakeNote.setAttribute("role", "status");
-  const t0 = state.wakeStarted || Date.now();
-  const text = el("span", "", WAKING + " ");
-  const timer = el("b", "", "0:00");
-  text.append(timer);
-  wakeNote.append(text);
-  $("thread").prepend(wakeNote);
-  wakeNote.tick = setInterval(() => { timer.textContent = mmss(Math.round((Date.now() - t0) / 1000)); }, 1000);
-}
-function hideWaking() {
-  if (!wakeNote) return;
-  clearInterval(wakeNote.tick); wakeNote.remove(); wakeNote = null;
-}
-
+// Wake the model as soon as the page opens -----------------------------------------------------------
 async function wake() {
   if (state.warming) return state.warming;
   state.warming = (async () => {
     let health = {};
     try { health = await (await fetch("/health")).json(); } catch (e) { }
     if (health.now_mode === "frozen") {
-      $("about").textContent = "These customers and orders are made up, and the shop's clock is fixed at 20 November "
-        + "2026 so their dates stay the same. Pick one to chat with Nova, NimbusCart's support assistant.";
-      state.frozen = true;
+      $("fine").textContent = "The shop, its customers and their orders are made up, and its clock is fixed at 20 November 2026.";
     }
-    if (health.model === "ready") { state.ready = true; canSend(); return; }
-    state.wakeStarted = Date.now();
-    showWaking();
+    if (health.model === "ready") { state.ready = true; setState("awake", "Awake"); return; }
+    state.wakeStarted = Date.now(); setState("waking", "Waking");
     try {
       const r = await fetch("/warmup", { method: "POST" });
       if (!r.ok) throw new Error(String(r.status));
-      state.ready = true; hideWaking();
-    } catch (e) {
-      hideWaking();
-      $("thread").prepend(el("div", "note err", "Nova couldn't start right now. Reload the page to try again."));
-    } finally {
-      state.warming = null; canSend();
-    }
+      state.ready = true; setState("awake", "Awake");
+    } catch (e) { setState("", "Asleep"); }
+    finally { state.warming = null; }
   })();
   return state.warming;
 }
@@ -348,58 +407,64 @@ async function signIn(c) {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customer_id: c.customer_id }),
   }).catch(() => null);
   if (!r || !r.ok) { alert("Couldn't sign in as that customer. Try another one."); return; }
-  $("picker").hidden = true; $("chat").hidden = false;
-  $("as").textContent = `chatting as ${c.name}`;
   state.customer = c;
-  const thread = $("thread");
-  thread.replaceChildren(el("div", "stamp", state.frozen ? "Thursday 20 November 2026, 10:00" : "Today"));
-  thread.append(el("div", "bubble nova", `Hi ${c.name.split(" ")[0]}, I'm Nova, NimbusCart's support assistant. `
-    + "I can check your orders and deliveries, explain our policies and start a return."));
-  wakeNote = null; showWaking();
-  const chip = el("button", "", c.try);
-  chip.type = "button";
+  $("picker").hidden = true; $("thread").hidden = false; $("form").hidden = false; $("orders-btn").hidden = false;
+  $("who-t").textContent = c.name;
+  const greet = el("div", "nova");
+  const meta = el("div", "meta"); meta.append(el("span", "mini-orb"), el("span", "", "Nova"));
+  greet.append(meta, el("div", "reply greet", `Hi ${c.name.split(" ")[0]}, I'm Nova. I can check your orders and deliveries, explain the shop's policies and start a return.`));
+  $("thread").replaceChildren(greet);
+  const chip = el("button", "", c.try); chip.type = "button";
   chip.addEventListener("click", () => { $("input").value = c.try; canSend(); $("input").focus(); });
   $("try").replaceChildren(chip);
-  window.scrollTo({ top: 0 });
-  canSend();
-  $("input").focus();
+  canSend(); $("input").focus();
 }
-$("back").addEventListener("click", () => {
-  $("chat").hidden = true; $("picker").hidden = false; hideWaking(); window.scrollTo({ top: 0 });
-});
+
+// Thinking: the orb with the tools around it --------------------------------------------------------
+let think = null;
+function showThinking() {
+  if (think) return think;
+  think = el("div", "think");
+  const orbit = el("div", "orbit");
+  orbit.append(el("div", "ring"), el("div", "ring r2"), el("div", "orb"));
+  const spots = { orders: [16, 50], truck: [50, 9], book: [84, 50], ret: [68, 91], person: [32, 91] };
+  for (const [name, [x, y]] of Object.entries(spots)) {
+    const t = el("div", "tool"); t.dataset.tool = name; t.innerHTML = ICON[name];
+    t.style.left = x + "%"; t.style.top = y + "%"; orbit.append(t);
+  }
+  const what = el("div", "what shimmer", state.ready ? "Thinking" : "Waking Nova up");
+  const wakeT = el("div", "wake-t"); wakeT.hidden = state.ready;
+  think.append(orbit, what, wakeT);
+  think.classList.toggle("waking", !state.ready);
+  $("thread").append(think);
+  if (!state.ready) wakeT.textContent = WAKING;
+  think.timer = setInterval(() => {
+    if (!state.ready) wakeT.textContent = `${WAKING} ${mmss(Math.round((Date.now() - (state.wakeStarted || Date.now())) / 1000))}`;
+  }, 1000);
+  return think;
+}
+function thinkStatus(text, tool) {
+  const t = showThinking();
+  t.classList.remove("waking"); t.querySelector(".wake-t").hidden = true;
+  t.querySelector(".what").textContent = text;
+  t.querySelectorAll(".tool").forEach((x) => x.classList.toggle("on", x.dataset.tool === TOOL_ICON[tool]));
+}
+function hideThinking() { if (think) { clearInterval(think.timer); think.remove(); think = null; } }
 
 // One turn: POST the message, read the server-sent events as they arrive. -----------------------------
-let typing = null;
-function setTyping(text) {
-  if (!typing) {
-    typing = el("div", "typing");
-    const dots = el("div", "dots");
-    dots.append(el("i"), el("i"), el("i"));
-    typing.append(dots, el("span", "what"));
-    $("thread").append(typing);
-  }
-  typing.querySelector(".what").textContent = text || "";
-  $("thread").append(typing);                       // keep it last
-}
-function clearTyping() { if (typing) { typing.remove(); typing = null; } }
-
 async function send(text) {
   state.busy = true; canSend();
   $("try").replaceChildren();
-  $("thread").append(el("div", "bubble me", text));
-  setTyping(state.ready ? "" : "Waiting for Nova to wake up…");
-  scrollDown();
+  $("thread").append(el("div", "me", text));
+  showThinking(); scrollDown();
   let r;
   try {
-    r = await fetch("/chat/stream", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }),
-    });
+    r = await fetch("/chat/stream", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text }) });
   } catch (e) { return failed(text, "Couldn't reach Nova. Check your connection and send it again."); }
-  if (r.status === 401) return failed(text, "Your session ended. Go back to Customers to start again.");
+  if (r.status === 401) return failed(text, "Your session ended. Choose a customer to start again.");
   if (!r.ok || !r.body) return failed(text, "Nova couldn't answer just now. Send it again in a moment.");
-  const reader = r.body.getReader();
-  const dec = new TextDecoder();
-  let buf = "", replied = false, finished = false;
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  let buf = "", turn = null, finished = false;
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
@@ -414,92 +479,48 @@ async function send(text) {
       }
       if (!data) continue;                            // a keep-alive comment
       const d = JSON.parse(data);
-      if (kind === "status" && d.waking) { state.ready = false; state.wakeStarted = Date.now(); showWaking(); setTyping(""); }
-      else if (kind === "status") { hideWaking(); state.ready = true; setTyping(d.text); }
-      else if (kind === "reply") { hideWaking(); state.ready = true; clearTyping(); $("thread").append(el("div", "bubble nova", d.text)); replied = true; }
-      else if (kind === "confirm_card") $("thread").append(confirmCard(d));
-      else if (kind === "handoff") $("thread").append(handoffCard(d));
-      else if (kind === "done") { if (replied) $("thread").append(...meta(d)); finished = true; }
+      if (kind === "status" && d.waking) { state.ready = false; state.wakeStarted = Date.now(); setState("waking", "Waking"); }
+      else if (kind === "status") { state.ready = true; setState("awake", "Awake"); thinkStatus(d.text, d.tool); }
+      else if (kind === "reply") {
+        state.ready = true; setState("awake", "Awake"); hideThinking();
+        turn = el("div", "nova");
+        const meta = el("div", "meta"); meta.append(el("span", "mini-orb"), el("span", "", "Nova"));
+        turn.append(meta, el("div", "reply", d.text)); $("thread").append(turn);
+      }
+      else if (kind === "confirm_card" && turn) turn.append(confirmCard(d));
+      else if (kind === "handoff" && turn) turn.append(handoffCard(d));
+      else if (kind === "done") { if (turn) finishTurn(turn, d); finished = true; }
       else if (kind === "error") return failed(text, d.text);
       scrollDown();
     }
   }
   if (!finished) return failed(text, "The answer was cut off. Send it again.");
-  clearTyping(); state.busy = false; canSend(); $("input").focus();
+  hideThinking(); state.busy = false; canSend(); $("input").focus();
 }
-
 function failed(text, why) {
-  clearTyping(); hideWaking();
+  hideThinking();
   $("thread").append(el("div", "note err", why));
   if (!$("input").value) $("input").value = text;     // nothing is lost: the message is back in the box
   state.busy = false; canSend(); scrollDown();
 }
 
-// The Confirm card sends only the proposal id; the backend re-reads and re-checks everything.
-function confirmCard(c) {
-  const card = el("div", "card");
-  card.append(el("div", "h", c.item || "Return"));
-  const est = c.refund_estimate_inr != null ? ` · refund ${rupees(c.refund_estimate_inr)}` : "";
-  card.append(el("div", "d", `Order ${c.order_id}${est}. Nothing happens until you confirm.`));
-  const btn = el("button", "pill", "Confirm return");
-  btn.type = "button";
-  const out = el("div", "result");
-  btn.addEventListener("click", async () => {
-    btn.disabled = true;
-    let r, body = {};
-    try { r = await fetch(`/returns/${encodeURIComponent(c.proposal_id)}/confirm`, { method: "POST" }); body = await r.json(); }
-    catch (e) { out.textContent = "Couldn't reach NimbusCart. Try again."; out.className = "result bad"; btn.disabled = false; return; }
-    if (r.ok) {
-      out.textContent = `Return confirmed. A courier will pick it up on ${day(body.pickup_date)}.`;
-      out.className = "result ok"; btn.remove(); return;
-    }
-    out.textContent = {
-      expired: "This offer has expired. Ask Nova to check the return again.",
-      not_open: "This return was already confirmed or closed.",
-      not_eligible: "This item can no longer be returned. Ask Nova why.",
-      not_found: "This return isn't on your account.",
-    }[body.error] || "That didn't work. Ask Nova to check the return again.";
-    out.className = "result bad";
-  });
-  card.append(btn, out);
-  return card;
-}
-
-function handoffCard(h) {
-  const card = el("div", "card");
-  card.append(el("div", "h", `Ticket ${h.ticket_id} is open`));
-  let when = "A teammate from the support team will reply here. You don't need to repeat anything.";
-  if (!h.support_open && h.opens) {
-    when = `Support is offline now (9:00 to 21:00 IST). A teammate will reply when it opens at 9:00 IST ${h.opens}. `
-      + "You don't need to repeat anything.";
-  }
-  card.append(el("div", "d", when));
-  return card;
-}
-
-// Under each reply: "How Nova answered" (the steps the backend reports: labels and timings, no data) and thumbs.
-function meta(d) {
-  const row = el("div", "meta");
-  const how = el("button", "how", "How Nova answered");
+// After the reply: "Answered in 3.1 s · 2 lookups" (opens the steps), and thumbs.
+function finishTurn(turn, d) {
+  const st = d.steps || {}, n = (st.tools || []).length;
+  const meta = turn.querySelector(".meta");
+  const how = el("button", "how", `· Answered in ${Number(d.turn_s).toFixed(1)} s · ${n} ${n === 1 ? "lookup" : "lookups"}`);
   how.type = "button"; how.setAttribute("aria-expanded", "false");
-  const list = stepsList(d.steps || {});
-  list.hidden = true;
-  how.addEventListener("click", () => {
-    list.hidden = !list.hidden;
-    how.setAttribute("aria-expanded", String(!list.hidden));
-    if (!list.hidden) list.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  });
-  row.append(how, thumbs(d.trace_id));
-  return [row, list];
+  const list = stepsList(st); list.hidden = true;
+  how.addEventListener("click", () => { list.hidden = !list.hidden; how.setAttribute("aria-expanded", String(!list.hidden)); });
+  meta.append(how);
+  turn.querySelector(".reply").after(list);
+  turn.append(thumbs(d.trace_id));
 }
-
 function stepsList(st) {
   const ul = el("ul", "steps");
   const line = (icon, cls, text, right) => {
-    const li = el("li");
-    li.append(el("span", `ic ${cls}`, icon), el("span", "", text));
-    if (right) li.append(el("span", "ms", right));
-    ul.append(li);
+    const li = el("li"); li.append(el("span", `ic ${cls}`, icon), el("span", "", text));
+    if (right) li.append(el("span", "ms", right)); ul.append(li);
   };
   const ms = (n) => (n == null ? "" : n < 1000 ? `${Math.round(n)} ms` : `${(n / 1000).toFixed(1)} s`);
   for (const t of st.tools || []) {
@@ -513,64 +534,14 @@ function stepsList(st) {
   else if (st.checks) line("✓", "ok", st.checks.changed_reply ? "Reply checks changed part of the reply" : "Reply checks passed", ms(st.checks.ms));
   return ul;
 }
-
-// Your orders: what a shop's orders page would show, so visitors know what to ask and can check Nova's answers.
-async function openOrders() {
-  const scrim = el("div", "scrim");
-  const sheet = el("div", "sheet");
-  sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-label", "Your orders");
-  const top = el("div", "sheet-top");
-  const done = el("button", "", "Done");
-  done.type = "button";
-  top.append(el("span"), el("div", "t", "Your orders"), done);
-  const body = el("div", "", "");
-  body.append(el("div", "empty", "Loading…"));
-  sheet.append(top, body);
-  scrim.append(sheet);
-  const close = () => { scrim.remove(); document.removeEventListener("keydown", esc); $("orders-btn").focus(); };
-  const esc = (e) => { if (e.key === "Escape") close(); };
-  done.addEventListener("click", close);
-  scrim.addEventListener("click", (e) => { if (e.target === scrim) close(); });
-  document.addEventListener("keydown", esc);
-  document.body.append(scrim);
-  done.focus();
-  let orders = [];
-  try {
-    const r = await fetch("/my-orders");
-    if (!r.ok) throw new Error(String(r.status));
-    orders = await r.json();
-  } catch (e) { body.replaceChildren(el("div", "empty", "Couldn't load the orders. Try again.")); return; }
-  const fmt = (iso) => (iso ? day(iso) : "");
-  body.replaceChildren(...orders.map((o) => {
-    const card = el("div", "order");
-    const topLine = el("div", "top");
-    topLine.append(el("b", "", `Order ${o.order_id}`), el("span", "", rupees(o.total_inr)));
-    let st = `Placed ${fmt(o.placed)} · ${o.status}`;
-    if (o.delivered && o.status === "delivered") st = `Placed ${fmt(o.placed)} · delivered ${fmt(o.delivered)}`;
-    else if (o.eta && !o.delivered) st += ` · expected ${fmt(o.eta)}`;
-    if (o.return) st += ` · return ${o.return}`;
-    const ask = el("button", "ask", "Ask Nova about this order");
-    ask.type = "button";
-    ask.addEventListener("click", () => {
-      $("input").value = `What's happening with order ${o.order_id}?`; canSend(); close(); $("input").focus();
-    });
-    card.append(topLine, el("div", "st", st), el("div", "it", o.items.join(", ")), ask);
-    return card;
-  }));
-}
-$("orders-btn").addEventListener("click", openOrders);
-
 function thumbs(traceId) {
   const box = el("div", "thumbs");
   for (const [rating, aria] of [["up", "Helpful"], ["down", "Not helpful"]]) {
-    const b = el("button");
-    b.type = "button"; b.setAttribute("aria-label", aria); b.setAttribute("aria-pressed", "false");
+    const b = el("button"); b.type = "button"; b.setAttribute("aria-label", aria); b.setAttribute("aria-pressed", "false");
     b.innerHTML = THUMB;                              // a fixed icon, not model text
     if (rating === "down") b.firstChild.style.transform = "rotate(180deg)";
     b.addEventListener("click", async () => {
-      const r = await fetch("/feedback", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ trace_id: traceId, rating }),
-      }).catch(() => null);
+      const r = await fetch("/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ trace_id: traceId, rating }) }).catch(() => null);
       if (r && r.ok) box.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     });
     box.append(b);
@@ -578,24 +549,93 @@ function thumbs(traceId) {
   return box;
 }
 
+// Glass cards. The Confirm button sends only the proposal id; the backend re-reads and re-checks everything.
+function confirmCard(c) {
+  const card = el("div", "card");
+  card.append(el("div", "k", `Return · order ${c.order_id}`), el("div", "h", c.item || "Item"));
+  const row = el("div", "row"), big = el("div", "big");
+  if (c.refund_estimate_inr != null) big.append(el("span", "", "₹"), dots(Math.round(c.refund_estimate_inr)), el("span", "", "refund"));
+  const btn = el("button", "btn-white", "Confirm return"); btn.type = "button";
+  row.append(big, btn);
+  const out = el("div", "result");
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    let r, body = {};
+    try { r = await fetch(`/returns/${encodeURIComponent(c.proposal_id)}/confirm`, { method: "POST" }); body = await r.json(); }
+    catch (e) { out.textContent = "Couldn't reach NimbusCart. Try again."; out.className = "result bad"; btn.disabled = false; return; }
+    if (r.ok) { out.textContent = `Return confirmed. A courier will pick it up on ${day(body.pickup_date)}.`; out.className = "result ok"; btn.remove(); return; }
+    out.textContent = {
+      expired: "This offer has expired. Ask Nova to check the return again.",
+      not_open: "This return was already confirmed or closed.",
+      not_eligible: "This item can no longer be returned. Ask Nova why.",
+      not_found: "This return isn't on your account.",
+    }[body.error] || "That didn't work. Ask Nova to check the return again.";
+    out.className = "result bad";
+  });
+  card.append(row, el("div", "k", "Nothing happens until you confirm."), out);
+  return card;
+}
+function handoffCard(h) {
+  const card = el("div", "card");
+  card.append(el("div", "k", "Ticket opened"));
+  const row = el("div", "row"); row.append(dots(h.ticket_id)); card.append(row);
+  let when = "A teammate from the support team will reply here. You don't need to repeat anything.";
+  if (!h.support_open && h.opens) when = `Support is offline now (9:00 to 21:00 IST). A teammate will reply when it opens at 9:00 IST ${h.opens}.`;
+  card.append(el("div", "k", when));
+  return card;
+}
+
+// Panels inside the window: the customer's orders, and NOVA on a phone -------------------------------
+function openPanel(title, fill) {
+  const panel = el("div", "panel");
+  panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", title);
+  const top = el("div", "ptop"); const done = el("button", "chip", "Done"); done.type = "button";
+  top.append(el("div", "ptitle", title), el("span", "spacer"), done);
+  const body = el("div", "pbody");
+  panel.append(top, body);
+  const close = () => { panel.remove(); document.removeEventListener("keydown", esc); };
+  const esc = (e) => { if (e.key === "Escape") close(); };
+  done.addEventListener("click", close); document.addEventListener("keydown", esc);
+  document.querySelector(".win").append(panel); done.focus();
+  fill(body, close);
+}
+$("orders-btn").addEventListener("click", () => openPanel("Your orders", async (body, close) => {
+  body.append(el("div", "empty", "Loading…"));
+  let orders = [];
+  try { const r = await fetch("/my-orders"); if (!r.ok) throw 0; orders = await r.json(); }
+  catch (e) { body.replaceChildren(el("div", "empty", "Couldn't load the orders. Try again.")); return; }
+  body.replaceChildren(...orders.map((o) => {
+    const card = el("div", "order"), top = el("div", "top");
+    top.append(el("span", "", `Order ${o.order_id}`), el("span", "", rupees(o.total_inr)));
+    let st = `Placed ${day(o.placed)} · ${o.status}`;
+    if (o.delivered && o.status === "delivered") st = `Placed ${day(o.placed)} · delivered ${day(o.delivered)}`;
+    else if (o.eta && !o.delivered) st += ` · expected ${day(o.eta)}`;
+    if (o.return) st += ` · return ${o.return}`;
+    const ask = el("button", "ask", "Ask Nova about this order"); ask.type = "button";
+    ask.addEventListener("click", () => { $("input").value = `What's happening with order ${o.order_id}?`; canSend(); close(); $("input").focus(); });
+    card.append(top, el("div", "st", st), el("div", "it", o.items.join(", ")), ask);
+    return card;
+  }));
+}));
+$("info-btn").addEventListener("click", () => openPanel("About", (body) => {
+  const m = el("div", "hero-mini");
+  m.append(el("h1", "", "NOVA"), el("p", "", $("summary").textContent.replace(/\s+/g, " ").trim()), el("p", "", $("fine").textContent));
+  const a = el("a", "pill-link", "How it's built"); a.href = "https://github.com/jagjotsingh244-source/customer-support-SLM";
+  a.target = "_blank"; a.rel = "noopener"; m.append(a); body.append(m);
+}));
+
 // Wiring ------------------------------------------------------------------------------------------
-$("search").addEventListener("input", renderList);
 $("form").addEventListener("submit", (e) => {
   e.preventDefault();
   const text = $("input").value.trim();
   if (!text || !canSend()) return;
-  $("input").value = ""; autosize();
-  send(text);
+  $("input").value = ""; autosize(); send(text);
 });
 function autosize() { const t = $("input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 120) + "px"; }
 $("input").addEventListener("input", () => { autosize(); canSend(); });
-$("input").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("form").requestSubmit(); }
-});
+$("input").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("form").requestSubmit(); } });
 
-canSend();
-loadList();
-wake();
+canSend(); loadList(); wake();
 </script>
 </body>
 </html>
