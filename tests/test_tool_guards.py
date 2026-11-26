@@ -188,6 +188,20 @@ def test_propose_records_a_proposal_only(eligible):
     assert again["proposal_id"] == out["proposal_id"]                  # one card, not two
 
 
+@pytest.mark.parametrize("scenario", ["window_just_expired", "opened_electronics"])
+def test_propose_refuses_an_item_that_cannot_go_back(scenario):
+    """The eligibility check is what stands between the model and a Confirm card for an expired or opened item.
+    A tool that skipped it would pass every other test here."""
+    r = OWNER.execute("""SELECT o.customer_id, o.order_id FROM scenarios s JOIN orders o USING (order_id)
+                         WHERE s.scenario = %s ORDER BY o.order_id LIMIT 1""", (scenario,)).fetchone()
+    s = t.Session.open(CONNS, r["customer_id"])
+    reason = "changed_mind"
+    out = t.REGISTRY["propose_return"](s, order_id=r["order_id"], line_no=1, reason=reason)
+    assert out.get("eligible") is False and "proposal_id" not in out, out
+    assert owner_count("SELECT count(*) AS n FROM returns WHERE order_id = %(o)s AND return_id >= 900001",
+                       r["order_id"]) == 0
+
+
 def test_tools_treat_another_customers_order_as_missing():
     s = t.Session.open(CONNS, A)
     assert t.REGISTRY["get_order_status"](s, order_id=B_ORDER) == t.NOT_FOUND
