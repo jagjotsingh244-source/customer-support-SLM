@@ -20,8 +20,8 @@ What is sent, per turn (the trace's id is the turn's trace id, which /feedback t
       rule:<name>      a hand-off or tracking check the rules made on their own
       reply_checks     output-filter hits and grounding issues
 
-Tags: adapter:<MODEL_VERSION>, prompt:<version>, kb:<index version>, now:<mode>. Scores, for the dashboards:
-escalated, tool_errors, grounding_issues, filter_hits, input_flags on every turn, thumbs when a visitor clicks.
+Tags: adapter:<MODEL_VERSION>, prompt:<version>, kb:<index version>, now:<mode>. Scores, for filtering and comparing
+versions (and a dashboard, once there is traffic): escalated, tool_errors, grounding_issues, filter_hits, input_flags on every turn, thumbs when a visitor clicks.
 
 Everything passes through agent.privacy.redact_obj before it leaves (the SDK's mask hook): phone numbers masked,
 card numbers and email addresses replaced. The customer's name is never sent; the customer is "customer-<id>".
@@ -97,7 +97,7 @@ def turn(trace_id: str, *, customer_id: int, conversation_id: str, message: str,
 
 
 def turn_scores(trace_id: str, trace: dict) -> dict:
-    """The per-turn numbers the dashboards chart, from the loop's own trace."""
+    """The per-turn numbers a canary comparison reads, from the loop's own trace."""
     return {
         "escalated": 1 if trace["escalated"] else 0,
         "tool_errors": sum(1 for t in trace["tool_calls"] if not t["ok"]),

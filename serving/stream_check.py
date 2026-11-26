@@ -82,7 +82,7 @@ def main():
             turn["customer_id"] = p["customer_id"]
             turns.append(turn)
             d = turn.get("done", {})
-            print(f"{p['customer_id']:>4}  first event {turn['first_event_s']} s  reply {turn.get('reply_s')} s  "
+            print(f"{d.get('model_version', '?'):<24}{p['customer_id']:>4}  first event {turn['first_event_s']} s  reply {turn.get('reply_s')} s  "
                   f"tools {d.get('tools')}  final call {d.get('final_call_s')} s  checks {d.get('checks_ms')} ms  "
                   f"{'card ' if 'confirm_card' in turn else ''}{'handoff' if 'handoff' in turn else ''}"
                   f"{turn.get('error', '')}", file=sys.stderr)

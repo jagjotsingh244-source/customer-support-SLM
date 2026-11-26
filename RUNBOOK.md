@@ -10,7 +10,7 @@ whoever is on call. Commands are Makefile targets (`make help`) unless shown in 
 | Chat page and backend (`api/app.py`, `ui/index.html`) | Cloud Run `nova-backend`, project `nova-evals`, `us-east4`, public | environment variables on the service (list below) | `/health`; Cloud Run logs |
 | Model server (vLLM, the fine-tune in FP8) | Modal app `nova-serve`, one L4, scales to zero after 60 s | `serving/modal_nova.py`; key in Modal secret `nova-serve` | first request after idle takes about 2 minutes |
 | Store: orders, help center, vectors, three roles | Neon Postgres | owner URL in `.env` (`NEON_URL`), never in the backend | `make reindex DB_URL=...` checks retrieval |
-| Traces and dashboard | Langfuse Cloud (US), project "My Project" | `LANGFUSE_*` on the backend | dashboard "Nova operations"; filter traces by tag |
+| Traces | Langfuse Cloud (US), project "My Project" | `LANGFUSE_*` on the backend | the Tracing page; filter by tag, user or time |
 | Local stand-in for all of the above | this machine: Docker Postgres, llama.cpp with the GGUF | `.claude/launch.json` | `http://localhost:8080` |
 
 Backend settings that matter: `MODEL_BASE_URL`, `MODEL_NAME` (nova), `MODEL_VERSION` (tag, e.g. sft2a-v1-fp8),
@@ -74,9 +74,10 @@ production's runs before it ships, like a new model.
 4. Canary: `make canary CANARY_VERSION=sft2b-v1-fp8` plus the new endpoint, i.e.
    `ops/set_env.sh CANARY_MODEL=nova-next CANARY_VERSION=sft2b-v1-fp8 CANARY_BASE_URL=<new endpoint>/v1 CANARY_SHARE=0.10`.
    One new conversation in ten goes to it, and keeps it for the whole conversation.
-5. Watch the dashboard "Nova operations" for 48 hours with both versions as separate lines: escalation rate,
-   thumbs, tool errors and grounding issues, filter hits, latency. Read a sample of the canary's traces (filter by
-   tag `adapter:sft2b-v1-fp8`).
+5. Watch both versions for 48 hours. In Langfuse, filter traces by the tag `adapter:sft2b-v1-fp8` against
+   production's tag and compare the per-turn scores (escalated, tool errors, grounding issues, filter hits, thumbs)
+   and the latency; read a sample of the canary's traces. With real traffic, build a dashboard that splits these by
+   trace version, one line per model (evals/reports/06_serving.md, section 7, lists the panels).
 6. **Promote:** set `MODEL_NAME`, `MODEL_VERSION` and `MODEL_BASE_URL` to the new model, then `make rollback` to
    turn the canary off. The old app stays deployed (it costs nothing while idle) until the new one has run a week.
 7. **Roll back:** `make rollback` (`CANARY_SHARE=0`). Every new conversation goes to production from the moment

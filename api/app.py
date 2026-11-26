@@ -436,7 +436,8 @@ def turn_events(c: Chat, text: str):
         final = trace["model_calls"][-1]["latency_s"] if trace["model_calls"] and not trace["format_errors"] else None
         done = {"trace_id": trace_id, "turn_s": round(turn_s, 3), "model_s": round(model_s, 3),
                 "model_calls": len(trace["model_calls"]), "tools": [t["name"] for t in trace["tool_calls"]],
-                "escalated": trace["escalated"], "final_call_s": final, "checks_ms": trace.get("checks_ms")}
+                "escalated": trace["escalated"], "final_call_s": final, "checks_ms": trace.get("checks_ms"),
+                "model_version": (c.route or production_route()).version}
         log.info(json.dumps({"event": "turn", **done}))
         yield "done", {**done, "steps": _steps(trace, reply)}
         tracing.flush()                                # after the page has its answer: not in the visitor's wait

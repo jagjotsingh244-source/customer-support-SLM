@@ -246,7 +246,7 @@ Nova searched the returns policy but never looked at the delivery date, and hand
 15-day window had closed (both runs). It is a model behaviour, not a page bug, so it goes to the first weekly
 review of traces as a candidate golden case.
 
-## 7. Traces and the operations dashboard
+## 7. Traces
 
 A request log says a turn took 4 s and returned 200. It cannot say which order Nova looked up, what the tool
 returned, or whether a check fired, so a bug report from a visitor could not be reproduced. Now every chat turn
@@ -267,14 +267,12 @@ becomes a sixth score on the same trace, by its id. Everything is redacted befor
 `tests/test_tracing.py` checks the nesting, tags, scores and redaction with an in-memory exporter. Without the
 keys nothing is sent, so tests and evals are unchanged.
 
-**The dashboard** ("Nova operations" in the Langfuse project, demo environment only, past 7 days):
-
-| Panel | Widgets |
-|---|---|
-| Hand-offs and feedback, per day, one line per model version | escalation rate; thumbs-up rate (thumbs-down = 1 − it) |
-| Tool errors and grounding issues | average per reply, per day (×100 = per 100 replies) |
-| Output-filter hits and flagged messages | count per day; both should be rare |
-| Latency per step | p50 and p95 of the turn, model calls, each tool, retrieval, checks |
+**No dashboard yet, on purpose.** A demo with a handful of visitors would chart almost nothing, so the
+dashboard was built once, checked, and removed. With real traffic it is the next step, and it needs no new code:
+the tags and scores above are what it would chart. Four panels would cover a live system: hand-off and thumbs-up
+rates per day with one line per model version (which is how a canary is compared with production), tool errors and
+grounding issues per 100 replies, output-filter hits and flagged messages per day (a spike means an attack or a
+bug), and p50 / p95 latency per step. Until then, a single trace answers "what happened in this conversation".
 
 **First trace, first finding.** The first test turn (customer 372, "Can I return the induction cooktop I bought in
 October?") shows why Nova hands off there: the help-center search found the right section, `returns-general#
