@@ -1,0 +1,26 @@
+{
+  "run": "2026-11-27_golden-dpo-v2-l4",
+  "system": "candidate",
+  "provider": "openai",
+  "model": "dpo",
+  "adapter": null,
+  "base_url": "http://localhost:8000/v1",
+  "prompt_version": "v3",
+  "tools_version": "v2",
+  "state": true,
+  "guards": true,
+  "handoff_rules": true,
+  "temperature": 0.2,
+  "sampling": "default",
+  "sampling_settings": {},
+  "max_model_calls_per_turn": 4,
+  "case_set": "golden",
+  "paired_run": null,
+  "cases": 107,
+  "commit": "",
+  "db_host": "localhost:5433",
+  "notes": "GCP L4 (nova-s1), vLLM 0.34.0 bf16; SFT-2a merged as the base, the DPO adapter as a LoRA module on the same server; help center as of f1057eb",
+  "served_models": [
+    "dpo"
+  ]
+}

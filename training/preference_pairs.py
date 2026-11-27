@@ -130,7 +130,7 @@ def _same_call(x: tuple[str, dict], y: tuple[str, dict]) -> bool:
 
 def reply_problems(reply: str, prompt: list[dict]) -> list[str]:
     """What is wrong with a text reply, by the same code checks the served reply goes through."""
-    evidence = [m.get("content") or "" for m in prompt if m["role"] in ("tool", "user")]
+    evidence = _evidence(prompt)
     out = []
     if DEAD_END.search(reply) and not OFFER.search(reply):
         out.append("dead_end_refusal")
@@ -152,22 +152,35 @@ def tag(rec: dict) -> str | None:
     t, n = rec["target"], rec["nova"]
     tc, nc = _calls(t), _calls(n)
     reply = n.get("content") or ""
+    # Split orders: the teacher proposed returning an item that had not arrived yet; that target is wrong.
+    if rec["scenario"] == "split_shipment" and tc and tc[0][0] == "propose_return":
+        return None
     if tc and nc:
         if _same_call(tc[0], nc[0]):
             return None
         if tc[0][0] == nc[0][0]:
-            return f"wrong_args:{tc[0][0]}"
+            # A different hand-off reason ("not_received" or "lost_parcel") is a judgement call, not a mistake.
+            return None if tc[0][0] == "escalate_to_human" else f"wrong_args:{tc[0][0]}"
         if nc[0][0] == "escalate_to_human":
             return f"early_handoff:{tc[0][0]}"
-        return f"wrong_tool:{tc[0][0]}<-{nc[0][0]}"
+        # Two lookups in the other order (status before the help center, or the reverse) are both right: the
+        # scorer allows any order since eval-v4, and 620 of the first 877 pairs were only that. An action
+        # the teacher took that Nova put off (a return proposal, a hand-off) is a real miss.
+        if tc[0][0] in ACTIONS:
+            return f"skipped_action:{tc[0][0]}<-{nc[0][0]}"
+        return None
     if tc and not nc:
         if tc[0][0] == "search_help_center":           # answering without the search is wrong only if it is policy
             bad = reply_problems(reply, rec["prompt"])
             return f"skipped_call:search_help_center/{bad[0]}" if bad else \
                 ("skipped_call:search_help_center/uncited_policy" if CITE_LIKE.search(reply) else None)
+        if tc[0][0] == "escalate_to_human" and OFFER.search(reply):
+            return None                                  # offering the hand-off first is good behaviour too
         return f"skipped_call:{tc[0][0]}"
     if nc and not tc:
-        return "early_handoff:reply" if nc[0][0] == "escalate_to_human" else None
+        # Handing off where the teacher replied: the read showed these contradict the skipped hand-offs (angry
+        # customers either way), and several targets said "I will escalate" without doing it. No pair.
+        return None
     bad = [b for b in reply_problems(reply, rec["prompt"]) if b != "ungrounded" or _invented_number(reply, rec)]
     if bad and not reply_problems(t.get("content") or "", rec["prompt"]):
         return "reply:" + bad[0]
@@ -175,12 +188,18 @@ def tag(rec: dict) -> str | None:
 
 
 CITE_LIKE = re.compile(r"\[kb:")
+ACTIONS = {"propose_return", "escalate_to_human"}
 
 
 def _invented_number(reply: str, rec: dict) -> bool:
     """A number in the reply found in no tool result and no customer message (citations alone do not count)."""
-    evidence = [m.get("content") or "" for m in rec["prompt"] if m["role"] in ("tool", "user")]
-    return any(i.startswith("number") for i in grounding_issues(reply, evidence))
+    return any(i.startswith("number") for i in grounding_issues(reply, _evidence(rec["prompt"])))
+
+
+def _evidence(prompt: list[dict]) -> list[str]:
+    """Everything Nova was shown: tool results, the customer's words, the state block in the system prompt and its
+    own earlier replies. Counting only tool results flagged order and ticket numbers carried in the state."""
+    return [m.get("content") or "" for m in prompt if m["role"] in ("tool", "user", "system", "assistant")]
 
 
 def build(a) -> None:
@@ -200,6 +219,55 @@ def build(a) -> None:
         print(f"  {v:5d}  {k}")
 
 
+# Extra: shop questions the help center may not answer ----------------------------------------------------
+
+EXTRA_QUESTIONS = ROOT / "training" / "shop_questions_no_answer.jsonl"
+EXTRA_PAIRS = OUT / "nova-pairs-no-answer-v1.jsonl"
+
+
+def extra(a) -> None:
+    """Nova's habit on shop questions it cannot answer (gift wrap, restocks, store pickup): a flat "I can only help
+    with your orders" with no search and no hand-off. The training steps hold few of these (11 pairs), so this
+    asks them directly: new questions, none copied from an eval set, each from a training-side customer's first
+    turn. Chosen is a help-center search (the rule: check, then say it is not covered and offer a teammate);
+    rejected is Nova's own reply when it answers without searching."""
+    from datasets import load_from_disk
+    from openai import OpenAI
+
+    from agent.tools_v2 import TOOLS
+    starts = []
+    for r in load_from_disk(str(MIX))["train"]:
+        msgs = json.loads(r["messages"])
+        if r["source"] in SOURCES and r["step"] == 0 and "No order looked up yet." in msgs[0]["content"]:
+            starts.append((r["conversation"], msgs[0]))
+    qs = [json.loads(line) for line in EXTRA_QUESTIONS.read_text().splitlines()]
+    client = OpenAI(base_url=a.base_url, api_key=a.api_key, timeout=120)
+
+    def one(k_q):
+        k, q = k_q
+        conv, system = starts[(k * 37) % len(starts)]
+        prompt = as_served([system, {"role": "user", "content": q["q"]}])
+        out = []
+        for i in range(a.samples):
+            m = client.chat.completions.create(model=a.model, messages=prompt, tools=TOOLS,
+                                               temperature=a.temperature, max_tokens=512).choices[0].message
+            if not m.tool_calls and m.content:
+                out.append({"prompt": prompt, "rejected": [{"role": "assistant", "content": m.content}],
+                            "chosen": [{"role": "assistant", "content": "", "tool_calls": [{
+                                "id": f"call-extra-{k}", "type": "function", "function": {
+                                    "name": "search_help_center",
+                                    "arguments": json.dumps({"query": q["query"]})}}]}],
+                            "tag": "no_answer:skipped_search", "scenario": "no_answer", "persona": "extra",
+                            "conversation": f"extra-{k}", "step": i})
+                break                                   # one pair per question
+        return out
+
+    with ThreadPoolExecutor(16) as pool:
+        pairs = [p for ps in pool.map(one, enumerate(qs)) for p in ps]
+    EXTRA_PAIRS.write_text("".join(json.dumps(p, ensure_ascii=False) + "\n" for p in pairs))
+    print(f"{len(qs)} questions, {len(pairs)} where Nova answered without searching -> {EXTRA_PAIRS}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -212,8 +280,14 @@ def main() -> None:
     c.add_argument("--limit", type=int)
     c.add_argument("--scenarios", nargs="*")
     sub.add_parser("build")
+    e = sub.add_parser("extra")
+    e.add_argument("--base-url", default="http://localhost:8090/v1")
+    e.add_argument("--api-key", default="none")
+    e.add_argument("--model", default="nova")
+    e.add_argument("--temperature", type=float, default=0.2)
+    e.add_argument("--samples", type=int, default=3, help="tries per question; the first reply without a search")
     a = ap.parse_args()
-    collect(a) if a.cmd == "collect" else build(a)
+    {"collect": collect, "build": build, "extra": extra}[a.cmd](a)
 
 
 if __name__ == "__main__":
