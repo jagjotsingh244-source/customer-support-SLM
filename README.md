@@ -35,11 +35,16 @@ forbidden was said and the hand-off was right.
   same model repeated a planted "full refund approved" note and printed its system prompt
   ([report](evals/reports/05a_attacks.md)).
 - **Since this table:** three fixes for right answers that were scored as failures (a privacy rule that blanked
-  correct cash-on-delivery refund answers, a hand-off on the model's last allowed call, and a scorer that wanted
-  lookups in a fixed order) take Nova as served to about 70% when its saved runs are rescored. The help center
-  now uses customers' words ("bedsheets", "money cut from my account", "charged ₹49 extra", "the screen
-  cracked"): on the 22 cases these changes touch, run on the local GGUF, 15 passed before and 20 after. A full
-  rerun on the serving GPU is still to do.
+  correct cash-on-delivery refund answers, a hand-off on the model's last allowed call, a scorer that wanted
+  lookups in a fixed order), and a help center written in customers' words ("bedsheets", "money cut from my
+  account", "charged ₹49 extra"). Measured on an L4, the same fine-tune now passes **74.5%** of the golden set
+  (three runs: 73.8, 72.9, 76.6; was 67) and 64% of the fresh set (was 62). Those runs used the merged model in
+  bf16; the deployment serves it in FP8, which measured the same in earlier format tests.
+- **Preference tuning (DPO) did not ship.** Trained on 272 pairs of Nova's own mistakes against corrected
+  replies, it fixed the flat refusals ("I can only help with your orders") on questions the help center does
+  not cover (unanswerable 64% to 80%, fresh set 64% to 70%), but lost points on attacks and returns (golden
+  72.6%) and the release gate blocked it. A first version learned to hand off almost everything (60%); dropping
+  the "should have handed off" pairs, since certain hand-offs are already forced in code, fixed most of that.
 - **Fresh cases:** 50 cases written after every decision was made. SFT-2a passes 62% (golden 62%), so all the
   tuning did not fit it to the golden set ([report](evals/reports/04_comparison.md)).
 
